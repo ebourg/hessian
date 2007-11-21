@@ -22,7 +22,7 @@
  *    Alternately, this acknowlegement may appear in the software itself,
  *    if and wherever such third-party acknowlegements normally appear.
  *
- * 4. The names "Hessian", "Resin", and "Caucho" must not be used to
+ * 4. The names "Burlap", "Resin", and "Caucho" must not be used to
  *    endorse or promote products derived from this software without prior
  *    written permission. For written permission, please contact
  *    info@caucho.com.
@@ -46,9 +46,13 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.client;
+package com.caucho.burlap.client;
 
-import com.caucho.hessian.io.*;
+import com.caucho.burlap.io.AbstractBurlapInput;
+import com.caucho.burlap.io.BurlapInput;
+import com.caucho.burlap.io.BurlapOutput;
+import com.caucho.burlap.io.BurlapRemoteObject;
+import com.caucho.burlap.io.BurlapRemoteResolver;
 import com.caucho.services.client.ServiceProxyFactory;
 
 import javax.naming.Context;
@@ -60,17 +64,15 @@ import javax.naming.spi.ObjectFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Hashtable;
-import java.util.logging.Logger;
 
 /**
- * Factory for creating Hessian client stubs.  The returned stub will
+ * Factory for creating Burlap client stubs.  The returned stub will
  * call the remote object for all methods.
  *
  * <pre>
@@ -89,17 +91,17 @@ import java.util.logging.Logger;
  * In Resin 3.0, the above example would be configured as:
  * <pre>
  * &lt;reference>
- *   &lt;jndi-name>hessian/hello&lt;/jndi-name>
+ *   &lt;name>hessian/hello&lt;/name>
  *   &lt;factory>com.caucho.hessian.client.HessianProxyFactory&lt;/factory>
- *   &lt;init-param url="http://localhost:8080/ejb/hello"/>
- *   &lt;init-param type="test.HelloHome"/>
+ *   &lt;init url="http://localhost:8080/ejb/hello"/>
+ *         type="test.HelloHome"/>
  * &lt;/reference>
  * </pre>
  *
  * To get the above resource, use JNDI as follows:
  * <pre>
  * Context ic = new InitialContext();
- * HelloHome hello = (HelloHome) ic.lookup("java:comp/env/hessian/hello");
+ * HelloHome hello = (HelloHome) ic.lookup("java:comp/env/burlap/hello");
  *
  * System.out.println("Hello: " + hello.helloWorld());
  * </pre>
@@ -109,12 +111,8 @@ import java.util.logging.Logger;
  * <p>The proxy can use HTTP basic authentication if the user and the
  * password are set.
  */
-public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
-  protected static Logger log
-    = Logger.getLogger(HessianProxyFactory.class.getName());
-
-  private SerializerFactory _serializerFactory;
-  private HessianRemoteResolver _resolver;
+public class BurlapProxyFactory implements ServiceProxyFactory, ObjectFactory {
+  private BurlapRemoteResolver _resolver;
   
   private String _user;
   private String _password;
@@ -122,22 +120,12 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
   private boolean _isOverloadEnabled = false;
 
-  private boolean _isHessian2Reply = false;
-  private boolean _isHessian2Request = false;
-
-  private boolean _isChunkedPost = false;
-  private boolean _isDebug = false;
-
-  private long _readTimeout = -1;
-
-  private String _connectionFactoryName = "jms/ConnectionFactory";
-
   /**
    * Creates the new proxy factory.
    */
-  public HessianProxyFactory()
+  public BurlapProxyFactory()
   {
-    _resolver = new HessianProxyResolver(this);
+    _resolver = new BurlapProxyResolver(this);
   }
 
   /**
@@ -159,31 +147,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   }
 
   /**
-   * Sets the name of the connection factory to use when connecting
-   * to JMS Hessian services.
-   */
-  public void setConnectionFactoryName(String connectionFactoryName)
-  {
-    _connectionFactoryName = connectionFactoryName;
-  }
-
-  /**
-   * Sets the debug
-   */
-  public void setDebug(boolean isDebug)
-  {
-    _isDebug = isDebug;
-  }
-
-  /**
-   * Gets the debug
-   */
-  public boolean isDebug()
-  {
-    return _isDebug;
-  }
-
-  /**
    * Returns true if overloaded methods are allowed (using mangling)
    */
   public boolean isOverloadEnabled()
@@ -200,81 +163,11 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   }
 
   /**
-   * Set true if should use chunked encoding on the request.
-   */
-  public void setChunkedPost(boolean isChunked)
-  {
-    _isChunkedPost = isChunked;
-  }
-
-  /**
-   * Set true if should use chunked encoding on the request.
-   */
-  public boolean isChunkedPost()
-  {
-    return _isChunkedPost;
-  }
-
-  /**
-   * The socket timeout on requests in milliseconds.
-   */
-  public long getReadTimeout()
-  {
-    return _readTimeout;
-  }
-
-  /**
-   * The socket timeout on requests in milliseconds.
-   */
-  public void setReadTimeout(long timeout)
-  {
-    _readTimeout = timeout;
-  }
-
-  /**
-   * True if the proxy can read Hessian 2 responses.
-   */
-  public void setHessian2Reply(boolean isHessian2)
-  {
-    _isHessian2Reply = isHessian2;
-  }
-
-  /**
-   * True if the proxy should send Hessian 2 requests.
-   */
-  public void setHessian2Request(boolean isHessian2)
-  {
-    _isHessian2Request = isHessian2;
-
-    if (isHessian2)
-      _isHessian2Reply = true;
-  }
-
-  /**
    * Returns the remote resolver.
    */
-  public HessianRemoteResolver getRemoteResolver()
+  public BurlapRemoteResolver getRemoteResolver()
   {
     return _resolver;
-  }
-
-  /**
-   * Sets the serializer factory.
-   */
-  public void setSerializerFactory(SerializerFactory factory)
-  {
-    _serializerFactory = factory;
-  }
-
-  /**
-   * Gets the serializer factory.
-   */
-  public SerializerFactory getSerializerFactory()
-  {
-    if (_serializerFactory == null)
-      _serializerFactory = new SerializerFactory();
-    
-    return _serializerFactory;
   }
 
   /**
@@ -286,15 +179,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     URLConnection conn = url.openConnection();
 
     conn.setDoOutput(true);
-
-    if (_readTimeout > 0) {
-      try {
-	conn.setReadTimeout((int) _readTimeout);
-      } catch (Throwable e) {
-      }
-    }
-
-    conn.setRequestProperty("Content-Type", "x-application/hessian");
 
     if (_basicAuth != null)
       conn.setRequestProperty("Authorization", _basicAuth);
@@ -317,15 +201,15 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public Object create(String url)
     throws MalformedURLException, ClassNotFoundException
   {
-    HessianMetaInfoAPI metaInfo;
+    BurlapMetaInfoAPI metaInfo;
 
-    metaInfo = (HessianMetaInfoAPI) create(HessianMetaInfoAPI.class, url);
+    metaInfo = (BurlapMetaInfoAPI) create(BurlapMetaInfoAPI.class, url);
 
     String apiClassName =
-      (String) metaInfo._hessian_getAttribute("java.api.class");
+      (String) metaInfo._burlap_getAttribute("java.api.class");
 
     if (apiClassName == null)
-      throw new HessianRuntimeException(url + " has an unknown api.");
+      throw new BurlapRuntimeException(url + " has an unknown api.");
 
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
@@ -351,88 +235,41 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public Object create(Class api, String urlName)
     throws MalformedURLException
   {
-    return create(api, urlName,
-		  Thread.currentThread().getContextClassLoader());
-  }
+    URL url = new URL(urlName);
 
-  /**
-   * Creates a new proxy with the specified URL.  The returned object
-   * is a proxy with the interface specified by api.
-   *
-   * <pre>
-   * String url = "http://localhost:8080/ejb/hello");
-   * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);
-   * </pre>
-   *
-   * @param api the interface the proxy class needs to implement
-   * @param url the URL where the client object is located.
-   *
-   * @return a proxy to the object with the specified interface.
-   */
-  public Object create(Class api, String urlName, ClassLoader loader)
-    throws MalformedURLException
-  {
-    if (api == null)
-      throw new NullPointerException("api must not be null for HessianProxyFactory.create()");
-    InvocationHandler handler = null;
+    try {
+      // clear old keepalive connections
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-    if (false && urlName.startsWith("jms:")) {
-      /*
-      String jndiName = urlName.substring("jms:".length());
+      conn.setRequestProperty("Connection", "close");
 
-      try {
-        handler = new HessianJMSProxy(this, jndiName, _connectionFactoryName);
-      } catch (Exception e) {
-        log.info("Unable to create JMS proxy: " + e);
-        return null;
-      }
-      */
-    } 
-    else {
-      URL url = new URL(urlName); 
-      handler = new HessianProxy(this, url);
+      InputStream is = conn.getInputStream();
+
+      is.close();
+
+      conn.disconnect();
+    } catch (IOException e) {
     }
+    
+    BurlapProxy handler = new BurlapProxy(this, url);
 
-    return Proxy.newProxyInstance(loader,
+    return Proxy.newProxyInstance(api.getClassLoader(),
                                   new Class[] { api,
-                                                HessianRemoteObject.class },
+                                                BurlapRemoteObject.class },
                                   handler);
   }
 
-  public AbstractHessianInput getHessianInput(InputStream is)
+  public AbstractBurlapInput getBurlapInput(InputStream is)
   {
-    AbstractHessianInput in;
-
-    if (_isDebug)
-      is = new HessianDebugInputStream(is, new PrintWriter(System.out));
-
-    if (_isHessian2Reply)
-      in = new Hessian2Input(is);
-    else
-      in = new HessianInput(is);
-    
+    AbstractBurlapInput in = new BurlapInput(is);
     in.setRemoteResolver(getRemoteResolver());
-
-    in.setSerializerFactory(getSerializerFactory());
 
     return in;
   }
 
-  public AbstractHessianOutput getHessianOutput(OutputStream os)
+  public BurlapOutput getBurlapOutput(OutputStream os)
   {
-    AbstractHessianOutput out;
-
-    if (_isHessian2Request)
-      out = new Hessian2Output(os);
-    else {
-      HessianOutput out1 = new HessianOutput(os);
-      out = out1;
-
-      if (_isHessian2Reply)
-        out1.setVersion(2);
-    }
-      
-    out.setSerializerFactory(getSerializerFactory());
+    BurlapOutput out = new BurlapOutput(os);
 
     return out;
   }
@@ -441,7 +278,8 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
    * JNDI object factory so the proxy can be used as a resource.
    */
   public Object getObjectInstance(Object obj, Name name,
-                                  Context nameCtx, Hashtable<?,?> environment)
+                                  Context nameCtx,
+				  Hashtable<?,?> environment)
     throws Exception
   {
     Reference ref = (Reference) obj;
@@ -458,20 +296,20 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       String value = (String) addr.getContent();
 
       if (type.equals("type"))
-	api = value;
+        api = value;
       else if (type.equals("url"))
-	url = value;
+        url = value;
       else if (type.equals("user"))
-	setUser(value);
+        setUser(value);
       else if (type.equals("password"))
-	setPassword(value);
+        setPassword(value);
     }
 
     if (url == null)
-      throw new NamingException("`url' must be configured for HessianProxyFactory.");
+      throw new NamingException("`url' must be configured for BurlapProxyFactory.");
     // XXX: could use meta protocol to grab this
     if (api == null)
-      throw new NamingException("`type' must be configured for HessianProxyFactory.");
+      throw new NamingException("`type' must be configured for BurlapProxyFactory.");
 
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     Class apiClass = Class.forName(api, false, loader);

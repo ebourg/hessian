@@ -55,8 +55,6 @@ import javax.crypto.*;
 
 import java.io.*;
 
-import com.caucho.util.*;
-import com.caucho.vfs.*;
 import com.caucho.hessian.io.*;
 
 public class X509Encryption extends HessianEnvelope {

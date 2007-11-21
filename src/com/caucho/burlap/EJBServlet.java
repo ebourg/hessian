@@ -26,7 +26,7 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian;
+package com.caucho.burlap;
 
 /**
  * Servlet for serving EJBs from the Resin web server.
@@ -34,6 +34,6 @@ package com.caucho.hessian;
 public class EJBServlet extends com.caucho.ejb.EJBServlet {
   protected String getDefaultProtocolContainer()
   {
-    return "com.caucho.ejb.hessian.HessianProtocol";
+    return "com.caucho.ejb.burlap.BurlapProtocol";
   }
 }

@@ -203,7 +203,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'c')
-      throw error("expected hessian call ('c') at code=" + tag + " ch=" + (char) tag);
+      throw error("expected hessian call ('c') at " + codeName(tag));
 
     int major = read();
     int minor = read();
@@ -224,7 +224,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'E')
-      throw error("expected hessian Envelope ('E') at code=" + tag + " ch=" + (char) tag);
+      throw error("expected hessian Envelope ('E') at " + codeName(tag));
 
     int major = read();
     int minor = read();
@@ -247,7 +247,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'z')
-      error("expected end of envelope");
+      error("expected end of envelope at " + codeName(tag));
   }
 
   /**
@@ -265,7 +265,8 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'm')
-      throw error("expected hessian method ('m') at code=" + tag + " ch=" + (char) tag);
+      throw error("expected hessian method ('m') at " + codeName(tag));
+    
     int d1 = read();
     int d2 = read();
 
@@ -322,7 +323,7 @@ public class Hessian2Input
     else if (tag < 0)
       throw error("expected end of call ('z') at end of stream.");
     else
-      throw error("expected end of call ('z') at '" + (char) tag + "'.  Check method arguments and ensure method overloading is enabled if necessary");
+      throw error("expected end of call ('z') at " + codeName(tag) + ".  Check method arguments and ensure method overloading is enabled if necessary");
   }
 
   /**
@@ -335,7 +336,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'r')
-      error("expected hessian reply");
+      error("expected hessian reply at " + codeName(tag));
 
     int major = read();
     int minor = read();
@@ -370,7 +371,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'r')
-      error("expected hessian reply");
+      error("expected hessian reply at " + codeName(tag));
 
     int major = read();
     int minor = read();
@@ -430,7 +431,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'z')
-      error("expected end of reply");
+      error("expected end of reply at " + codeName(tag));
   }
 
   /**
@@ -448,7 +449,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'z')
-      error("expected end of reply");
+      error("expected end of reply at " + codeName(tag));
   }
 
   /**
@@ -498,7 +499,7 @@ public class Hessian2Input
     else if (tag == 'P')
       _isStreaming = true;
     else
-      throw error("expected Hessian message ('p') at code=" + tag + " ch=" + (char) tag);
+      throw error("expected Hessian message ('p') at " + codeName(tag));
 
     int major = read();
     int minor = read();
@@ -521,7 +522,7 @@ public class Hessian2Input
     int tag = read();
     
     if (tag != 'z')
-      error("expected end of message");
+      error("expected end of message at " + codeName(tag));
   }
 
   /**
@@ -1972,7 +1973,7 @@ public class Hessian2Input
       if (tag < 0)
 	throw error("readObject: unexpected end of file");
       else
-	throw error("readObject: unknown code 0x" + Integer.toHexString(tag & 0xff) + " " + (char) tag);
+	throw error("readObject: unknown code " + codeName(tag));
     }
   }
 
@@ -2115,8 +2116,12 @@ public class Hessian2Input
   {
     int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
 
-    if (code != 'z')
-      throw error("unknown code:" + (char) code);
+    if (code == 'z')
+      return;
+    else if (code < 0)
+      throw error("unexpected end of file");
+    else
+      throw error("unknown code:" + codeName(code));
   }
 
   /**
@@ -2128,7 +2133,7 @@ public class Hessian2Input
     int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
 
     if (code != 'z')
-      throw error("expected end of map ('z') at '" + (char) code + "'");
+      throw error("expected end of map ('z') at '" + codeName(code) + "'");
   }
 
   /**
@@ -2140,7 +2145,7 @@ public class Hessian2Input
     int code = _offset < _length ? (_buffer[_offset++] & 0xff) : read();
 
     if (code != 'z')
-      throw error("expected end of list ('z') at '" + (char) code + "'");
+      throw error("expected end of list ('z') at '" + codeName(code) + "'");
   }
 
   /**

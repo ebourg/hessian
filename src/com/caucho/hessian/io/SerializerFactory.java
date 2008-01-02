@@ -564,6 +564,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       e.printStackTrace();
     }
 
+    // hessian/3bb5
     try {
       Class stackTrace = Class.forName("java.lang.StackTraceElement");
       

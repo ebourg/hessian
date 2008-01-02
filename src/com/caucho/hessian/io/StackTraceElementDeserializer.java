@@ -54,116 +54,16 @@ import java.util.HashMap;
 /**
  * Deserializing a JDK 1.4 StackTraceElement
  */
-public class StackTraceElementDeserializer extends AbstractMapDeserializer {
-  private static Class _stackTraceClass;
-  
+public class StackTraceElementDeserializer extends JavaDeserializer {
   public StackTraceElementDeserializer()
   {
+    super(StackTraceElement.class);
   }
-  
-  public Class getType()
+
+  @Override
+  protected Object instantiate()
+    throws Exception
   {
-    return _stackTraceClass;
-  }
-  
-  public Object readMap(AbstractHessianInput in)
-    throws IOException
-  {
-    HashMap map = new HashMap();
-
-    in.addRef(map);
-
-    String declaringClass = null;
-    String methodName = null;
-    String fileName = null;
-    int lineNumber = 0;
-
-    while (! in.isEnd()) {
-      String key = in.readString();
-
-      if (key.equals("declaringClass"))
-        declaringClass = in.readString();
-      else if (key.equals("methodName"))
-        methodName = in.readString();
-      else if (key.equals("fileName"))
-        fileName = in.readString();
-      else if (key.equals("lineNumber"))
-        lineNumber = in.readInt();
-      else {
-        Object value = in.readObject();
-      }
-    }
-
-    in.readMapEnd();
-
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(bos);
-    ObjectOutputStream oos = new ObjectOutputStream(dos);
-
-    oos.writeObject(_stackTraceClass);
-
-    Throwable e1 = new IOException();
-    try {
-      throw e1;
-    } catch (Throwable e2) {
-      e1 = e2;
-    }
-
-    dos.writeByte(ObjectStreamConstants.TC_OBJECT);
-    dos.writeByte(ObjectStreamConstants.TC_REFERENCE);
-    dos.writeShort(0x007e);
-    dos.writeShort(0);
-    
-    dos.writeInt(lineNumber);
-    
-    if (declaringClass != null) {
-      dos.writeByte(ObjectStreamConstants.TC_STRING);
-      dos.writeUTF(declaringClass);
-    }
-    else
-      dos.writeByte(ObjectStreamConstants.TC_NULL);
-    
-    if (fileName != null) {
-      dos.writeByte(ObjectStreamConstants.TC_STRING);
-      dos.writeUTF(fileName);
-    }
-    else
-      dos.writeByte(ObjectStreamConstants.TC_NULL);
-    
-    if (methodName != null) {
-      dos.writeByte(ObjectStreamConstants.TC_STRING);
-      dos.writeUTF(methodName);
-    }
-    else
-      dos.writeByte(ObjectStreamConstants.TC_NULL);
-
-    oos.close();
-    dos.close();
-    bos.close();
-
-    byte []data = bos.toByteArray();
-
-    try {
-      ByteArrayInputStream bis = new ByteArrayInputStream(data);
-      ObjectInputStream ois = new ObjectInputStream(bis);
-
-      Object cl = ois.readObject();
-
-      Object obj = ois.readObject();
-      
-      ois.close();
-      bis.close();
-      
-      return obj;
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  static {
-    try {
-      _stackTraceClass = Class.forName("java.lang.StackTraceElement");
-    } catch (Throwable e) {
-    }
+    return new StackTraceElement("", "", "", 0);
   }
 }

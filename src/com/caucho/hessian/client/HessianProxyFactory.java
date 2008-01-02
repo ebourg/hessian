@@ -125,7 +125,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   private boolean _isHessian2Reply = false;
   private boolean _isHessian2Request = false;
 
-  private boolean _isChunkedPost = false;
+  private boolean _isChunkedPost = true;
   private boolean _isDebug = false;
 
   private long _readTimeout = -1;

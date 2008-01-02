@@ -2436,7 +2436,7 @@ public class Hessian2Input
       return v;
     }
     else
-      throw error("bad utf-8 encoding");
+      throw error("bad utf-8 encoding at " + codeName(ch));
   }
   
   /**

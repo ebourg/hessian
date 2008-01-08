@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -68,7 +68,7 @@ import java.util.logging.*;
  * Servlet for serving Hessian services.
  */
 public class HessianServlet extends GenericServlet {
-  private Logger _log;
+  private Logger _log = Logger.getLogger(HessianServlet.class.getName());
   
   private Class _homeAPI;
   private Object _homeImpl;
@@ -85,7 +85,6 @@ public class HessianServlet extends GenericServlet {
 
   public HessianServlet()
   {
-    _log = Logger.getLogger(HessianServlet.class.getName());
   }
 
   public String getServletInfo()

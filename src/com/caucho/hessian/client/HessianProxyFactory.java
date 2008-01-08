@@ -122,7 +122,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
   private boolean _isOverloadEnabled = false;
 
-  private boolean _isHessian2Reply = false;
+  private boolean _isHessian2Reply = true;
   private boolean _isHessian2Request = false;
 
   private boolean _isChunkedPost = true;
@@ -406,10 +406,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     if (_isDebug)
       is = new HessianDebugInputStream(is, new PrintWriter(System.out));
 
-    if (_isHessian2Reply)
-      in = new Hessian2Input(is);
-    else
-      in = new HessianInput(is);
+    in = new Hessian2Input(is);
     
     in.setRemoteResolver(getRemoteResolver());
 

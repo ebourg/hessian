@@ -330,17 +330,35 @@ public class Hessian2Input
    * Reads a reply as an object.
    * If the reply has a fault, throws the exception.
    */
+  @Override
   public Object readReply(Class expectedClass)
     throws Throwable
   {
     int tag = read();
     
-    if (tag != 'r')
-      error("expected hessian reply at " + codeName(tag));
+    if (tag != 'r') {
+      StringBuilder sb = new StringBuilder();
+      sb.append((char) tag);
+      
+      try {
+	int ch;
+
+	while ((ch = read()) >= 0) {
+	  sb.append((char) ch);
+	}
+      } catch (IOException e) {
+	log.log(Level.FINE, e.toString(), e);
+      }
+      
+      throw error("expected hessian reply at " + codeName(tag) + "\n"
+		  + sb);
+    }
 
     int major = read();
     int minor = read();
 
+    if (major > 2 || major == 2 && major > 0)
+      throw error("Cannot understand Hessian " + major + "." + minor + " response");
     tag = read();
     if (tag == 'f')
       throw prepareFault();
@@ -370,11 +388,29 @@ public class Hessian2Input
   {
     int tag = read();
     
-    if (tag != 'r')
-      error("expected hessian reply at " + codeName(tag));
+    if (tag != 'r') {
+      StringBuilder sb = new StringBuilder();
+      sb.append((char) tag);
+      
+      try {
+	int ch;
+
+	while ((ch = read()) >= 0) {
+	  sb.append((char) ch);
+	}
+      } catch (IOException e) {
+	log.log(Level.FINE, e.toString(), e);
+      }
+      
+      throw error("expected hessian reply at " + codeName(tag) + "\n"
+		  + sb);
+    }
 
     int major = read();
     int minor = read();
+
+    if (major > 2 || major == 2 && major > 0)
+      throw error("Cannot understand Hessian " + major + "." + minor + " response");
     
     tag = read();
     if (tag == 'f')

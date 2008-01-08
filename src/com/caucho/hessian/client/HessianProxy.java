@@ -48,15 +48,10 @@
 
 package com.caucho.hessian.client;
 
-import com.caucho.hessian.io.AbstractHessianInput;
-import com.caucho.hessian.io.AbstractHessianOutput;
-import com.caucho.hessian.io.HessianProtocolException;
-import com.caucho.services.server.AbstractSkeleton;
+import com.caucho.hessian.io.*;
+import com.caucho.services.server.*;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.logging.*;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -160,6 +155,9 @@ public class HessianProxy implements InvocationHandler {
     HttpURLConnection httpConn = null;
     
     try {
+      if (log.isLoggable(Level.FINER))
+	log.finer("Hessian[" + _url + "] calling " + mangleName);
+      
       conn = sendRequest(mangleName, args);
 
       if (conn instanceof HttpURLConnection) {
@@ -193,20 +191,27 @@ public class HessianProxy implements InvocationHandler {
                 sb.append((char) ch);
             }
           } catch (FileNotFoundException e) {
-            throw new HessianRuntimeException(String.valueOf(e));
+            throw new HessianConnectionException("HessianProxy cannot connect to '" + _url, e);
           } catch (IOException e) {
 	    if (is == null)
-	      throw new HessianProtocolException(code + ": " + e, e);
+	      throw new HessianConnectionException(code + ": " + e, e);
+	    else
+	      throw new HessianConnectionException(code + ": " + sb, e);
           }
 
           if (is != null)
             is.close();
 
-          throw new HessianProtocolException(code + ": " + sb.toString());
+          throw new HessianConnectionException(code + ": " + sb.toString());
         }
       }
 
       is = conn.getInputStream();
+
+      if (log.isLoggable(Level.FINEST)) {
+	PrintWriter dbg = new PrintWriter(new LogWriter(log));
+	is = new HessianDebugInputStream(is, dbg);
+      }
 
       AbstractHessianInput in = _factory.getHessianInput(is);
 
@@ -229,14 +234,14 @@ public class HessianProxy implements InvocationHandler {
       try {
 	if (is != null)
 	  is.close();
-      } catch (Throwable e) {
+      } catch (Exception e) {
 	log.log(Level.FINE, e.toString(), e);
       }
       
       try {
 	if (httpConn != null)
 	  httpConn.disconnect();
-      } catch (Throwable e) {
+      } catch (Exception e) {
 	log.log(Level.FINE, e.toString(), e);
       }
     }
@@ -289,6 +294,11 @@ public class HessianProxy implements InvocationHandler {
     }
 
     try {
+      if (log.isLoggable(Level.FINEST)) {
+	PrintWriter dbg = new PrintWriter(new LogWriter(log));
+	os = new HessianDebugOutputStream(os, dbg);
+      }
+      
       AbstractHessianOutput out = _factory.getHessianOutput(os);
 
       out.call(methodName, args);
@@ -410,6 +420,51 @@ public class HessianProxy implements InvocationHandler {
       } catch (Exception e) {
 	log.log(Level.FINE, e.toString(), e);
       }
+    }
+  }
+
+  static class LogWriter extends Writer {
+    private Logger _log;
+    private Level _level = Level.FINEST;
+    private StringBuilder _sb = new StringBuilder();
+
+    LogWriter(Logger log)
+    {
+      _log = log;
+    }
+
+    public void write(char ch)
+    {
+      if (ch == '\n' && _sb.length() > 0) {
+	_log.fine(_sb.toString());
+	_sb.setLength(0);
+      }
+      else
+	_sb.append((char) ch);
+    }
+
+    public void write(char []buffer, int offset, int length)
+    {
+      for (int i = 0; i < length; i++) {
+	char ch = buffer[offset + i];
+	
+	if (ch == '\n' && _sb.length() > 0) {
+	  _log.log(_level, _sb.toString());
+	  _sb.setLength(0);
+	}
+	else
+	  _sb.append((char) ch);
+      }
+    }
+
+    public void flush()
+    {
+    }
+
+    public void close()
+    {
+      if (_sb.length() > 0)
+	_log.log(_level, _sb.toString());
     }
   }
 }

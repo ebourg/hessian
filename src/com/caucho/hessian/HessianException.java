@@ -22,7 +22,7 @@
  *    Alternately, this acknowlegement may appear in the software itself,
  *    if and wherever such third-party acknowlegements normally appear.
  *
- * 4. The names "Burlap", "Resin", and "Caucho" must not be used to
+ * 4. The names "Hessian", "Resin", and "Caucho" must not be used to
  *    endorse or promote products derived from this software without prior
  *    written permission. For written permission, please contact
  *    info@caucho.com.
@@ -46,65 +46,40 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.io;
-
-import java.io.IOException;
+package com.caucho.hessian;
 
 /**
- * Exception for faults when the fault doesn't return a java exception.
- * This exception is required for MicroHessianInput.
+ * Base runtime exception for Hessian exceptions. 
  */
-public class HessianProtocolException extends IOException {
-  private Throwable rootCause;
-  
+public class HessianException extends RuntimeException {
   /**
    * Zero-arg constructor.
    */
-  public HessianProtocolException()
+  public HessianException()
   {
   }
-  
+
   /**
    * Create the exception.
    */
-  public HessianProtocolException(String message)
+  public HessianException(String message)
   {
     super(message);
   }
-  
+
   /**
    * Create the exception.
    */
-  public HessianProtocolException(String message, Throwable rootCause)
+  public HessianException(String message, Throwable rootCause)
   {
-    super(message);
-
-    this.rootCause = rootCause;
+    super(message, rootCause);
   }
-  
+
   /**
    * Create the exception.
    */
-  public HessianProtocolException(Throwable rootCause)
+  public HessianException(Throwable rootCause)
   {
-    super(String.valueOf(rootCause));
-
-    this.rootCause = rootCause;
-  }
-
-  /**
-   * Returns the underlying cause.
-   */
-  public Throwable getRootCause()
-  {
-    return rootCause;
-  }
-
-  /**
-   * Returns the underlying cause.
-   */
-  public Throwable getCause()
-  {
-    return getRootCause();
+    super(rootCause);
   }
 }

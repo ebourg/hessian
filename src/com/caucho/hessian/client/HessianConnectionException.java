@@ -22,7 +22,7 @@
  *    Alternately, this acknowlegement may appear in the software itself,
  *    if and wherever such third-party acknowlegements normally appear.
  *
- * 4. The names "Burlap", "Resin", and "Caucho" must not be used to
+ * 4. The names "Hessian", "Resin", and "Caucho" must not be used to
  *    endorse or promote products derived from this software without prior
  *    written permission. For written permission, please contact
  *    info@caucho.com.
@@ -46,65 +46,42 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.io;
+package com.caucho.hessian.client;
 
-import java.io.IOException;
+import com.caucho.hessian.HessianException;
 
 /**
- * Exception for faults when the fault doesn't return a java exception.
- * This exception is required for MicroHessianInput.
+ * Exception caused by failure of the client proxy to connect to the server.
  */
-public class HessianProtocolException extends IOException {
-  private Throwable rootCause;
-  
+public class HessianConnectionException extends HessianException {
   /**
    * Zero-arg constructor.
    */
-  public HessianProtocolException()
+  public HessianConnectionException()
   {
   }
-  
+
   /**
    * Create the exception.
    */
-  public HessianProtocolException(String message)
+  public HessianConnectionException(String message)
   {
     super(message);
   }
-  
+
   /**
    * Create the exception.
    */
-  public HessianProtocolException(String message, Throwable rootCause)
+  public HessianConnectionException(String message, Throwable rootCause)
   {
-    super(message);
-
-    this.rootCause = rootCause;
+    super(message, rootCause);
   }
-  
+
   /**
    * Create the exception.
    */
-  public HessianProtocolException(Throwable rootCause)
+  public HessianConnectionException(Throwable rootCause)
   {
-    super(String.valueOf(rootCause));
-
-    this.rootCause = rootCause;
-  }
-
-  /**
-   * Returns the underlying cause.
-   */
-  public Throwable getRootCause()
-  {
-    return rootCause;
-  }
-
-  /**
-   * Returns the underlying cause.
-   */
-  public Throwable getCause()
-  {
-    return getRootCause();
+    super(rootCause);
   }
 }

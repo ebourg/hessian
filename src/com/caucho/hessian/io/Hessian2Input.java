@@ -357,7 +357,7 @@ public class Hessian2Input
     int major = read();
     int minor = read();
 
-    if (major > 2 || major == 2 && major > 0)
+    if (major > 2 || major == 2 && minor > 0)
       throw error("Cannot understand Hessian " + major + "." + minor + " response");
     tag = read();
     if (tag == 'f')
@@ -409,7 +409,7 @@ public class Hessian2Input
     int major = read();
     int minor = read();
 
-    if (major > 2 || major == 2 && major > 0)
+    if (major > 2 || major == 2 && minor > 0)
       throw error("Cannot understand Hessian " + major + "." + minor + " response");
     
     tag = read();

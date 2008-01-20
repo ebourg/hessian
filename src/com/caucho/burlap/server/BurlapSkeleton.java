@@ -55,11 +55,15 @@ import com.caucho.services.server.ServiceContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.*;
 
 /**
  * Proxy class for Burlap services.
  */
 public class BurlapSkeleton extends AbstractSkeleton {
+  private static final Logger log
+    = Logger.getLogger(BurlapSkeleton.class.getName());
+  
   private Object _service;
   
   /**
@@ -74,6 +78,17 @@ public class BurlapSkeleton extends AbstractSkeleton {
 
     _service = service;
   }
+  
+  /**
+   * Create a new burlap skeleton.
+   *
+   * @param service the underlying service object.
+   * @param apiClass the API interface
+   */
+  public BurlapSkeleton(Class apiClass)
+  {
+    super(apiClass);
+  }
 
   /**
    * Invoke the object with the request from the input stream.
@@ -82,7 +97,19 @@ public class BurlapSkeleton extends AbstractSkeleton {
    * @param out the Burlap output stream
    */
   public void invoke(BurlapInput in, BurlapOutput out)
-    throws Throwable
+    throws Exception
+  {
+    invoke(_service, in, out);
+  }
+
+  /**
+   * Invoke the object with the request from the input stream.
+   *
+   * @param in the Burlap input stream
+   * @param out the Burlap output stream
+   */
+  public void invoke(Object service, BurlapInput in, BurlapOutput out)
+    throws Exception
   {
     in.readCall();
 
@@ -140,9 +167,12 @@ public class BurlapSkeleton extends AbstractSkeleton {
     Object result = null;
     
     try {
-      result = method.invoke(_service, values);
+      result = method.invoke(service, values);
     } catch (Throwable e) {
-      if (e instanceof InvocationTargetException)
+      log.log(Level.FINE, e.toString(), e);
+      
+      if (e instanceof InvocationTargetException
+	  && e.getCause() instanceof Exception)
         e = ((InvocationTargetException) e).getTargetException();
       out.startReply();
       out.writeFault("ServiceException", e.getMessage(), e);

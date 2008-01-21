@@ -85,6 +85,17 @@ public class HessianSkeleton extends AbstractSkeleton {
     if (! apiClass.isAssignableFrom(service.getClass()))
       throw new IllegalArgumentException("Service " + service + " must be an instance of " + apiClass.getName());
   }
+  
+  /**
+   * Create a new hessian skeleton.
+   *
+   * @param service the underlying service object.
+   * @param apiClass the API interface
+   */
+  public HessianSkeleton(Class apiClass)
+  {
+    super(apiClass);
+  }
 
   /**
    * Invoke the object with the request from the input stream.
@@ -93,7 +104,21 @@ public class HessianSkeleton extends AbstractSkeleton {
    * @param out the Hessian output stream
    */
   public void invoke(AbstractHessianInput in, AbstractHessianOutput out)
-    throws Throwable
+    throws Exception
+  {
+    invoke(_service, in, out);
+  }
+
+  /**
+   * Invoke the object with the request from the input stream.
+   *
+   * @param in the Hessian input stream
+   * @param out the Hessian output stream
+   */
+  public void invoke(Object service,
+		     AbstractHessianInput in,
+		     AbstractHessianOutput out)
+    throws Exception
   {
     ServiceContext context = ServiceContext.getContext();
 
@@ -152,7 +177,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     Object result = null;
     
     try {
-      result = method.invoke(_service, values);
+      result = method.invoke(service, values);
     } catch (Throwable e) {
       if (e instanceof InvocationTargetException)
         e = ((InvocationTargetException) e).getTargetException();

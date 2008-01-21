@@ -235,6 +235,9 @@ public class BurlapProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public Object create(Class api, String urlName)
     throws MalformedURLException
   {
+    if (api == null)
+      throw new NullPointerException();
+    
     URL url = new URL(urlName);
 
     try {

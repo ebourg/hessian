@@ -164,6 +164,9 @@ public class SerializerFactory extends AbstractSerializerFactory
     if (serializer != null) {
     }
 
+    else if (JavaSerializer.getWriteReplace(cl) != null)
+      serializer = new JavaSerializer(cl);
+
     else if (HessianRemoteObject.class.isAssignableFrom(cl))
       serializer = new RemoteSerializer();
 

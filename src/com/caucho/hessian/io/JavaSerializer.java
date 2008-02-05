@@ -118,7 +118,7 @@ public class JavaSerializer extends AbstractSerializer
   /**
    * Returns the writeReplace method
    */
-  static Method getWriteReplace(Class cl)
+  public static Method getWriteReplace(Class cl)
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       Method []methods = cl.getDeclaredMethods();

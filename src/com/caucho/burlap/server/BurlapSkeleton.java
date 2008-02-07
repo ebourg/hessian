@@ -125,6 +125,9 @@ public class BurlapSkeleton extends AbstractSkeleton {
     String methodName = in.readMethod();
     Method method = getMethod(methodName);
 
+    if (log.isLoggable(Level.FINE))
+      log.fine(this + " invoking " + methodName + " (" + method + ")");
+
     if (method != null) {
     }
     else if ("_burlap_getAttribute".equals(in.getMethod())) {
@@ -169,7 +172,10 @@ public class BurlapSkeleton extends AbstractSkeleton {
     try {
       result = method.invoke(service, values);
     } catch (Throwable e) {
-      log.log(Level.FINE, e.toString(), e);
+      log.log(Level.FINE,
+	      service + "." + method.getName() + "() failed with exception:\n"
+	      + e.toString(),
+	      e);
       
       if (e instanceof InvocationTargetException
 	  && e.getCause() instanceof Exception)

@@ -61,12 +61,16 @@ import java.lang.reflect.Proxy;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.logging.*;
 
 /**
  * Proxy implementation for Burlap clients.  Applications will generally
  * use BurlapProxyFactory to create proxy clients.
  */
 public class BurlapProxy implements InvocationHandler {
+  private static final Logger log
+    = Logger.getLogger(BurlapProxy.class.getName());
+  
   private BurlapProxyFactory _factory;
   private URL _url;
   
@@ -142,6 +146,9 @@ public class BurlapProxy implements InvocationHandler {
       else
         methodName = methodName + "__0";
 
+      if (log.isLoggable(Level.FINE))
+	log.fine(this + " calling " + methodName + " (" + method + ")");
+
       out.call(methodName, args);
 
       try {
@@ -207,5 +214,10 @@ public class BurlapProxy implements InvocationHandler {
       if (httpConn != null)
 	httpConn.disconnect();
     }
+  }
+
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _url + "]";
   }
 }

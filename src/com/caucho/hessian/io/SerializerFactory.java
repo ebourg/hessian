@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -457,13 +457,15 @@ public class SerializerFactory extends AbstractSerializerFactory
         deserializer = new ArrayDeserializer(Object.class);
     }
     else {
-      try {
-	ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
       
+      try {
 	Class cl = Class.forName(type, false, loader);
 
 	deserializer = getDeserializer(cl);
       } catch (Exception e) {
+	log.warning("Hessian/Burlap: '" + type + "' is an unknown class in " + loader + ":\n" + e);
+	
 	log.log(Level.FINER, e.toString(), e);
       }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -68,6 +68,9 @@ public class HessianDebugInputStream extends InputStream
   public HessianDebugInputStream(InputStream is, PrintWriter dbg)
   {
     _is = is;
+
+    if (dbg == null)
+      dbg = new PrintWriter(System.out);
 
     _state = new HessianDebugState(dbg);
   }

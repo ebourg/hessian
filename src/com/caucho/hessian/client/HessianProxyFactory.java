@@ -376,22 +376,8 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       throw new NullPointerException("api must not be null for HessianProxyFactory.create()");
     InvocationHandler handler = null;
 
-    if (false && urlName.startsWith("jms:")) {
-      /*
-      String jndiName = urlName.substring("jms:".length());
-
-      try {
-        handler = new HessianJMSProxy(this, jndiName, _connectionFactoryName);
-      } catch (Exception e) {
-        log.info("Unable to create JMS proxy: " + e);
-        return null;
-      }
-      */
-    } 
-    else {
-      URL url = new URL(urlName); 
-      handler = new HessianProxy(this, url);
-    }
+    URL url = new URL(urlName); 
+    handler = new HessianProxy(this, url);
 
     return Proxy.newProxyInstance(loader,
                                   new Class[] { api,

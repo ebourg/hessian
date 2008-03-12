@@ -272,28 +272,29 @@ public class HessianProxy implements InvocationHandler {
     URLConnection conn = null;
     
     conn = _factory.openConnection(_url);
+    boolean isValid = false;
 
-    // Used chunked mode when available, i.e. JDK 1.5.
-    if (_factory.isChunkedPost() && conn instanceof HttpURLConnection) {
-      try {
-	HttpURLConnection httpConn = (HttpURLConnection) conn;
+    try {
+      // Used chunked mode when available, i.e. JDK 1.5.
+      if (_factory.isChunkedPost() && conn instanceof HttpURLConnection) {
+	try {
+	  HttpURLConnection httpConn = (HttpURLConnection) conn;
 
-	httpConn.setChunkedStreamingMode(8 * 1024);
-      } catch (Throwable e) {
+	  httpConn.setChunkedStreamingMode(8 * 1024);
+	} catch (Throwable e) {
+	}
       }
-    }
     
-    addRequestHeaders(conn);
+      addRequestHeaders(conn);
 
-    OutputStream os = null;
+      OutputStream os = null;
 
-    try {
-      os = conn.getOutputStream();
-    } catch (Exception e) {
-      throw new HessianRuntimeException(e);
-    }
+      try {
+	os = conn.getOutputStream();
+      } catch (Exception e) {
+	throw new HessianRuntimeException(e);
+      }
 
-    try {
       if (log.isLoggable(Level.FINEST)) {
 	PrintWriter dbg = new PrintWriter(new LogWriter(log));
 	os = new HessianDebugOutputStream(os, dbg);
@@ -304,17 +305,12 @@ public class HessianProxy implements InvocationHandler {
       out.call(methodName, args);
       out.flush();
 
+      isValid = true;
+
       return conn;
-    } catch (IOException e) {
-      if (conn instanceof HttpURLConnection)
+    } finally {
+      if (! isValid && conn instanceof HttpURLConnection)
 	((HttpURLConnection) conn).disconnect();
-
-      throw e;
-    } catch (RuntimeException e) {
-      if (conn instanceof HttpURLConnection)
-	((HttpURLConnection) conn).disconnect();
-
-      throw e;
     }
   }
 

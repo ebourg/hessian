@@ -1531,6 +1531,7 @@ public class Hessian2Output
       
       _offset = 0;
       _os.write(_buffer, 0, offset);
+      _os.flush();
     }
   }
 

@@ -48,10 +48,7 @@
 
 package com.caucho.hessian.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
@@ -2007,7 +2004,7 @@ public class Hessian2Input
 
     default:
       if (tag < 0)
-	throw error("readObject: unexpected end of file");
+	throw new EOFException("readObject: unexpected end of file");
       else
 	throw error("readObject: unknown code " + codeName(tag));
     }

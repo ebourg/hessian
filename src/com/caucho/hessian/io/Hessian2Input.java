@@ -2548,7 +2548,6 @@ public class Hessian2Input
     }
     
     return new ReadInputStream();
-
   }
   
   /**
@@ -2578,6 +2577,14 @@ public class Hessian2Input
 
           _chunkLength = (read() << 8) + read();
           break;
+
+	case 0x20: case 0x21: case 0x22: case 0x23:
+	case 0x24: case 0x25: case 0x26: case 0x27:
+	case 0x28: case 0x29: case 0x2a: case 0x2b:
+	case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+	  _isLastChunk = true;
+	  _chunkLength = code - 0x20;
+	  break;
 
         default:
           throw expect("byte[]", code);

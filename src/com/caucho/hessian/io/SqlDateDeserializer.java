@@ -73,6 +73,8 @@ public class SqlDateDeserializer extends AbstractDeserializer {
   public Object readMap(AbstractHessianInput in)
     throws IOException
   {
+    int ref = in.addRef(null);
+    
     long initValue = Long.MIN_VALUE;
     
     while (! in.isEnd()) {
@@ -86,12 +88,18 @@ public class SqlDateDeserializer extends AbstractDeserializer {
 
     in.readMapEnd();
 
-    return create(initValue);
+    Object value = create(initValue);
+
+    in.setRef(ref, value);
+
+    return value;
   }
   
   public Object readObject(AbstractHessianInput in, String []fieldNames)
     throws IOException
   {
+    int ref = in.addRef(null);
+    
     long initValue = Long.MIN_VALUE;
 
     for (int i = 0; i < fieldNames.length; i++) {
@@ -103,7 +111,11 @@ public class SqlDateDeserializer extends AbstractDeserializer {
 	in.readObject();
     }
 
-    return create(initValue);
+    Object value = create(initValue);
+
+    in.setRef(ref, value);
+
+    return value;
   }
 
   private Object create(long initValue)

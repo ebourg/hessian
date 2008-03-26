@@ -357,7 +357,10 @@ public class HessianServlet extends GenericServlet {
       InputStream is = request.getInputStream();
       OutputStream os = response.getOutputStream();
 
-      if (_isDebug && _log.isLoggable(Level.FINE)) {
+      response.setContentType("application/x-hessian");
+
+      if (_log.isLoggable(Level.FINEST)
+	  || _isDebug && _log.isLoggable(Level.FINE)) {
 	PrintWriter dbg = new PrintWriter(new LogWriter(_log));
 	is = new HessianDebugInputStream(is, dbg);
 	os = new HessianDebugOutputStream(os, dbg);

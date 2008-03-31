@@ -441,7 +441,6 @@ public class HessianDebugState implements Hessian2Constants
 	return new StreamingState(this, false);
 	
       default:
-	println(String.valueOf((char) ch) + ": unexpected character");
 	return this;
       }
     }
@@ -1720,8 +1719,12 @@ public class HessianDebugState implements Hessian2Constants
 	  _refId = 0;
 	  return _next;
 	}
-	else
+	else {
+	  if (_digit == 2)
+	    println(-1, "packet-start(" + _length + ")");
+	  
 	  return this;
+	}
       }
       else if (_length == 0) {
 	_isLast = (ch == 'P');
@@ -1735,6 +1738,7 @@ public class HessianDebugState implements Hessian2Constants
       _length--;
 
       if (_length == 0 && _isLast) {
+	println(-1, "packet-end");
 	_refId = 0;
 	return _next;
       }

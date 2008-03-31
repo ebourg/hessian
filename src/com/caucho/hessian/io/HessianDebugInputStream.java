@@ -72,6 +72,7 @@ public class HessianDebugInputStream extends InputStream
   public HessianDebugInputStream(InputStream is, PrintWriter dbg)
   {
     _is = is;
+    System.out.println("DIS: " + is);
 
     if (dbg == null)
       dbg = new PrintWriter(System.out);
@@ -99,8 +100,9 @@ public class HessianDebugInputStream extends InputStream
 
     if (is == null)
       return -1;
-    else
+    else {
       ch = is.read();
+    }
 
     _state.next(ch);
 

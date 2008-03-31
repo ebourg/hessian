@@ -1520,7 +1520,7 @@ public class Hessian2Output
     throws IOException
   {
     int offset = _offset;
-    
+
     if (offset > 0) {
       if (_isStreaming) {
 	int len = offset - 3;

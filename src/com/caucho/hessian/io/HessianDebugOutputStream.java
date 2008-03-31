@@ -84,11 +84,13 @@ public class HessianDebugOutputStream extends OutputStream
   }
 
   /**
-   * Reads a character.
+   * Writes a character.
    */
   public void write(int ch)
     throws IOException
   {
+    ch = ch & 0xff;
+    
     _os.write(ch);
 
     _state.next(ch);

@@ -96,6 +96,12 @@ public class HessianDebugOutputStream extends OutputStream
     _state.next(ch);
   }
 
+  public void flush()
+    throws IOException
+  {
+    _os.flush();
+  }
+
   /**
    * closes the stream.
    */

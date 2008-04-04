@@ -133,9 +133,11 @@ public class Hessian2StreamingInput
 
 	if (code < 0)
 	  return -1;
-	else if (code != 'p' && code != 'P')
+	else if (code != 'p' && code != 'P') {
 	  throw new HessianProtocolException("expected streaming packet at 0x"
-					     + Integer.toHexString(code & 0xff));
+					     + Integer.toHexString(code & 0xff)
+					     + " (" + (char) code + ")");
+	}
 
 	int d1 = is.read();
 	int d2 = is.read();

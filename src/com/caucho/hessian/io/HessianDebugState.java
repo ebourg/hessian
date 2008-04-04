@@ -1738,6 +1738,7 @@ public class HessianDebugState implements Hessian2Constants
       _length--;
 
       if (_length == 0 && _isLast) {
+	println(-1, "");
 	println(-1, "packet-end");
 	_refId = 0;
 	return _next;

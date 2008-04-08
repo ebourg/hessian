@@ -22,7 +22,7 @@
  *    Alternately, this acknowlegement may appear in the software itself,
  *    if and wherever such third-party acknowlegements normally appear.
  *
- * 4. The names "Hessian", "Resin", and "Caucho" must not be used to
+ * 4. The names "Burlap", "Resin", and "Caucho" must not be used to
  *    endorse or promote products derived from this software without prior
  *    written permission. For written permission, please contact
  *    info@caucho.com.
@@ -49,121 +49,40 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import java.util.Date;
 
 /**
- * Debugging input stream for Hessian requests.
+ * Serializing an object for known object types.
  */
-public class HessianDebugInputStream extends InputStream
-{
-  private InputStream _is;
-  
-  private HessianDebugState _state;
-  
-  /**
-   * Creates an uninitialized Hessian input stream.
-   */
-  public HessianDebugInputStream(InputStream is, PrintWriter dbg)
-  {
-    _is = is;
+public class ObjectDeserializer extends AbstractDeserializer {
+  private Class _cl;
 
-    if (dbg == null)
-      dbg = new PrintWriter(System.out);
-
-    _state = new HessianDebugState(dbg);
-  }
-  
-  /**
-   * Creates an uninitialized Hessian input stream.
-   */
-  public HessianDebugInputStream(InputStream is, Logger log, Level level)
+  public ObjectDeserializer(Class cl)
   {
-    this(is, new PrintWriter(new LogWriter(log, level)));
+    _cl = cl;
   }
 
-  /**
-   * Reads a character.
-   */
-  public int read()
+  public Class getType()
+  {
+    return _cl;
+  }
+  
+  public Object readObject(AbstractHessianInput in)
     throws IOException
   {
-    int ch;
-
-    InputStream is = _is;
-
-    if (is == null)
-      return -1;
-    else {
-      ch = is.read();
-    }
-
-    _state.next(ch);
-
-    return ch;
+    return in.readObject();
   }
-
-  /**
-   * closes the stream.
-   */
-  public void close()
+  
+  public Object readList(AbstractHessianInput in, int length)
     throws IOException
   {
-    InputStream is = _is;
-    _is = null;
-
-    if (is != null)
-      is.close();
-    
-    _state.println();
+    throw new UnsupportedOperationException(String.valueOf(this));
   }
-
-  static class LogWriter extends Writer {
-    private Logger _log;
-    private Level _level;
-    private StringBuilder _sb = new StringBuilder();
-
-    LogWriter(Logger log, Level level)
-    {
-      _log = log;
-      _level = level;
-    }
-
-    public void write(char ch)
-    {
-      if (ch == '\n' && _sb.length() > 0) {
-	_log.log(_level, _sb.toString());
-	_sb.setLength(0);
-      }
-      else
-	_sb.append((char) ch);
-    }
-
-    public void write(char []buffer, int offset, int length)
-    {
-      for (int i = 0; i < length; i++) {
-	char ch = buffer[offset + i];
-	
-	if (ch == '\n' && _sb.length() > 0) {
-	  _log.log(_level, _sb.toString());
-	  _sb.setLength(0);
-	}
-	else
-	  _sb.append((char) ch);
-      }
-    }
-
-    public void flush()
-    {
-    }
-
-    public void close()
-    {
-    }
+  
+  public Object readLengthList(AbstractHessianInput in, int length)
+    throws IOException
+  {
+    throw new UnsupportedOperationException(String.valueOf(this));
   }
 }

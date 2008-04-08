@@ -291,7 +291,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       deserializer = new MapDeserializer(cl);
     
     else if (cl.isInterface())
-      deserializer = OBJECT_DESERIALIZER;
+      deserializer = new ObjectDeserializer(cl);
 
     else if (cl.isArray())
       deserializer = new ArrayDeserializer(cl.getComponentType());
@@ -392,14 +392,15 @@ public class SerializerFactory extends AbstractSerializerFactory
     Deserializer reader = getObjectDeserializer(type);
     
     if (cl == null
-	|| cl == reader.getType()
+	|| cl.equals(reader.getType())
 	|| cl.isAssignableFrom(reader.getType())
 	|| HessianHandle.class.isAssignableFrom(reader.getType())) {
       return reader;
     }
 
     if (log.isLoggable(Level.FINE))
-      log.fine("hessian: expected '" + cl.getName() + "' at '" + type + "'");
+      log.fine("hessian: expected '" + cl.getName() + "' at '" + type + "' ("
+	       + reader.getType().getName() + ")");
     
     return getDeserializer(cl);
   }
@@ -461,7 +462,6 @@ public class SerializerFactory extends AbstractSerializerFactory
       
       try {
 	Class cl = Class.forName(type, false, loader);
-
 	deserializer = getDeserializer(cl);
       } catch (Exception e) {
 	log.warning("Hessian/Burlap: '" + type + "' is an unknown class in " + loader + ":\n" + e);

@@ -1519,6 +1519,14 @@ public class Hessian2Output
   public final void flush()
     throws IOException
   {
+    flushBuffer();
+
+    _os.flush();
+  }
+
+  public final void flushBuffer()
+    throws IOException
+  {
     int offset = _offset;
 
     if (offset > 0) {
@@ -1531,14 +1539,13 @@ public class Hessian2Output
       
       _offset = 0;
       _os.write(_buffer, 0, offset);
-      _os.flush();
     }
   }
 
   public final void close()
     throws IOException
   {
-    flush();
+    flushBuffer();
     
     OutputStream os = _os;
     _os = null;

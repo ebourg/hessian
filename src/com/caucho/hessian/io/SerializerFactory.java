@@ -80,6 +80,7 @@ public class SerializerFactory extends AbstractSerializerFactory
   protected MapSerializer _mapSerializer;
   
   private Deserializer _hashMapDeserializer;
+  private Deserializer _arrayListDeserializer;
   private HashMap _cachedSerializerMap;
   private HashMap _cachedDeserializerMap;
   private HashMap _cachedTypeDeserializerMap;
@@ -398,9 +399,10 @@ public class SerializerFactory extends AbstractSerializerFactory
       return reader;
     }
 
-    if (log.isLoggable(Level.FINE))
+    if (log.isLoggable(Level.FINE)) {
       log.fine("hessian: expected '" + cl.getName() + "' at '" + type + "' ("
 	       + reader.getType().getName() + ")");
+    }
     
     return getDeserializer(cl);
   }
@@ -421,6 +423,47 @@ public class SerializerFactory extends AbstractSerializerFactory
       _hashMapDeserializer = new MapDeserializer(HashMap.class);
       
       return _hashMapDeserializer;
+    }
+  }
+
+  /**
+   * Reads the object as a map.
+   */
+  public Deserializer getListDeserializer(String type, Class cl)
+    throws HessianProtocolException
+  {
+    Deserializer reader = getListDeserializer(type);
+    
+    if (cl == null
+	|| cl.equals(reader.getType())
+	|| cl.isAssignableFrom(reader.getType())) {
+      return reader;
+    }
+
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("hessian: expected '" + cl.getName() + "' at '" + type + "' ("
+	       + reader.getType().getName() + ")");
+    }
+    
+    return getDeserializer(cl);
+  }
+  
+  /**
+   * Reads the object as a map.
+   */
+  public Deserializer getListDeserializer(String type)
+    throws HessianProtocolException
+  {
+    Deserializer deserializer = getDeserializer(type);
+
+    if (deserializer != null)
+      return deserializer;
+    else if (_arrayListDeserializer != null)
+      return _arrayListDeserializer;
+    else {
+      _arrayListDeserializer = new CollectionDeserializer(ArrayList.class);
+      
+      return _arrayListDeserializer;
     }
   }
 

@@ -1695,7 +1695,7 @@ public class Hessian2Input
       int length = readLength();
       
       Deserializer reader;
-      reader = findSerializerFactory().getObjectDeserializer(type, cl);
+      reader = findSerializerFactory().getListDeserializer(type, cl);
 
       Object v = reader.readList(this, length);
 
@@ -1709,7 +1709,7 @@ public class Hessian2Input
       int length = readInt();
       
       Deserializer reader;
-      reader = findSerializerFactory().getObjectDeserializer(type, cl);
+      reader = findSerializerFactory().getListDeserializer(type, cl);
 
       Object v = reader.readLengthList(this, length);
 

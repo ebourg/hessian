@@ -854,7 +854,7 @@ public class HessianDebugState implements Hessian2Constants
     BinaryState(State next, char typeCode, boolean isLastChunk)
     {
       super(next);
-      
+
       _typeCode = typeCode;
       _isLastChunk = isLastChunk;
     }
@@ -862,7 +862,7 @@ public class HessianDebugState implements Hessian2Constants
     BinaryState(State next, char typeCode, int length)
     {
       super(next);
-      
+
       _typeCode = typeCode;
       _isLastChunk = true;
       _length = length;
@@ -1307,7 +1307,7 @@ public class HessianDebugState implements Hessian2Constants
 	if (ch == 't') {
 	  return new StringState(this, 't', true);
 	}
-	else if (ch == 0x75) {
+	else if (ch == TYPE_REF) {
 	  return new IndirectState(this);
 	}
 	else if (ch == 'l') {
@@ -1316,11 +1316,11 @@ public class HessianDebugState implements Hessian2Constants
 	  
 	  return new IntegerState(this, "length");
 	}
-	else if (ch == 0x6e) {
+	else if (ch == LENGTH_BYTE) {
 	  printObject("list (#" + _refId + ")");
 	  _state = LENGTH;
 	  
-	  return new IndirectState(this);
+	  return new IntegerState(this, "length", 0, 3);
 	}
 	else if (ch == 'z') {
 	  printObject("list (#" + _refId + ")");
@@ -1347,8 +1347,8 @@ public class HessianDebugState implements Hessian2Constants
 	else if (ch == 'l') {
 	  return new IntegerState(this, "length");
 	}
-	else if (ch == 0x6e) {
-	  return new IndirectState(this);
+	else if (ch == LENGTH_BYTE) {
+	  return new IntegerState(this, "length", 0, 3);
 	}
 	else {
 	  _state = VALUE;

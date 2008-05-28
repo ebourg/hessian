@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -931,5 +931,19 @@ public class HessianOutput extends AbstractHessianOutput {
         os.write(0x80 + (ch & 0x3f));
       }
     }
+  }
+
+  public void flush()
+    throws IOException
+  {
+    if (this.os != null)
+      this.os.flush();
+  }
+
+  public void close()
+    throws IOException
+  {
+    if (this.os != null)
+      this.os.flush();
   }
 }

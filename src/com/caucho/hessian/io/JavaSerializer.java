@@ -69,11 +69,14 @@ public class JavaSerializer extends AbstractSerializer
   
   private Field []_fields;
   private FieldSerializer []_fieldSerializers;
+
+  private Object _writeReplaceFactory;
   private Method _writeReplace;
   
   public JavaSerializer(Class cl)
   {
-    _writeReplace = getWriteReplace(cl);
+    introspectWriteReplace(cl);
+    
     if (_writeReplace != null)
       _writeReplace.setAccessible(true);
 
@@ -115,10 +118,37 @@ public class JavaSerializer extends AbstractSerializer
     }
   }
 
+  private void introspectWriteReplace(Class cl)
+  {
+    try {
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+      String className = cl.getName() + "HessianSerializer";
+
+      Class serializerClass = Class.forName(className, false, loader);
+
+      Object serializerObject = serializerClass.newInstance();
+
+      Method writeReplace = getWriteReplace(serializerClass, cl);
+
+      if (writeReplace != null) {
+	_writeReplaceFactory = serializerObject;
+	_writeReplace = writeReplace;
+
+	return;
+      }
+    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
+      log.log(Level.FINER, e.toString(), e);
+    }
+      
+    _writeReplace = getWriteReplace(cl);
+  }
+
   /**
    * Returns the writeReplace method
    */
-  public static Method getWriteReplace(Class cl)
+  protected static Method getWriteReplace(Class cl)
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       Method []methods = cl.getDeclaredMethods();
@@ -126,8 +156,25 @@ public class JavaSerializer extends AbstractSerializer
       for (int i = 0; i < methods.length; i++) {
 	Method method = methods[i];
 
+	if (method.getName().equals("writeReplace") &&
+	    method.getParameterTypes().length == 0)
+	  return method;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Returns the writeReplace method
+   */
+  protected Method getWriteReplace(Class cl, Class param)
+  {
+    for (; cl != null; cl = cl.getSuperclass()) {
+      for (Method method : cl.getDeclaredMethods()) {
 	if (method.getName().equals("writeReplace")
-	    && method.getParameterTypes().length == 0)
+	    && method.getParameterTypes().length == 1
+	    && param.equals(method.getParameterTypes()[0]))
 	  return method;
       }
     }
@@ -146,7 +193,12 @@ public class JavaSerializer extends AbstractSerializer
 
     try {
       if (_writeReplace != null) {
-	Object repl = _writeReplace.invoke(obj, NULL_ARGS);
+	Object repl;
+
+	if (_writeReplaceFactory != null)
+	  repl = _writeReplace.invoke(_writeReplaceFactory, obj);
+	else
+	  repl = _writeReplace.invoke(obj);
 
 	out.removeRef(obj);
 

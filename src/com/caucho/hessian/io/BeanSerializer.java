@@ -58,15 +58,19 @@ import java.util.logging.*;
  * Serializing an object for known object types.
  */
 public class BeanSerializer extends AbstractSerializer {
+  private static final Logger log
+    = Logger.getLogger(BeanSerializer.class.getName());
+  
   private static final Object []NULL_ARGS = new Object[0];
   private Method []_methods;
   private String []_names;
-  
+
+  private Object _writeReplaceFactory;
   private Method _writeReplace;
   
   public BeanSerializer(Class cl)
   {
-    _writeReplace = getWriteReplace(cl);
+    introspectWriteReplace(cl);
 
     ArrayList primitiveMethods = new ArrayList();
     ArrayList compoundMethods = new ArrayList();
@@ -135,6 +139,33 @@ public class BeanSerializer extends AbstractSerializer {
     }
   }
 
+  private void introspectWriteReplace(Class cl)
+  {
+    try {
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+      String className = cl.getName() + "HessianSerializer";
+
+      Class serializerClass = Class.forName(className, false, loader);
+
+      Object serializerObject = serializerClass.newInstance();
+
+      Method writeReplace = getWriteReplace(serializerClass, cl);
+
+      if (writeReplace != null) {
+	_writeReplaceFactory = serializerObject;
+	_writeReplace = writeReplace;
+
+	return;
+      }
+    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
+      log.log(Level.FINER, e.toString(), e);
+    }
+      
+    _writeReplace = getWriteReplace(cl);
+  }
+
   /**
    * Returns the writeReplace method
    */
@@ -154,6 +185,23 @@ public class BeanSerializer extends AbstractSerializer {
 
     return null;
   }
+
+  /**
+   * Returns the writeReplace method
+   */
+  protected Method getWriteReplace(Class cl, Class param)
+  {
+    for (; cl != null; cl = cl.getSuperclass()) {
+      for (Method method : cl.getDeclaredMethods()) {
+	if (method.getName().equals("writeReplace")
+	    && method.getParameterTypes().length == 1
+	    && param.equals(method.getParameterTypes()[0]))
+	  return method;
+      }
+    }
+
+    return null;
+  }
   
   public void writeObject(Object obj, AbstractHessianOutput out)
     throws IOException
@@ -165,7 +213,12 @@ public class BeanSerializer extends AbstractSerializer {
     
     try {
       if (_writeReplace != null) {
-	Object repl = _writeReplace.invoke(obj, new Object[0]);
+	Object repl;
+
+	if (_writeReplaceFactory != null)
+	  repl = _writeReplace.invoke(_writeReplaceFactory, obj);
+	else
+	  repl = _writeReplace.invoke(obj);
 
 	out.removeRef(obj);
 
@@ -176,6 +229,7 @@ public class BeanSerializer extends AbstractSerializer {
 	return;
       }
     } catch (Exception e) {
+      log.log(Level.FINER, e.toString(), e);
     }
 
     int ref = out.writeObjectBegin(cl.getName());

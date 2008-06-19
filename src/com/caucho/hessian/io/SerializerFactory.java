@@ -55,6 +55,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.*;
 
 /**
  * Factory for returning serialization methods.
@@ -589,6 +590,13 @@ public class SerializerFactory extends AbstractSerializerFactory
     try {
       _staticDeserializerMap.put(File.class,
 			   new StringValueDeserializer(File.class));
+    } catch (Throwable e) {
+    }
+    
+    _staticSerializerMap.put(ObjectName.class, new StringValueSerializer());
+    try {
+      _staticDeserializerMap.put(ObjectName.class,
+			   new StringValueDeserializer(ObjectName.class));
     } catch (Throwable e) {
     }
     

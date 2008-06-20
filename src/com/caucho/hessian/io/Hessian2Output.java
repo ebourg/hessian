@@ -1175,36 +1175,51 @@ public class Hessian2Output
   {
     if (buffer == null) {
       if (SIZE < _offset + 16)
-	flush();
+	flushBuffer();
       
       _buffer[_offset++] = (byte) 'N';
     }
     else {
       flush();
       
-      while (length > 0x8000) {
-        int sublen = 0x8000;
-        
-        _os.write('b');
-        _os.write(sublen >> 8);
-        _os.write(sublen);
+      while (length > SIZE - _offset - 3) {
+        int sublen = SIZE - _offset - 3;
 
-        _os.write(buffer, offset, sublen);
+	if (sublen < 16) {
+	  flushBuffer();
+	  
+	  sublen = SIZE - _offset - 3;
+	  
+	  if (length < sublen)
+	    sublen = length;
+	}
+
+	_buffer[_offset++] = (byte) 'b';
+        _buffer[_offset++] = (byte) (sublen >> 8);
+        _buffer[_offset++] = (byte) sublen;
+
+	System.arraycopy(buffer, offset, _buffer, _offset, sublen);
+	_offset += sublen;
 
         length -= sublen;
         offset += sublen;
       }
+      
+      if (SIZE < _offset + 16)
+	flushBuffer();
 
       if (length < 0x10) {
-	_os.write(BYTES_DIRECT + length);
+	_buffer[_offset++] = (byte) (BYTES_DIRECT + length);
       }
       else {
-	_os.write('B');
-	_os.write(length >> 8);
-	_os.write(length);
+	_buffer[_offset++] = (byte) 'B';
+	_buffer[_offset++] = (byte) (length >> 8);
+	_buffer[_offset++] = (byte) (length);
       }
-      
-      _os.write(buffer, offset, length);
+
+      System.arraycopy(buffer, offset, _buffer, _offset, length);
+
+      _offset += length;
     }
   }
   
@@ -1529,15 +1544,18 @@ public class Hessian2Output
   {
     int offset = _offset;
 
-    if (offset > 0) {
-      if (_isStreaming) {
-	int len = offset - 3;
-	_buffer[0] = 'p';
-	_buffer[1] = (byte) (len >> 8);
-	_buffer[2] = (byte) len;
-      }
-      
+    if (! _isStreaming && offset > 0) {
       _offset = 0;
+      
+      _os.write(_buffer, 0, offset);
+    }
+    else if (_isStreaming && offset > 3) {
+      int len = offset - 3;
+      _buffer[0] = 'p';
+      _buffer[1] = (byte) (len >> 8);
+      _buffer[2] = (byte) len;
+      _offset = 3;
+      
       _os.write(_buffer, 0, offset);
     }
   }

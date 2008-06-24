@@ -61,6 +61,9 @@ public class ObjectDeserializer extends AbstractDeserializer {
   public ObjectDeserializer(Class cl)
   {
     _cl = cl;
+
+    System.out.println("CL: " + cl);
+    Thread.dumpStack();
   }
 
   public Class getType()
@@ -74,6 +77,12 @@ public class ObjectDeserializer extends AbstractDeserializer {
     return in.readObject();
   }
   
+  public Object readObject(AbstractHessianInput in, String []fieldNames)
+    throws IOException
+  {
+    throw new UnsupportedOperationException(String.valueOf(this));
+  }
+  
   public Object readList(AbstractHessianInput in, int length)
     throws IOException
   {
@@ -84,5 +93,11 @@ public class ObjectDeserializer extends AbstractDeserializer {
     throws IOException
   {
     throw new UnsupportedOperationException(String.valueOf(this));
+  }
+
+  @Override
+  public String toString()
+  {
+    return getClass().getSimpleName() + "[" + _cl + "]";
   }
 }

@@ -305,7 +305,15 @@ public class JavaSerializer extends AbstractSerializer
 	log.log(Level.FINE, e.toString(), e);
       }
 
-      out.writeObject(value);
+      try {
+	out.writeObject(value);
+      } catch (RuntimeException e) {
+	throw new RuntimeException(e.getMessage() + "\n Java field: " + field,
+				   e);
+      } catch (IOException e) {
+	throw new IOException(e.getMessage() + "\n Java field: " + field,
+			      e);
+      }
     }
   }
 

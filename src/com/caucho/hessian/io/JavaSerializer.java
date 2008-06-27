@@ -317,7 +317,7 @@ public class JavaSerializer extends AbstractSerializer
 	throw new RuntimeException(e.getMessage() + "\n Java field: " + field,
 				   e);
       } catch (IOException e) {
-	throw new IOException(e.getMessage() + "\n Java field: " + field,
+	throw new IOExceptionWrapper(e.getMessage() + "\n Java field: " + field,
 			      e);
       }
     }

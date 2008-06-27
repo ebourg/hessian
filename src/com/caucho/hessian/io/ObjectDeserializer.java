@@ -61,9 +61,6 @@ public class ObjectDeserializer extends AbstractDeserializer {
   public ObjectDeserializer(Class cl)
   {
     _cl = cl;
-
-    System.out.println("CL: " + cl);
-    Thread.dumpStack();
   }
 
   public Class getType()

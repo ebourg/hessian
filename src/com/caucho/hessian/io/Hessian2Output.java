@@ -83,8 +83,6 @@ public class Hessian2Output
   // map of references
   private IdentityIntMap _refs = new IdentityIntMap();
 
-  private HashMap _serializerMap = new HashMap();
-
   private boolean _isCloseStreamOnClose;
   
   // map of classes

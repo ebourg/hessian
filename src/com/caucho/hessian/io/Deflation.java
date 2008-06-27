@@ -98,7 +98,7 @@ public class Deflation extends HessianEnvelope {
     return filter;
   }
   
-  class DeflateOutputStream extends OutputStream {
+  static class DeflateOutputStream extends OutputStream {
     private Hessian2Output _out;
     private OutputStream _bodyOut;
     private DeflaterOutputStream _deflateOut;
@@ -148,7 +148,7 @@ public class Deflation extends HessianEnvelope {
     }
   }
   
-  class DeflateInputStream extends InputStream {
+  static class DeflateInputStream extends InputStream {
     private Hessian2Input _in;
     
     private InputStream _bodyIn;

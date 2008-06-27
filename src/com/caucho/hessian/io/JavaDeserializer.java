@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -327,6 +327,15 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 	else if (boolean.class.equals(type)) {
 	  deser = new BooleanFieldDeserializer(field);
 	}
+	else if (java.sql.Date.class.equals(type)) {
+	  deser = new SqlDateFieldDeserializer(field);
+  }
+	else if (java.sql.Timestamp.class.equals(type)) {
+	  deser = new SqlTimestampFieldDeserializer(field);
+  }
+	else if (java.sql.Time.class.equals(type)) {
+	  deser = new SqlTimeFieldDeserializer(field);
+  }
 	else {
 	  deser = new ObjectFieldDeserializer(field);
 	}
@@ -571,6 +580,78 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 	value = in.readString();
 	
 	_field.set(obj, value);
+      } catch (Exception e) {
+        logDeserializeError(_field, obj, value, e);
+      }
+    }
+  }
+
+  static class SqlDateFieldDeserializer extends FieldDeserializer {
+    private final Field _field;
+
+    SqlDateFieldDeserializer(Field field)
+    {
+      _field = field;
+    }
+    
+    void deserialize(AbstractHessianInput in, Object obj)
+      throws IOException
+    {
+      java.sql.Date value = null;
+
+      try {
+        java.util.Date date = (java.util.Date) in.readObject();
+        value = new java.sql.Date(date.getTime());
+
+        _field.set(obj, value);
+      } catch (Exception e) {
+        logDeserializeError(_field, obj, value, e);
+      }
+    }
+  }
+
+  static class SqlTimestampFieldDeserializer extends FieldDeserializer {
+    private final Field _field;
+
+    SqlTimestampFieldDeserializer(Field field)
+    {
+      _field = field;
+    }
+    
+    void deserialize(AbstractHessianInput in, Object obj)
+      throws IOException
+    {
+      java.sql.Timestamp value = null;
+
+      try {
+        java.util.Date date = (java.util.Date) in.readObject();
+        value = new java.sql.Timestamp(date.getTime());
+
+        _field.set(obj, value);
+      } catch (Exception e) {
+        logDeserializeError(_field, obj, value, e);
+      }
+    }
+  }
+
+  static class SqlTimeFieldDeserializer extends FieldDeserializer {
+    private final Field _field;
+
+    SqlTimeFieldDeserializer(Field field)
+    {
+      _field = field;
+    }
+    
+    void deserialize(AbstractHessianInput in, Object obj)
+      throws IOException
+    {
+      java.sql.Time value = null;
+
+      try {
+        java.util.Date date = (java.util.Date) in.readObject();
+        value = new java.sql.Time(date.getTime());
+
+        _field.set(obj, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }

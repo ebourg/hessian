@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -269,16 +269,16 @@ public class JavaSerializer extends AbstractSerializer
   private static FieldSerializer getFieldSerializer(Class type)
   {
     if (int.class.equals(type)
-	|| byte.class.equals(type)
-	|| short.class.equals(type)
-	|| int.class.equals(type)) {
+        || byte.class.equals(type)
+        || short.class.equals(type)
+        || int.class.equals(type)) {
       return IntFieldSerializer.SER;
     }
     else if (long.class.equals(type)) {
       return LongFieldSerializer.SER;
     }
     else if (double.class.equals(type) ||
-	     float.class.equals(type)) {
+        float.class.equals(type)) {
       return DoubleFieldSerializer.SER;
     }
     else if (boolean.class.equals(type)) {
@@ -286,6 +286,12 @@ public class JavaSerializer extends AbstractSerializer
     }
     else if (String.class.equals(type)) {
       return StringFieldSerializer.SER;
+    }
+    else if (java.util.Date.class.equals(type)
+             || java.sql.Date.class.equals(type)
+             || java.sql.Timestamp.class.equals(type)
+             || java.sql.Time.class.equals(type)) {
+      return DateFieldSerializer.SER;
     }
     else
       return FieldSerializer.SER;
@@ -404,6 +410,24 @@ public class JavaSerializer extends AbstractSerializer
       }
 
       out.writeString(value);
+    }
+  }
+
+  static class DateFieldSerializer extends FieldSerializer {
+    static final FieldSerializer SER = new DateFieldSerializer();
+
+    void serialize(AbstractHessianOutput out, Object obj, Field field)
+      throws IOException
+    {
+      java.util.Date value = null;
+
+      try {
+        value = (java.util.Date) field.get(obj);
+      } catch (IllegalAccessException e) {
+        log.log(Level.FINE, e.toString(), e);
+      }
+
+      out.writeUTCDate(value.getTime());
     }
   }
 }

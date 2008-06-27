@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -187,9 +187,9 @@ public class BasicDeserializer extends AbstractDeserializer {
       {
 	String s = in.readString();
 	if (s == null || s.equals(""))
-	  return new Character((char) 0);
+	  return Character.valueOf((char) 0);
 	else
-	  return new Character(s.charAt(0));
+	  return Character.valueOf(s.charAt(0));
       }
       
     case CHARACTER_OBJECT:
@@ -198,7 +198,7 @@ public class BasicDeserializer extends AbstractDeserializer {
 	if (s == null || s.equals(""))
 	  return null;
 	else
-	  return new Character(s.charAt(0));
+	  return Character.valueOf(s.charAt(0));
       }
       
     case DATE:
@@ -281,7 +281,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         ArrayList list = new ArrayList();
 
         while (! in.isEnd())
-          list.add(new Boolean(in.readBoolean()));
+          list.add(Boolean.valueOf(in.readBoolean()));
 	
         in.readEnd();
 
@@ -313,7 +313,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         ArrayList list = new ArrayList();
 
         while (! in.isEnd())
-          list.add(new Short((short) in.readInt()));
+          list.add(Short.valueOf((short) in.readInt()));
 
         in.readEnd();
 
@@ -344,7 +344,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         ArrayList list = new ArrayList();
 
         while (! in.isEnd())
-          list.add(new Integer(in.readInt()));
+          list.add(Integer.valueOf(in.readInt()));
 
 
         in.readEnd();
@@ -376,7 +376,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         ArrayList list = new ArrayList();
 
         while (! in.isEnd())
-          list.add(new Long(in.readLong()));
+          list.add(Long.valueOf(in.readLong()));
 
         in.readEnd();
         

@@ -1179,40 +1179,40 @@ public class Hessian2Output
     }
     else {
       flush();
-      
+
       while (length > SIZE - _offset - 3) {
         int sublen = SIZE - _offset - 3;
 
-	if (sublen < 16) {
-	  flushBuffer();
-	  
-	  sublen = SIZE - _offset - 3;
-	  
-	  if (length < sublen)
-	    sublen = length;
-	}
+        if (sublen < 16) {
+          flushBuffer();
 
-	_buffer[_offset++] = (byte) 'b';
+          sublen = SIZE - _offset - 3;
+
+          if (length < sublen)
+            sublen = length;
+        }
+
+        _buffer[_offset++] = (byte) 'b';
         _buffer[_offset++] = (byte) (sublen >> 8);
         _buffer[_offset++] = (byte) sublen;
 
-	System.arraycopy(buffer, offset, _buffer, _offset, sublen);
-	_offset += sublen;
+        System.arraycopy(buffer, offset, _buffer, _offset, sublen);
+        _offset += sublen;
 
         length -= sublen;
         offset += sublen;
       }
-      
+
       if (SIZE < _offset + 16)
-	flushBuffer();
+        flushBuffer();
 
       if (length < 0x10) {
-	_buffer[_offset++] = (byte) (BYTES_DIRECT + length);
+        _buffer[_offset++] = (byte) (BYTES_DIRECT + length);
       }
       else {
-	_buffer[_offset++] = (byte) 'B';
-	_buffer[_offset++] = (byte) (length >> 8);
-	_buffer[_offset++] = (byte) (length);
+        _buffer[_offset++] = (byte) 'B';
+        _buffer[_offset++] = (byte) (length >> 8);
+        _buffer[_offset++] = (byte) (length);
       }
 
       System.arraycopy(buffer, offset, _buffer, _offset, length);
@@ -1578,64 +1578,68 @@ public class Hessian2Output
     BytesOutputStream()
       throws IOException
     {
-      if (SIZE < _offset + 16)
-	flush();
+      if (SIZE < _offset + 16) {
+        Hessian2Output.this.flush();
+      }
 
       _startOffset = _offset;
       _offset += 3; // skip 'b' xNN xNN
     }
 
+    @Override
     public void write(int ch)
       throws IOException
     {
       if (SIZE <= _offset) {
-	int length = (_offset - _startOffset) - 3;
-	
-	_buffer[_startOffset] = (byte) 'b';
-	_buffer[_startOffset + 1] = (byte) (length >> 8);
-	_buffer[_startOffset + 2] = (byte) (length);
+        int length = (_offset - _startOffset) - 3;
 
-	flush();
+        _buffer[_startOffset] = (byte) 'b';
+        _buffer[_startOffset + 1] = (byte) (length >> 8);
+        _buffer[_startOffset + 2] = (byte) (length);
 
-	_startOffset = _offset;
-	_offset += 3;
+        Hessian2Output.this.flush();
+
+        _startOffset = _offset;
+        _offset += 3;
       }
-      
+
       _buffer[_offset++] = (byte) ch;
     }
 
+    @Override
     public void write(byte []buffer, int offset, int length)
       throws IOException
     {
       while (length > 0) {
-	int sublen = SIZE - _offset;
+        int sublen = SIZE - _offset;
 
-	if (length < sublen)
-	  sublen = length;
+        if (length < sublen)
+          sublen = length;
 
-	if (sublen > 0) {
-	  System.arraycopy(buffer, offset, _buffer, _offset, sublen);
-	  _offset += sublen;
-	}
+        if (sublen > 0) {
+          System.arraycopy(buffer, offset, _buffer, _offset, sublen);
+          _offset += sublen;
+        }
 
-	length -= sublen;
-	offset += sublen;
-	
-	if (SIZE <= _offset) {
-	  int chunkLength = (_offset - _startOffset) - 3;
-	
-	  _buffer[_startOffset] = (byte) 'b';
-	  _buffer[_startOffset + 1] = (byte) (chunkLength >> 8);
-	  _buffer[_startOffset + 2] = (byte) (chunkLength);
+        length -= sublen;
+        offset += sublen;
 
-	  flush();
+        if (SIZE <= _offset) {
+          int chunkLength = (_offset - _startOffset) - 3;
 
-	  _startOffset = _offset;
-	  _offset += 3;
-	}
+          _buffer[_startOffset] = (byte) 'b';
+          _buffer[_startOffset + 1] = (byte) (chunkLength >> 8);
+          _buffer[_startOffset + 2] = (byte) (chunkLength);
+
+          Hessian2Output.this.flush();
+
+          _startOffset = _offset;
+          _offset += 3;
+        }
       }
     }
 
+    @Override
     public void close()
       throws IOException
     {
@@ -1643,13 +1647,15 @@ public class Hessian2Output
       _startOffset = -1;
 
       if (startOffset < 0)
-	return;
-      
+        return;
+
       int length = (_offset - startOffset) - 3;
-	
+
       _buffer[startOffset] = (byte) 'B';
       _buffer[startOffset + 1] = (byte) (length >> 8);
       _buffer[startOffset + 2] = (byte) (length);
+
+      Hessian2Output.this.flush();
     }
   }
 }

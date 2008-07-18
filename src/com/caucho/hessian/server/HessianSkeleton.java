@@ -156,6 +156,7 @@ public class HessianSkeleton extends AbstractSkeleton {
       out.writeObject(value);
 
       out.completeReply();
+      out.close();
       return;
     }
     else if (method == null) {
@@ -164,6 +165,7 @@ public class HessianSkeleton extends AbstractSkeleton {
 		     "The service has no method named: " + in.getMethod(),
 		     null);
       out.completeReply();
+      out.close();
       return;
     }
 
@@ -187,6 +189,7 @@ public class HessianSkeleton extends AbstractSkeleton {
       out.startReply();
       out.writeFault("ServiceException", e.getMessage(), e);
       out.completeReply();
+      out.close();
       return;
     }
 

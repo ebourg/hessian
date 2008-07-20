@@ -184,7 +184,7 @@ public class HessianSkeleton extends AbstractSkeleton {
       if (e instanceof InvocationTargetException)
         e = ((InvocationTargetException) e).getTargetException();
 
-      log.log(Level.WARNING, e.toString(), e);
+      log.log(Level.FINE, this + " " + e.toString(), e);
       
       out.startReply();
       out.writeFault("ServiceException", e.getMessage(), e);

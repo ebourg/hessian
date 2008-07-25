@@ -427,7 +427,10 @@ public class JavaSerializer extends AbstractSerializer
         log.log(Level.FINE, e.toString(), e);
       }
 
-      out.writeUTCDate(value.getTime());
+      if (value == null)
+        out.writeNull();
+      else
+        out.writeUTCDate(value.getTime());
     }
   }
 }

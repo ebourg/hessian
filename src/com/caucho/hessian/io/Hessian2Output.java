@@ -155,7 +155,7 @@ public class Hessian2Output
 
     if (SIZE < offset + 32) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
 
     byte []buffer = _buffer;
@@ -237,7 +237,7 @@ public class Hessian2Output
 
     if (SIZE < offset + 32) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
 
     byte []buffer = _buffer;
@@ -744,7 +744,7 @@ public class Hessian2Output
 
     if (SIZE <= offset + 16) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
     
     if (INT_DIRECT_MIN <= value && value <= INT_DIRECT_MAX)
@@ -787,7 +787,7 @@ public class Hessian2Output
 
     if (SIZE <= offset + 16) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
 
     if (LONG_DIRECT_MIN <= value && value <= LONG_DIRECT_MAX) {
@@ -846,7 +846,7 @@ public class Hessian2Output
 
     if (SIZE <= offset + 16) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
     
     int intValue = (int) value;
@@ -965,7 +965,7 @@ public class Hessian2Output
 
     if (SIZE <= offset + 16) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
 
     buffer[offset++] = 'N';
@@ -997,7 +997,7 @@ public class Hessian2Output
 
     if (SIZE <= offset + 16) {
       flush();
-      offset = 0;
+      offset = _offset;
     }
     
     if (value == null) {
@@ -1016,7 +1016,7 @@ public class Hessian2Output
 
 	if (SIZE <= offset + 16) {
 	  flush();
-	  offset = 0;
+	  offset = _offset;
 	}
 
 	// chunk can't end in high surrogate
@@ -1041,7 +1041,7 @@ public class Hessian2Output
 
       if (SIZE <= offset + 16) {
 	flush();
-	offset = 0;
+	offset = _offset;
       }
 
       if (length <= STRING_DIRECT_MAX) {
@@ -1461,7 +1461,7 @@ public class Hessian2Output
       if (SIZE <= offset + 16) {
 	_offset = offset;
 	flush();
-	offset = 0;
+	offset = _offset;
       }
       
       char ch = v.charAt(i + strOffset);
@@ -1497,7 +1497,7 @@ public class Hessian2Output
       if (SIZE <= offset + 16) {
 	_offset = offset;
 	flush();
-	offset = 0;
+	offset = _offset;
       }
       
       char ch = v[i + strOffset];
@@ -1553,7 +1553,7 @@ public class Hessian2Output
       _buffer[1] = (byte) (len >> 8);
       _buffer[2] = (byte) len;
       _offset = 3;
-      
+
       _os.write(_buffer, 0, offset);
     }
   }

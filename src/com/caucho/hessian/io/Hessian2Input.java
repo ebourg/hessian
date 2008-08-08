@@ -2297,7 +2297,7 @@ public class Hessian2Input
     int code = read();
 
     if (code == LENGTH_BYTE)
-      return read();
+      return read() & 0xff;
 	
     else if (code == 'l')
       return parseInt();

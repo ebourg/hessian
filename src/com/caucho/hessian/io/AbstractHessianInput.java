@@ -280,8 +280,11 @@ abstract public class AbstractHessianInput {
    * X b16 b8 final xml chunk
    * </pre>
    */
-  abstract public org.w3c.dom.Node readNode()
-    throws IOException;
+  public org.w3c.dom.Node readNode()
+    throws IOException
+  {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
   
   /**
    * Starts reading a string.  All the characters must be read before

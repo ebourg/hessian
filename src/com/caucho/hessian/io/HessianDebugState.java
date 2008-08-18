@@ -1307,21 +1307,25 @@ public class HessianDebugState implements Hessian2Constants
 	if (ch == 't') {
 	  return new StringState(this, 't', true);
 	}
+	/*
 	else if (ch == TYPE_REF) {
 	  return new IndirectState(this);
 	}
+	*/
 	else if (ch == 'l') {
 	  printObject("list (#" + _refId + ")");
 	  _state = LENGTH;
 	  
 	  return new IntegerState(this, "length");
 	}
+	/*
 	else if (ch == LENGTH_BYTE) {
 	  printObject("list (#" + _refId + ")");
 	  _state = LENGTH;
 	  
 	  return new IntegerState(this, "length", 0, 3);
 	}
+	*/
 	else if (ch == 'z') {
 	  printObject("list (#" + _refId + ")");
 	  return _next;
@@ -1344,12 +1348,14 @@ public class HessianDebugState implements Hessian2Constants
 	if (ch == 'z') {
 	  return _next;
 	}
+	/*
 	else if (ch == 'l') {
 	  return new IntegerState(this, "length");
 	}
 	else if (ch == LENGTH_BYTE) {
 	  return new IntegerState(this, "length", 0, 3);
 	}
+	*/
 	else {
 	  _state = VALUE;
 	  

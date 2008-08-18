@@ -52,6 +52,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.*;
 
 /**
@@ -103,9 +105,9 @@ public class BeanSerializer extends AbstractSerializer {
 	// XXX: could parameterize the handler to only deal with public
 	method.setAccessible(true);
 
-	if (type.isPrimitive() ||
-	    type.getName().startsWith("java.lang.") &&
-	    ! type.equals(Object.class))
+	if (type.isPrimitive()
+	    || type.getName().startsWith("java.lang.")
+	    && ! type.equals(Object.class))
 	  primitiveMethods.add(method);
 	else
 	  compoundMethods.add(method);
@@ -115,6 +117,8 @@ public class BeanSerializer extends AbstractSerializer {
     ArrayList methodList = new ArrayList();
     methodList.addAll(primitiveMethods);
     methodList.addAll(compoundMethods);
+
+    Collections.sort(methodList, new MethodNameCmp());
 
     _methods = new Method[methodList.size()];
     methodList.toArray(_methods);
@@ -302,5 +306,12 @@ public class BeanSerializer extends AbstractSerializer {
     }
 
     return null;
+  }
+
+  static class MethodNameCmp implements Comparator<Method> {
+    public int compare(Method a, Method b)
+    {
+      return a.getName().compareTo(b.getName());
+    }
   }
 }

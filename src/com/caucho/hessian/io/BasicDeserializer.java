@@ -443,9 +443,7 @@ public class BasicDeserializer extends AbstractDeserializer {
         double []data = new double[list.size()];
         in.addRef(data);
         for (int i = 0; i < data.length; i++)
-          data[i] = ((Double) list.get(i)).intValue();
-
-        in.readEnd();
+          data[i] = ((Double) list.get(i)).doubleValue();
 
         return data;
       }
@@ -475,8 +473,6 @@ public class BasicDeserializer extends AbstractDeserializer {
         in.addRef(data);
         for (int i = 0; i < data.length; i++)
           data[i] = (String) list.get(i);
-
-        in.readEnd();
 
         return data;
       }
@@ -550,6 +546,17 @@ public class BasicDeserializer extends AbstractDeserializer {
         
       for (int i = 0; i < data.length; i++)
 	data[i] = in.readInt();
+
+      return data;
+    }
+    
+    case LONG_ARRAY: {
+      long []data = new long[length];
+
+      in.addRef(data);
+        
+      for (int i = 0; i < data.length; i++)
+	data[i] = in.readLong();
 
       return data;
     }

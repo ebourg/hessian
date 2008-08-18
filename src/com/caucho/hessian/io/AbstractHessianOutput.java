@@ -504,8 +504,11 @@ abstract public class AbstractHessianOutput {
    * 'r' 't' b16 b8 type url
    * </pre></code>
    */
-  abstract public void writeRemote(String type, String url)
-    throws IOException;
+  public void writeRemote(String type, String url)
+    throws IOException
+  {
+    throw new UnsupportedOperationException(getClass().getName());
+  }
   
   public void startReply()
     throws IOException

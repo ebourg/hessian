@@ -1389,7 +1389,6 @@ public class Hessian2Input
         _sbuf.append((char) ch);
 
       return _sbuf.toString();
-      
 
     default:
       throw expect("string", tag);
@@ -1429,15 +1428,33 @@ public class Hessian2Input
     case 0x24: case 0x25: case 0x26: case 0x27:
     case 0x28: case 0x29: case 0x2a: case 0x2b:
     case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-      _isLastChunk = true;
-      _chunkLength = tag - 0x20;
+      {
+	_isLastChunk = true;
+	_chunkLength = tag - 0x20;
 
-      bos = new ByteArrayOutputStream();
+	byte []buffer = new byte[_chunkLength];
 
-      while ((data = parseByte()) >= 0)
-        bos.write(data);
+	int k = 0;
+	while ((data = parseByte()) >= 0)
+	  buffer[k++] = (byte) data;
 
-      return bos.toByteArray();
+	return buffer;
+      }
+      
+    case 0x34: case 0x35: case 0x36: case 0x37:
+      {
+	_isLastChunk = true;
+	_chunkLength = (tag - 0x34) * 256 + read();
+
+	byte []buffer = new byte[_chunkLength];
+	int k = 0;
+
+	while ((data = parseByte()) >= 0) {
+	  buffer[k++] = (byte) data;
+	}
+
+	return buffer;
+      }
       
     default:
       throw expect("bytes", tag);
@@ -1685,6 +1702,21 @@ public class Hessian2Input
 	return v;
       }
 
+    case 0x70: case 0x71: case 0x72: case 0x73:
+    case 0x74: case 0x75: case 0x76: case 0x77:
+      {
+	int length = tag - 0x70;
+
+	String type = readType();
+      
+	Deserializer reader;
+	reader = findSerializerFactory().getListDeserializer(null, cl);
+
+	Object v = reader.readLengthList(this, length);
+
+	return v;
+      }
+
     case BC_LIST_VARIABLE_UNTYPED:
       {
 	Deserializer reader;
@@ -1707,6 +1739,19 @@ public class Hessian2Input
 	return v;
       }
 
+    case 0x78: case 0x79: case 0x7a: case 0x7b:
+    case 0x7c: case 0x7d: case 0x7e: case 0x7f:
+      {
+	int length = tag - 0x78;
+      
+	Deserializer reader;
+	reader = findSerializerFactory().getListDeserializer(null, cl);
+
+	Object v = reader.readLengthList(this, length);
+
+	return v;
+      }
+
     case BC_REF:
       {
 	int ref = readInt();
@@ -1720,7 +1765,6 @@ public class Hessian2Input
 
     // hessian/3b2i vs hessian/3406
     // return readObject();
-
     Object value = findSerializerFactory().getDeserializer(cl).readObject(this);
     return value;
   }
@@ -1875,6 +1919,20 @@ public class Hessian2Input
 	return _sbuf.toString();
       }
 
+    case 0x30: case 0x31: case 0x32: case 0x33:
+      {
+	_isLastChunk = true;
+	_chunkLength = (tag - 0x30) * 256 + read();
+
+	_sbuf.setLength(0);
+
+	int ch;
+	while ((ch = parseChar()) >= 0)
+	  _sbuf.append((char) ch);
+
+	return _sbuf.toString();
+      }
+
     case BC_BINARY_CHUNK:
     case 'B':
       {
@@ -1905,6 +1963,21 @@ public class Hessian2Input
 	  data[i] = (byte) read();
 
 	return data;
+      }
+      
+    case 0x34: case 0x35: case 0x36: case 0x37:
+      {
+	_isLastChunk = true;
+	int len = (tag - 0x34) * 256 + read();
+	_chunkLength = 0;
+
+	byte []buffer = new byte[len];
+
+	for (int i = 0; i < len; i++) {
+	  buffer[i] = (byte) read();
+	}
+
+	return buffer;
       }
 
     case BC_LIST_VARIABLE:
@@ -1953,6 +2026,19 @@ public class Hessian2Input
 
 	Deserializer reader;
 	reader = findSerializerFactory().getListDeserializer(type, null);
+      
+	return reader.readLengthList(this, length);
+      }
+
+      // compact fixed untyped list
+    case 0x78: case 0x79: case 0x7a: case 0x7b:
+    case 0x7c: case 0x7d: case 0x7e: case 0x7f:
+      {
+	// fixed length lists
+	int length = tag - 0x78;
+
+	Deserializer reader;
+	reader = findSerializerFactory().getListDeserializer(null, null);
       
 	return reader.readLengthList(this, length);
       }

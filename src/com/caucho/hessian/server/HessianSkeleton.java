@@ -53,6 +53,7 @@ import com.caucho.hessian.io.AbstractHessianOutput;
 import com.caucho.services.server.AbstractSkeleton;
 import com.caucho.services.server.ServiceContext;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
@@ -125,7 +126,8 @@ public class HessianSkeleton extends AbstractSkeleton {
     // backward compatibility for some frameworks that don't read
     // the call type first
     in.skipOptionalCall();
-    
+
+    // Hessian 1.0 backward compatibility
     String header;
     while ((header = in.readHeader()) != null) {
       Object value = in.readObject();
@@ -134,9 +136,23 @@ public class HessianSkeleton extends AbstractSkeleton {
     }
 
     String methodName = in.readMethod();
-    Method method = getMethod(methodName);
+    int argLength = in.readMethodArgLength();
+    
+    Method method;
+    
+    method = getMethod(methodName + "__" + argLength);
 
-    if (method != null) {
+    if (method == null)
+      method = getMethod(methodName);
+
+    if (method == null) {
+      out.startReply();
+      out.writeFault("NoSuchMethodException",
+		     "The service has no method named: " + in.getMethod(),
+		     null);
+      out.completeReply();
+      out.close();
+      return;
     }
     else if ("_hessian_getAttribute".equals(methodName)) {
       String attrName = in.readString();
@@ -159,17 +175,17 @@ public class HessianSkeleton extends AbstractSkeleton {
       out.close();
       return;
     }
-    else if (method == null) {
-      out.startReply();
-      out.writeFault("NoSuchMethodException",
-		     "The service has no method named: " + in.getMethod(),
+
+    Class []args = method.getParameterTypes();
+
+    if (argLength != args.length && argLength >= 0) {
+      out.writeFault("NoSuchMethod",
+		     "method " + method + " argument length mismatch, received length=" + argLength,
 		     null);
-      out.completeReply();
       out.close();
       return;
     }
-
-    Class []args = method.getParameterTypes();
+    
     Object []values = new Object[args.length];
 
     for (int i = 0; i < args.length; i++) {

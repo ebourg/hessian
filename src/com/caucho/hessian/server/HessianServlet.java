@@ -366,27 +366,39 @@ public class HessianServlet extends GenericServlet {
 	os = new HessianDebugOutputStream(os, dbg);
       }
 
-      Hessian2Input in = new Hessian2Input(is);
+      int code = is.read();
+      int major;
+      int minor;
+
+      AbstractHessianInput in;
       AbstractHessianOutput out;
 
-      SerializerFactory serializerFactory = getSerializerFactory();
-      
-      in.setSerializerFactory(serializerFactory);
+      if (code == 'H') {
+	major = is.read();
+	minor = is.read();
 
-      int code = in.read();
+	if (major != 0x02 || minor != 0x00)
+	  throw new IOException("Version " + major + "." + minor + " is not understood");
 
-      if (code != 'c') {
+	in = new Hessian2Input(is);
+	out = new Hessian2Output(os);
+
+	in.readCall();
+      }
+      else if (code == 'c') {
+	major = is.read();
+	minor = is.read();
+
+	in = new HessianInput(is);
+	out = new HessianOutput(os);
+      }
+      else {
 	// XXX: deflate
-	throw new IOException("expected 'c' in hessian input at " + code);
+	throw new IOException("expected 'H' (Hessian 2.0) or 'c' (Hessian 1.0) in hessian input at " + code);
       }
 
-      int major = in.read();
-      int minor = in.read();
-
-      if (major >= 2)
-	out = new Hessian2Output(os);
-      else
-	out = new HessianOutput(os);
+      SerializerFactory serializerFactory = getSerializerFactory();
+      in.setSerializerFactory(serializerFactory);
       
       out.setSerializerFactory(serializerFactory);
 

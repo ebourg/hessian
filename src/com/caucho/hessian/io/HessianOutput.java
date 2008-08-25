@@ -124,12 +124,12 @@ public class HessianOutput extends AbstractHessianOutput {
   public void call(String method, Object []args)
     throws IOException
   {
-    startCall(method);
+    int length = args != null ? args.length : 0;
     
-    if (args != null) {
-      for (int i = 0; i < args.length; i++)
-        writeObject(args[i]);
-    }
+    startCall(method, length);
+    
+    for (int i = 0; i < length; i++)
+      writeObject(args[i]);
     
     completeCall();
   }
@@ -146,7 +146,7 @@ public class HessianOutput extends AbstractHessianOutput {
    *
    * @param method the method name to call.
    */
-  public void startCall(String method)
+  public void startCall(String method, int length)
     throws IOException
   {
     os.write('c');

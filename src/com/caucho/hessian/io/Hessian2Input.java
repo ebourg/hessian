@@ -108,6 +108,7 @@ public class Hessian2Input
   
   // the method for a call
   private String _method;
+  private int _argLength;
 
   private Reader _chunkReader;
   private InputStream _chunkInputStream;
@@ -199,13 +200,10 @@ public class Hessian2Input
   {
     int tag = read();
     
-    if (tag != 'c')
-      throw error("expected hessian call ('c') at " + codeName(tag));
+    if (tag != 'C')
+      throw error("expected hessian call ('C') at " + codeName(tag));
 
-    int major = read();
-    int minor = read();
-
-    return (major << 16) + minor;
+    return 0;
   }
 
   /**
@@ -253,30 +251,29 @@ public class Hessian2Input
    * <p>A successful completion will have a single value:
    *
    * <pre>
-   * m b16 b8 method
+   * string
    * </pre>
    */
   public String readMethod()
     throws IOException
   {
-    int tag = read();
-    
-    if (tag != 'm')
-      throw error("expected hessian method ('m') at " + codeName(tag));
-    
-    int d1 = read();
-    int d2 = read();
-
-    _isLastChunk = true;
-    _chunkLength = d1 * 256 + d2;
-    _sbuf.setLength(0);
-    int ch;
-    while ((ch = parseChar()) >= 0)
-      _sbuf.append((char) ch);
-    
-    _method = _sbuf.toString();
+    _method = readString();
 
     return _method;
+  }
+
+  /**
+   * Returns the number of method arguments
+   *
+   * <pre>
+   * int
+   * </pre>
+   */
+  @Override
+  public int readMethodArgLength()
+    throws IOException
+  {
+    return readInt();
   }
 
   /**
@@ -294,10 +291,6 @@ public class Hessian2Input
   {
     readCall();
 
-    while (readHeader() != null) {
-      readObject();
-    }
-
     readMethod();
   }
 
@@ -307,20 +300,11 @@ public class Hessian2Input
    * <p>A successful completion will have a single value:
    *
    * <pre>
-   * z
    * </pre>
    */
   public void completeCall()
     throws IOException
   {
-    int tag = read();
-
-    if (tag == 'Z') {
-    }
-    else if (tag < 0)
-      throw error("expected end of call ('Z') at end of stream.");
-    else
-      throw error("expected end of call ('Z') at " + codeName(tag) + ".  Check method arguments and ensure method overloading is enabled if necessary");
   }
 
   /**
@@ -495,23 +479,6 @@ public class Hessian2Input
   public String readHeader()
     throws IOException
   {
-    int tag = read();
-
-    if (tag == 'H') {
-      _isLastChunk = true;
-      _chunkLength = (read() << 8) + read();
-
-      _sbuf.setLength(0);
-      int ch;
-      while ((ch = parseChar()) >= 0)
-        _sbuf.append((char) ch);
-
-      return _sbuf.toString();
-    }
-
-    if (tag >= 0)
-      _offset--;
-
     return null;
   }
 
@@ -696,11 +663,11 @@ public class Hessian2Input
     case BC_DOUBLE_SHORT:
       return (0x100 * read() + read()) != 0;
       
-    case BC_DOUBLE_FLOAT:
+    case BC_DOUBLE_MILL:
       {
-	int f = parseInt();
+	int mills = parseInt();
 
-	return Float.intBitsToFloat(f) != 0;
+	return mills != 0;
       }
       
     case 'D':
@@ -831,11 +798,11 @@ public class Hessian2Input
     case BC_DOUBLE_SHORT:
       return (short) (256 * read() + read());
 
-    case BC_DOUBLE_FLOAT:
+    case BC_DOUBLE_MILL:
       {
-	int f = parseInt();
+	int mills = parseInt();
 
-	return (int) Float.intBitsToFloat(f);
+	return (int) (0.001 * mills);
       }
 
     case 'D':
@@ -946,11 +913,11 @@ public class Hessian2Input
     case BC_DOUBLE_ONE:
       return 1;
 
-    case BC_DOUBLE_FLOAT:
+    case BC_DOUBLE_MILL:
       {
-	int f = parseInt();
+	int mills = parseInt();
 
-	return (long) Float.intBitsToFloat(f);
+	return (long) (0.001 * mills);
       }
 
     case 'D':
@@ -1071,11 +1038,11 @@ public class Hessian2Input
     case BC_DOUBLE_SHORT:
       return (short) (256 * read() + read());
 
-    case BC_DOUBLE_FLOAT:
+    case BC_DOUBLE_MILL:
       {
-	int f = parseInt();
+	int mills = parseInt();
 
-	return Float.intBitsToFloat(f);
+	return 0.001 * mills;
       }
       
     case 'D':
@@ -1336,11 +1303,11 @@ public class Hessian2Input
     case BC_DOUBLE_SHORT:
       return String.valueOf(((short) (256 * read() + read())));
 
-    case BC_DOUBLE_FLOAT:
+    case BC_DOUBLE_MILL:
       {
-	int f = parseInt();
+	int mills = parseInt();
 
-	return String.valueOf(Float.intBitsToFloat(f));
+	return String.valueOf(0.001 * mills);
       }
       
     case 'D':
@@ -1866,11 +1833,11 @@ public class Hessian2Input
     case BC_DOUBLE_SHORT:
       return Double.valueOf((short) (256 * read() + read()));
       
-    case BC_DOUBLE_FLOAT:
+    case BC_DOUBLE_MILL:
       {
-	int f = parseInt();
+	int mills = parseInt();
 
-	return Double.valueOf(Float.intBitsToFloat(f));
+	return Double.valueOf(0.001 * mills);
       }
 
     case 'D':

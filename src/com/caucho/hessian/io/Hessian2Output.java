@@ -123,15 +123,16 @@ public class Hessian2Output
   /**
    * Writes a complete method call.
    */
+  @Override
   public void call(String method, Object []args)
     throws IOException
   {
-    startCall(method);
+    int length = args != null ? args.length : 0;
     
-    if (args != null) {
-      for (int i = 0; i < args.length; i++)
-        writeObject(args[i]);
-    }
+    startCall(method, length);
+    
+    for (int i = 0; i < args.length; i++)
+      writeObject(args[i]);
     
     completeCall();
   }
@@ -142,13 +143,14 @@ public class Hessian2Output
    * writing the arguments, or needed to write headers.
    *
    * <code><pre>
-   * c major minor
-   * m b16 b8 method-name
+   * C
+   * string # method name
+   * int    # arg count
    * </pre></code>
    *
    * @param method the method name to call.
    */
-  public void startCall(String method)
+  public void startCall(String method, int length)
     throws IOException
   {
     int offset = _offset;
@@ -160,26 +162,18 @@ public class Hessian2Output
 
     byte []buffer = _buffer;
     
-    buffer[offset++] = (byte) 'c';
-    buffer[offset++] = (byte) 2;
-    buffer[offset++] = (byte) 0;
+    buffer[_offset++] = (byte) 'C';
 
-    buffer[offset++] = (byte) 'm';
-    int len = method.length();
-    buffer[offset++] = (byte) (len >> 8);
-    buffer[offset++] = (byte) len;
-
-    _offset = offset;
-    
-    printString(method, 0, len);
+    writeString(method);
+    writeInt(length);
   }
 
   /**
    * Writes the call tag.  This would be followed by the
-   * headers and the method tag.
+   * method and the arguments
    *
    * <code><pre>
-   * c major minor
+   * C
    * </pre></code>
    *
    * @param method the method name to call.
@@ -189,35 +183,7 @@ public class Hessian2Output
   {
     flushIfFull();
     
-    int offset = _offset;
-    byte []buffer = _buffer;
-    
-    buffer[offset++] = (byte) 'c';
-    buffer[offset++] = (byte) 2;
-    buffer[offset++] = (byte) 0;
-  }
-
-  /**
-   * Writes the streaming call tag.  This would be followed by the
-   * headers and the method tag.
-   *
-   * <code><pre>
-   * C major minor
-   * </pre></code>
-   *
-   * @param method the method name to call.
-   */
-  public void startStreamingCall()
-    throws IOException
-  {
-    flushIfFull();
-    
-    int offset = _offset;
-    byte []buffer = _buffer;
-    
-    buffer[offset++] = (byte) 'C';
-    buffer[offset++] = (byte) 2;
-    buffer[offset++] = (byte) 0;
+    _buffer[_offset++] = (byte) 'C';
   }
   
   /**
@@ -240,20 +206,9 @@ public class Hessian2Output
       offset = _offset;
     }
 
-    byte []buffer = _buffer;
-    
-    buffer[offset++] = (byte) 'E';
-    buffer[offset++] = (byte) 2;
-    buffer[offset++] = (byte) 0;
+    _buffer[_offset++] = (byte) 'E';
 
-    buffer[offset++] = (byte) 'm';
-    int len = method.length();
-    buffer[offset++] = (byte) (len >> 8);
-    buffer[offset++] = (byte) len;
-
-    _offset = offset;
-    
-    printString(method, 0, len);
+    writeString(method);
   }
 
   /**
@@ -262,7 +217,7 @@ public class Hessian2Output
    * <p>A successful completion will have a single value:
    *
    * <pre>
-   * z
+   * Z
    * </pre>
    */
   public void completeEnvelope()
@@ -270,14 +225,14 @@ public class Hessian2Output
   {
     flushIfFull();
     
-    _buffer[_offset++] = (byte) 'z';
+    _buffer[_offset++] = (byte) 'Z';
   }
 
   /**
    * Writes the method tag.
    *
    * <code><pre>
-   * m b16 b8 method-name
+   * string
    * </pre></code>
    *
    * @param method the method name to call.
@@ -285,19 +240,7 @@ public class Hessian2Output
   public void writeMethod(String method)
     throws IOException
   {
-    flushIfFull();
-
-    byte []buffer = _buffer;
-    int offset = _offset;
-    
-    buffer[offset++] = (byte) 'm';
-    int len = method.length();
-    buffer[offset++] = (byte) (len >> 8);
-    buffer[offset++] = (byte) len;
-
-    _offset = offset;
-    
-    printString(method, 0, len);
+    writeString(method);
   }
 
   /**
@@ -312,7 +255,7 @@ public class Hessian2Output
   {
     flushIfFull();
     
-    _buffer[_offset++] = (byte) 'z';
+    _buffer[_offset++] = (byte) 'Z';
   }
 
   /**
@@ -321,34 +264,24 @@ public class Hessian2Output
    * <p>A successful completion will have a single value:
    *
    * <pre>
-   * r
+   * R
    * </pre>
    */
   public void startReply()
     throws IOException
   {
-    flushIfFull();
+    writeVersion();
     
-    _buffer[_offset++] = (byte) 'r';
-    _buffer[_offset++] = (byte) 2;
-    _buffer[_offset++] = (byte) 0;
-  }
+    flushIfFull();
 
-  /**
-   * Starts the streaming reply
-   *
-   * <p>A successful completion will have a single value:
-   *
-   * <pre>
-   * r
-   * </pre>
-   */
-  public void startStreamingReply()
+    _buffer[_offset++] = (byte) 'R';
+  }
+  
+  protected void writeVersion()
     throws IOException
   {
     flushIfFull();
-    
-    _buffer[_offset++] = (byte) 'R';
+    _buffer[_offset++] = (byte) 'H';
     _buffer[_offset++] = (byte) 2;
     _buffer[_offset++] = (byte) 0;
   }
@@ -365,15 +298,12 @@ public class Hessian2Output
   public void completeReply()
     throws IOException
   {
-    flushIfFull();
-    
-    _buffer[_offset++] = (byte) 'z';
   }
 
   /**
-   * Starts the message
+   * Starts a packet
    *
-   * <p>A message contains several objects followed by a 'z'</p>
+   * <p>A message contains several objects encapsulated by a length</p>
    *
    * <pre>
    * p x02 x00
@@ -407,32 +337,12 @@ public class Hessian2Output
   }
 
   /**
-   * Writes a header name.  The header value must immediately follow.
-   *
-   * <code><pre>
-   * H b16 b8 foo <em>value</em>
-   * </pre></code>
-   */
-  public void writeHeader(String name)
-    throws IOException
-  {
-    int len = name.length();
-
-    flushIfFull();
-    
-    _buffer[_offset++] = (byte) 'H';
-    _buffer[_offset++] = (byte) (len >> 8);
-    _buffer[_offset++] = (byte) (len);
-
-    printString(name);
-  }
-
-  /**
    * Writes a fault.  The fault will be written
    * as a descriptive string followed by an object:
    *
    * <code><pre>
-   * f
+   * F map
+   * </pre></code>
    * &lt;string>code
    * &lt;string>the fault code
    *
@@ -452,9 +362,12 @@ public class Hessian2Output
     throws IOException
   {
     flushIfFull();
+
+    writeVersion();
     
-    _buffer[_offset++] = (byte) 'f'
-      ;
+    _buffer[_offset++] = (byte) 'F';
+    _buffer[_offset++] = (byte) 'H';
+
     writeString("code");
     writeString(code);
 
@@ -467,7 +380,7 @@ public class Hessian2Output
     }
 
     flushIfFull();
-    _buffer[_offset++] = (byte) ('z');
+    _buffer[_offset++] = (byte) 'Z';
   }
 
   /**
@@ -494,7 +407,7 @@ public class Hessian2Output
    * call <code>writeListEnd</code>.
    *
    * <code><pre>
-   * list ::= V type value* z
+   * list ::= V type value* Z
    *      ::= v type int value*
    * </pre></code>
    *
@@ -868,16 +781,14 @@ public class Hessian2Output
       }
     }
 
-    float f = (float) value;
+    int mills = (int) (value * 1000);
 
-    if (f == value) {
-      int bits = Float.floatToIntBits(f);
-      
-      buffer[offset + 0] = (byte) (BC_DOUBLE_FLOAT);
-      buffer[offset + 1] = (byte) (bits >> 24);
-      buffer[offset + 2] = (byte) (bits >> 16);
-      buffer[offset + 3] = (byte) (bits >> 8);
-      buffer[offset + 4] = (byte) (bits);
+    if (0.001 * mills == value) {
+      buffer[offset + 0] = (byte) (BC_DOUBLE_MILL);
+      buffer[offset + 1] = (byte) (mills >> 24);
+      buffer[offset + 2] = (byte) (mills >> 16);
+      buffer[offset + 3] = (byte) (mills >> 8);
+      buffer[offset + 4] = (byte) (mills);
 
       _offset = offset + 5;
 
@@ -1307,7 +1218,8 @@ public class Hessian2Output
    *
    * @param value the integer value to write.
    */
-  public void writeRef(int value)
+  @Override
+  protected void writeRef(int value)
     throws IOException
   {
     if (SIZE < _offset + 16)
@@ -1392,6 +1304,25 @@ public class Hessian2Output
   public void writeStreamingObject(Object obj)
     throws IOException
   {
+    startStreamingPacket();
+
+    writeObject(obj);
+
+    endStreamingPacket();
+  }
+
+  /**
+   * Starts a streaming packet
+   *
+   * <p>A streaming message starts with 'P'</p>
+   *
+   * <pre>
+   * P x02 x00
+   * </pre>
+   */
+  public void startStreamingPacket()
+    throws IOException
+  {
     if (_refs != null)
       _refs.clear();
     
@@ -1399,9 +1330,11 @@ public class Hessian2Output
 
     _isStreaming = true;
     _offset = 3;
+  }
 
-    writeObject(obj);
-
+  public void endStreamingPacket()
+    throws IOException
+  {
     int len = _offset - 3;
     
     _buffer[0] = (byte) 'P';
@@ -1536,7 +1469,8 @@ public class Hessian2Output
   {
     flushBuffer();
 
-    _os.flush();
+    if (_os != null)
+      _os.flush();
   }
 
   public final void flushBuffer()

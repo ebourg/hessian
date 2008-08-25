@@ -68,7 +68,7 @@ public interface Hessian2Constants
   public static final int BC_DOUBLE_ONE = 0x5c;
   public static final int BC_DOUBLE_BYTE = 0x5d;
   public static final int BC_DOUBLE_SHORT = 0x5e;
-  public static final int BC_DOUBLE_FLOAT = 0x5f;
+  public static final int BC_DOUBLE_MILL = 0x5f;
   
   public static final int BC_FALSE = 'F'; // boolean false
   
@@ -134,4 +134,13 @@ public interface Hessian2Constants
   public static final int STRING_SHORT_MAX = 0x3ff;
   
   public static final int BC_TRUE = 'T';
+
+  public static final int P_PACKET_CHUNK = 0x4f;
+  public static final int P_PACKET = 'P';
+
+  public static final int P_PACKET_DIRECT = 0x80;
+  public static final int PACKET_DIRECT_MAX = 0x7f;
+
+  public static final int P_PACKET_SHORT = 0x70;
+  public static final int PACKET_SHORT_MAX = 0xfff;
 }

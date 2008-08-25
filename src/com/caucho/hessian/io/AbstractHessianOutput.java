@@ -110,12 +110,12 @@ abstract public class AbstractHessianOutput {
   public void call(String method, Object []args)
     throws IOException
   {
-    startCall(method);
+    int length = args != null ? args.length : 0;
     
-    if (args != null) {
-      for (int i = 0; i < args.length; i++)
-        writeObject(args[i]);
-    }
+    startCall(method, length);
+    
+    for (int i = 0; i < length; i++)
+      writeObject(args[i]);
     
     completeCall();
   }
@@ -124,7 +124,7 @@ abstract public class AbstractHessianOutput {
    * Starts the method call:
    *
    * <code><pre>
-   * c major minor
+   * C
    * </pre></code>
    *
    * @param method the method name to call.
@@ -136,30 +136,30 @@ abstract public class AbstractHessianOutput {
    * Starts the method call:
    *
    * <code><pre>
-   * c major minor
-   * m b16 b8 method-namek
+   * C string int
    * </pre></code>
    *
    * @param method the method name to call.
    */
-  abstract public void startCall(String method)
+  abstract public void startCall(String method, int length)
     throws IOException;
 
   /**
-   * Writes a header name.  The header value must immediately follow.
+   * For Hessian 2.0, use the Header envelope instead
    *
-   * <code><pre>
-   * H b16 b8 foo <em>value</em>
-   * </pre></code>
+   * @deprecated
    */
-  abstract public void writeHeader(String name)
-    throws IOException;
+  public void writeHeader(String name)
+    throws IOException
+  {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
 
   /**
    * Writes the method tag.
    *
    * <code><pre>
-   * m b16 b8 method-name
+   * string
    * </pre></code>
    *
    * @param method the method name to call.
@@ -171,7 +171,6 @@ abstract public class AbstractHessianOutput {
    * Completes the method call:
    *
    * <code><pre>
-   * z
    * </pre></code>
    */
   abstract public void completeCall()
@@ -368,12 +367,12 @@ abstract public class AbstractHessianOutput {
    * Writes a reference.
    *
    * <code><pre>
-   * R b32 b24 b16 b8
+   * Q int
    * </pre></code>
    *
    * @param value the integer value to write.
    */
-  abstract public void writeRef(int value)
+  abstract protected void writeRef(int value)
     throws IOException;
 
   /**
@@ -423,12 +422,12 @@ abstract public class AbstractHessianOutput {
    * call <code>writeListEnd</code>.
    *
    * <code><pre>
-   * &lt;list>
-   *   &lt;type>java.util.ArrayList&lt;/type>
-   *   &lt;length>3&lt;/length>
-   *   &lt;int>1&lt;/int>
-   *   &lt;int>2&lt;/int>
-   *   &lt;int>3&lt;/int>
+   * V
+   *   x13 java.util.ArrayList   # type
+   *   x93                       # length=3
+   *   x91                       # 1
+   *   x92                       # 2
+   *   x93                       # 3
    * &lt;/list>
    * </pre></code>
    */
@@ -447,7 +446,7 @@ abstract public class AbstractHessianOutput {
    * call <code>writeMapEnd</code>.
    *
    * <code><pre>
-   * Mt b16 b8 type (<key> <value>)z
+   * M type (<key> <value>)* Z
    * </pre></code>
    */
   abstract public void writeMapBegin(String type)
@@ -466,8 +465,8 @@ abstract public class AbstractHessianOutput {
    * call <code>writeObjectEnd</code>.
    *
    * <code><pre>
-   * Ot b16 b8 type (<key> <value>)* z
-   * o b32 b24 b16 b8 <value>* z
+   * C type int <key>*
+   * C int <value>*
    * </pre></code>
    *
    * @return true if the object has already been defined.
@@ -494,20 +493,6 @@ abstract public class AbstractHessianOutput {
   public void writeObjectEnd()
     throws IOException
   {
-  }
-
-  /**
-   * Writes a remote object reference to the stream.  The type is the
-   * type of the remote interface.
-   *
-   * <code><pre>
-   * 'r' 't' b16 b8 type url
-   * </pre></code>
-   */
-  public void writeRemote(String type, String url)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
   }
   
   public void startReply()

@@ -84,6 +84,11 @@ public class HessianDebugState implements Hessian2Constants
     _state = new InitialState();
   }
 
+  public void startTop2()
+  {
+    _state = new Top2State();
+  }
+
   /**
    * Reads a character.
    */
@@ -112,6 +117,69 @@ public class HessianDebugState implements Hessian2Constants
 
     _isNewline = true;
     _column = 0;
+  }
+
+  static boolean isString(int ch)
+  {
+    switch (ch) {
+    case 0x00: case 0x01: case 0x02: case 0x03:
+    case 0x04: case 0x05: case 0x06: case 0x07:
+    case 0x08: case 0x09: case 0x0a: case 0x0b:
+    case 0x0c: case 0x0d: case 0x0e: case 0x0f:
+	
+    case 0x10: case 0x11: case 0x12: case 0x13:
+    case 0x14: case 0x15: case 0x16: case 0x17:
+    case 0x18: case 0x19: case 0x1a: case 0x1b:
+    case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+
+    case 0x30: case 0x31: case 0x32: case 0x33:
+	
+    case 'R':
+    case 'S':
+      return true;
+	
+    default:
+      return false;
+    }
+  }
+
+  static boolean isInteger(int ch)
+  {
+    switch (ch) {
+    case 0x80: case 0x81: case 0x82: case 0x83: 
+    case 0x84: case 0x85: case 0x86: case 0x87: 
+    case 0x88: case 0x89: case 0x8a: case 0x8b: 
+    case 0x8c: case 0x8d: case 0x8e: case 0x8f: 
+
+    case 0x90: case 0x91: case 0x92: case 0x93: 
+    case 0x94: case 0x95: case 0x96: case 0x97: 
+    case 0x98: case 0x99: case 0x9a: case 0x9b: 
+    case 0x9c: case 0x9d: case 0x9e: case 0x9f: 
+
+    case 0xa0: case 0xa1: case 0xa2: case 0xa3: 
+    case 0xa4: case 0xa5: case 0xa6: case 0xa7: 
+    case 0xa8: case 0xa9: case 0xaa: case 0xab: 
+    case 0xac: case 0xad: case 0xae: case 0xaf: 
+
+    case 0xb0: case 0xb1: case 0xb2: case 0xb3: 
+    case 0xb4: case 0xb5: case 0xb6: case 0xb7: 
+    case 0xb8: case 0xb9: case 0xba: case 0xbb: 
+    case 0xbc: case 0xbd: case 0xbe: case 0xbf:
+
+    case 0xc0: case 0xc1: case 0xc2: case 0xc3: 
+    case 0xc4: case 0xc5: case 0xc6: case 0xc7: 
+    case 0xc8: case 0xc9: case 0xca: case 0xcb: 
+    case 0xcc: case 0xcd: case 0xce: case 0xcf:
+
+    case 0xd0: case 0xd1: case 0xd2: case 0xd3: 
+    case 0xd4: case 0xd5: case 0xd6: case 0xd7: 
+
+    case 'I':
+      return true;
+
+    default:
+      return false;
+    }
   }
 
   abstract class State {
@@ -320,16 +388,18 @@ public class HessianDebugState implements Hessian2Constants
       case 0x38: case 0x39: case 0x3a: case 0x3b: 
       case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 	return new LongState(this, "long", ch - 0x3c, 6);
-	
+
+	/*
       case 0x77:
 	return new LongState(this, "long", 0, 4);
+	*/
 
       case 'L':
 	return new LongState(this, "long");
 
-      case 0x67: case 0x68:
+      case 0x5b: case 0x5c:
 	{
-	  Double value = new Double(ch - 0x67);
+	  Double value = new Double(ch - 0x5b);
 	  
 	  if (isShift(value))
 	    return shift(value);
@@ -339,32 +409,26 @@ public class HessianDebugState implements Hessian2Constants
 	  }
 	}
 
-      case 0x69:
+      case 0x5d:
 	return new DoubleIntegerState(this, 3);
 
-      case 0x6a:
+      case 0x5e:
 	return new DoubleIntegerState(this, 2);
 
-      case 0x6b:
-	return new FloatState(this);
+      case 0x5f:
+	return new MillsState(this);
 	
       case 'D':
 	return new DoubleState(this);
 
-      case 0x4a:
-	return new RefState(this, "Ref", 0, 3);
+      case 'Q':
+	return new RefState(this);
 
-      case 0x4b:
-	return new RefState(this, "Ref", 0, 2);
-
-      case 'R':
-	return new RefState(this, "Ref");
-
-      case 'r':
-	return new RemoteState(this);
-
-      case 'd':
+      case BC_DATE:
 	return new DateState(this);
+
+      case BC_DATE_MINUTE:
+	return new DateState(this, true);
 
       case 0x00:
 	{
@@ -389,11 +453,14 @@ public class HessianDebugState implements Hessian2Constants
       case 0x1c: case 0x1d: case 0x1e: case 0x1f:
 	return new StringState(this, 'S', ch);
 
-      case 'S': case 'X':
-	return new StringState(this, 'S', true);
-
-      case 's': case 'x':
+      case 0x30: case 0x31: case 0x32: case 0x33:
+	return new StringState(this, 'S', ch - 0x30, true);
+	
+      case 'R':
 	return new StringState(this, 'S', false);
+
+      case 'S':
+	return new StringState(this, 'S', true);
 
       case 0x20:
 	{
@@ -412,33 +479,53 @@ public class HessianDebugState implements Hessian2Constants
       case 0x28: case 0x29: case 0x2a: case 0x2b:
       case 0x2c: case 0x2d: case 0x2e: case 0x2f:
 	return new BinaryState(this, 'B', ch - 0x20);
+	
+      case 0x34: case 0x35: case 0x36: case 0x37:
+	return new BinaryState(this, 'B', ch - 0x34, true);
+
+      case 'A':
+	return new BinaryState(this, 'B', false);
 
       case 'B':
 	return new BinaryState(this, 'B', true);
 
-      case 'b':
-	return new BinaryState(this, 'B', false);
-
       case 'M':
 	return new MapState(this, _refId++);
 
-      case 'V':
+      case 'H':
+	return new MapState(this, _refId++, false);
+
+      case BC_LIST_VARIABLE:
 	return new ListState(this, _refId++);
 
-      case 'v':
-	return new CompactListState(this, _refId++);
+      case BC_LIST_VARIABLE_UNTYPED:
+	return new ListState(this, _refId++);
 
-      case 'O':
+      case BC_LIST_FIXED:
+	return new CompactListState(this, _refId++, true);
+	
+      case BC_LIST_FIXED_UNTYPED:
+	return new CompactListState(this, _refId++, false);
+
+      case 0x70: case 0x71: case 0x72: case 0x73:
+      case 0x74: case 0x75: case 0x76: case 0x77:
+	return new CompactListState(this, _refId++, true, ch - 0x70);
+
+      case 0x78: case 0x79: case 0x7a: case 0x7b:
+      case 0x7c: case 0x7d: case 0x7e: case 0x7f:
+	return new CompactListState(this, _refId++, false, ch - 0x78);
+
+      case 'C':
 	return new ObjectDefState(this);
 
-      case 'o':
+      case 0x60: case 0x61: case 0x62: case 0x63:
+      case 0x64: case 0x65: case 0x66: case 0x67:
+      case 0x68: case 0x69: case 0x6a: case 0x6b:
+      case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+	return new ObjectState(this, _refId++, ch - 0x60);
+	
+      case 'O':
 	return new ObjectState(this, _refId++);
-
-      case 'P':
-	return new StreamingState(this, true);
-
-      case 'p':
-	return new StreamingState(this, false);
 	
       default:
 	return this;
@@ -456,6 +543,22 @@ public class HessianDebugState implements Hessian2Constants
       }
       else if (ch == 'c') {
 	return new CallState(this);
+      }
+      else
+	return nextObject(ch);
+    }
+  }
+  
+  class Top2State extends State {
+    State next(int ch)
+    {
+      println();
+      
+      if (ch == 'R') {
+	return new ReplyState(this);
+      }
+      else if (ch == 'C') {
+	return new Call2State(this);
       }
       else
 	return nextObject(ch);
@@ -591,6 +694,11 @@ public class HessianDebugState implements Hessian2Constants
     int _length;
     int _value;
 
+    RefState(State next)
+    {
+      super(next);
+    }
+
     RefState(State next, String typeCode)
     {
       super(next);
@@ -608,33 +716,43 @@ public class HessianDebugState implements Hessian2Constants
       _length = length;
     }
 
+    @Override
+    boolean isShift(Object o)
+    {
+      return true;
+    }
+
+    @Override
+    State shift(Object o)
+    {
+      println("ref #" + o);
+
+      return _next;
+    }
+
+    @Override
     State next(int ch)
     {
-      _value = 256 * _value + (ch & 0xff);
-
-      if (++_length == 4) {
-	Integer value = new Integer(_value);
-	
-	if (_next.isShift(value))
-	  return _next.shift(value);
-	else {
-	  printObject("ref(#" + value + ")");
-	  
-	  return _next;
-	}
-      }
-      else
-	return this;
+      return nextObject(ch);
     }
   }
   
   class DateState extends State {
     int _length;
     long _value;
+    boolean _isMinute;
 
     DateState(State next)
     {
       super(next);
+    }
+
+    DateState(State next, boolean isMinute)
+    {
+      super(next);
+
+      _length = 4;
+      _isMinute = isMinute;
     }
       
     
@@ -643,7 +761,12 @@ public class HessianDebugState implements Hessian2Constants
       _value = 256 * _value + (ch & 0xff);
 
       if (++_length == 8) {
-	java.util.Date value = new java.util.Date(_value);
+	java.util.Date value;
+
+	if (_isMinute)
+	  value = new java.util.Date(_value * 60000L);
+	else
+	  value = new java.util.Date(_value);
 
 	if (_next.isShift(value))
 	  return _next.shift(value);
@@ -687,11 +810,11 @@ public class HessianDebugState implements Hessian2Constants
     }
   }
   
-  class FloatState extends State {
+  class MillsState extends State {
     int _length;
     int _value;
 
-    FloatState(State next)
+    MillsState(State next)
     {
       super(next);
     }
@@ -701,12 +824,12 @@ public class HessianDebugState implements Hessian2Constants
       _value = 256 * _value + (ch & 0xff);
 
       if (++_length == 4) {
-	Double value = (double) Float.intBitsToFloat(_value);
+	Double value = 0.001 * _value;
 
 	if (_next.isShift(value))
 	  return _next.shift(value);
 	else {
-	  printObject(value.toString() + "F");
+	  printObject(value.toString());
 	  
 	  return _next;
 	}
@@ -749,6 +872,16 @@ public class HessianDebugState implements Hessian2Constants
       _length = length;
       _lengthIndex = 2;
     }
+
+    StringState(State next, char typeCode, int length, boolean isLastChunk)
+    {
+      super(next);
+      
+      _typeCode = typeCode;
+      _isLastChunk = isLastChunk;
+      _length = length;
+      _lengthIndex = 1;
+    }
     
     State next(int ch)
     {
@@ -789,6 +922,12 @@ public class HessianDebugState implements Hessian2Constants
 	  _isLastChunk = true;
 	  _lengthIndex = 2;
 	  _length = ch & 0xff;
+	  return this;
+	}
+	else if (0x30 <= ch && ch < 0x34) {
+	  _isLastChunk = true;
+	  _lengthIndex = 1;
+	  _length = (ch - 0x30);
 	  return this;
 	}
 	else {
@@ -867,6 +1006,16 @@ public class HessianDebugState implements Hessian2Constants
       _isLastChunk = true;
       _length = length;
       _lengthIndex = 2;
+    }
+
+    BinaryState(State next, char typeCode, int length, boolean isLastChunk)
+    {
+      super(next);
+      
+      _typeCode = typeCode;
+      _isLastChunk = isLastChunk;
+      _length = length;
+      _lengthIndex = 1;
     }
     
     State next(int ch)
@@ -958,6 +1107,20 @@ public class HessianDebugState implements Hessian2Constants
       _state = TYPE;
     }
 
+    MapState(State next, int refId, boolean isType)
+    {
+      super(next);
+      
+      _refId = refId;
+
+      if (isType)
+	_state = TYPE;
+      else {
+	printObject("map (#" + _refId + ")");
+	_state = VALUE;
+      }
+    }
+
     @Override
     boolean isShift(Object value)
     {
@@ -978,7 +1141,7 @@ public class HessianDebugState implements Hessian2Constants
 	    type = _typeDefList.get(iValue);
 	}
 	
-	printObject("map " + type + "(#" + _refId + ")");
+	printObject("map " + type + " (#" + _refId + ")");
 
 	_state = VALUE;
       
@@ -1003,26 +1166,10 @@ public class HessianDebugState implements Hessian2Constants
     {
       switch (_state) {
       case TYPE:
-	if (ch == 't') {
-	  return new StringState(this, 't', true);
-	}
-	else if (ch == 0x75) {
-	  return new IndirectState(this);
-	}
-	else if (ch == 'z') {
-	  printObject("map (#" + _refId + ")");
-	  return _next;
-	}
-	else {
-	  printObject("map (#" + _refId + ")");
-	  
-	  _state = KEY;
-	  
-	  return nextObject(ch);
-	}
+	return nextObject(ch);
 	
       case VALUE:
-	if (ch == 'z') {
+	if (ch == 'Z') {
 	  if (_hasData)
 	    println();
 	  
@@ -1168,6 +1315,18 @@ public class HessianDebugState implements Hessian2Constants
 
       _refId = refId;
       _state = TYPE;
+    }
+
+    ObjectState(State next, int refId, int def)
+    {
+      super(next);
+
+      _refId = refId;
+      _state = FIELD;
+
+      _def = _objectDefList.get(def);
+
+      println("object " + _def.getType() + " (#" + _refId + ")");
     }
 
     @Override
@@ -1326,7 +1485,7 @@ public class HessianDebugState implements Hessian2Constants
 	  return new IntegerState(this, "length", 0, 3);
 	}
 	*/
-	else if (ch == 'z') {
+	else if (ch == 'Z') {
 	  printObject("list (#" + _refId + ")");
 	  return _next;
 	}
@@ -1345,7 +1504,7 @@ public class HessianDebugState implements Hessian2Constants
 	}
 	
       case LENGTH:
-	if (ch == 'z') {
+	if (ch == 'Z') {
 	  return _next;
 	}
 	/*
@@ -1369,7 +1528,7 @@ public class HessianDebugState implements Hessian2Constants
 	}
 	
       case VALUE:
-	if (ch == 'z') {
+	if (ch == 'Z') {
 	  if (_count > 0)
 	    println();
 	  
@@ -1398,18 +1557,45 @@ public class HessianDebugState implements Hessian2Constants
 
     private int _refId;
 
+    private boolean _isTyped;
+    private boolean _isLength;
+
     private int _state;
     private boolean _hasData;
     private int _length;
     private int _count;
     private int _valueDepth;
 
-    CompactListState(State next, int refId)
+    CompactListState(State next, int refId, boolean isTyped)
     {
       super(next);
-      
+
+      _isTyped = isTyped;
       _refId = refId;
-      _state = TYPE;
+      
+      if (isTyped)
+	_state = TYPE;
+      else
+	_state = LENGTH;
+    }
+
+    CompactListState(State next, int refId, boolean isTyped, int length)
+    {
+      super(next);
+
+      _isTyped = isTyped;
+      _refId = refId;
+      _length = length;
+
+      _isLength = true;
+      
+      if (isTyped)
+	_state = TYPE;
+      else {
+	printObject("list (#" + _refId + ")");
+	
+	_state = VALUE;
+      }
     }
 
     @Override
@@ -1431,14 +1617,24 @@ public class HessianDebugState implements Hessian2Constants
 	    type = _typeDefList.get(index);
 	}
 	
-	printObject("list " + type + "(#" + _refId + ")");
-      
-	_state = LENGTH;
+	printObject("list " + type + " (#" + _refId + ")");
+
+	if (_isLength) {
+	  _state = VALUE;
+
+	  if (_length == 0)
+	    return _next;
+	}
+	else
+	  _state = LENGTH;
       
 	return this;
       }
       else if (_state == LENGTH) {
 	_length = (Integer) object;
+
+	if (! _isTyped)
+	  printObject("list (#" + _refId + ")");
 	
 	_state = VALUE;
 
@@ -1553,10 +1749,86 @@ public class HessianDebugState implements Hessian2Constants
 	return nextObject(ch);
 	
       case ARG:
-	if (ch == 'z')
+	if (ch == 'Z')
 	  return _next;
 	else
 	  return nextObject(ch);
+
+      default:
+	throw new IllegalStateException();
+      }
+    }
+  }
+  
+  class Call2State extends State {
+    private static final int METHOD = 0;
+    private static final int COUNT = 1;
+    private static final int ARG = 2;
+
+    private int _state = METHOD;
+    private int _i;
+    private int _count;
+
+    Call2State(State next)
+    {
+      super(next);
+    }
+
+    int depth()
+    {
+      return _next.depth() + 5;
+    }
+
+    @Override
+    boolean isShift(Object value)
+    {
+      return _state != ARG;
+    }
+
+    @Override
+    State shift(Object object)
+    {
+      if (_state == METHOD) {
+	println(-5, "Call " + object);
+
+	_state = COUNT;
+	return this;
+      }
+      else if (_state == COUNT) {
+	Integer count = (Integer) object;
+
+	_count = count;
+      
+	_state = ARG;
+
+	if (_count == 0)
+	  return _next;
+	else
+	  return this;
+      }
+      else
+	return this;
+    }
+
+    @Override
+    State next(int ch)
+    {
+      switch (_state) {
+      case COUNT:
+	return nextObject(ch);
+	
+      case METHOD:
+	return nextObject(ch);
+	
+      case ARG:
+	if (_count <= _i)
+	  return _next.next(ch);
+	else {
+	  println();
+	  print(-3, _i++ + ": ");
+	  
+	  return nextObject(ch);
+	}
 
       default:
 	throw new IllegalStateException();
@@ -1624,7 +1896,7 @@ public class HessianDebugState implements Hessian2Constants
 	
       case END:
 	println();
-	if (ch == 'z') {
+	if (ch == 'Z') {
 	  return _next;
 	}
 	else

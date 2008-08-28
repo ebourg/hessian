@@ -115,6 +115,8 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
   private SerializerFactory _serializerFactory;
   private HessianRemoteResolver _resolver;
+
+  private ClassLoader _loader;
   
   private String _user;
   private String _password;
@@ -137,6 +139,15 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
    */
   public HessianProxyFactory()
   {
+    this(Thread.currentThread().getContextClassLoader());
+  }
+
+  /**
+   * Creates the new proxy factory.
+   */
+  public HessianProxyFactory(ClassLoader loader)
+  {
+    _loader = loader;
     _resolver = new HessianProxyResolver(this);
   }
 

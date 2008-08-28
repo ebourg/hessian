@@ -54,9 +54,9 @@ import java.io.IOException;
  * Serializing an object for known object types.
  */
 public class ThrowableSerializer extends JavaSerializer {
-  public ThrowableSerializer(Class cl)
+  public ThrowableSerializer(Class cl, ClassLoader loader)
   {
-    super(cl);
+    super(cl, loader);
   }
   
   public void writeObject(Object obj, AbstractHessianOutput out)

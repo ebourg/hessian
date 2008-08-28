@@ -73,9 +73,9 @@ public class JavaSerializer extends AbstractSerializer
   private Object _writeReplaceFactory;
   private Method _writeReplace;
   
-  public JavaSerializer(Class cl)
+  public JavaSerializer(Class cl, ClassLoader loader)
   {
-    introspectWriteReplace(cl);
+    introspectWriteReplace(cl, loader);
     
     if (_writeReplace != null)
       _writeReplace.setAccessible(true);
@@ -118,11 +118,9 @@ public class JavaSerializer extends AbstractSerializer
     }
   }
 
-  private void introspectWriteReplace(Class cl)
+  private void introspectWriteReplace(Class cl, ClassLoader loader)
   {
     try {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
       String className = cl.getName() + "HessianSerializer";
 
       Class serializerClass = Class.forName(className, false, loader);

@@ -57,9 +57,12 @@ import java.util.HashMap;
 public class ClassDeserializer extends AbstractMapDeserializer {
   private static final HashMap<String,Class> _primClasses
     = new HashMap<String,Class>();
+
+  private ClassLoader _loader;
   
-  public ClassDeserializer()
+  public ClassDeserializer(ClassLoader loader)
   {
+    _loader = loader;
   }
   
   public Class getType()
@@ -124,11 +127,9 @@ public class ClassDeserializer extends AbstractMapDeserializer {
     if (cl != null)
       return cl;
 
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
     try {
-      if (loader != null)
-        return Class.forName(name, false, loader);
+      if (_loader != null)
+        return Class.forName(name, false, _loader);
       else
         return Class.forName(name);
     } catch (Exception e) {

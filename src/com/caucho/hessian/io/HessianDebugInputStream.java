@@ -87,6 +87,11 @@ public class HessianDebugInputStream extends InputStream
     this(is, new PrintWriter(new LogWriter(log, level)));
   }
 
+  public void startTop2()
+  {
+    _state.startTop2();
+  }
+
   /**
    * Reads a character.
    */

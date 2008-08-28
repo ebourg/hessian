@@ -380,7 +380,7 @@ public class HessianServlet extends GenericServlet {
 	if (major != 0x02 || minor != 0x00)
 	  throw new IOException("Version " + major + "." + minor + " is not understood");
 
-	in = new Hessian2Input(is);
+	in = createHessian2Input(is);
 	out = new Hessian2Output(os);
 
 	in.readCall();
@@ -417,6 +417,11 @@ public class HessianServlet extends GenericServlet {
     } finally {
       ServiceContext.end();
     }
+  }
+
+  protected Hessian2Input createHessian2Input(InputStream is)
+  {
+    return new Hessian2Input(is);
   }
 
   static class LogWriter extends Writer {

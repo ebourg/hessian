@@ -70,9 +70,9 @@ public class BeanSerializer extends AbstractSerializer {
   private Object _writeReplaceFactory;
   private Method _writeReplace;
   
-  public BeanSerializer(Class cl)
+  public BeanSerializer(Class cl, ClassLoader loader)
   {
-    introspectWriteReplace(cl);
+    introspectWriteReplace(cl, loader);
 
     ArrayList primitiveMethods = new ArrayList();
     ArrayList compoundMethods = new ArrayList();
@@ -143,11 +143,9 @@ public class BeanSerializer extends AbstractSerializer {
     }
   }
 
-  private void introspectWriteReplace(Class cl)
+  private void introspectWriteReplace(Class cl, ClassLoader loader)
   {
     try {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
       String className = cl.getName() + "HessianSerializer";
 
       Class serializerClass = Class.forName(className, false, loader);

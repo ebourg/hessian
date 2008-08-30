@@ -320,7 +320,7 @@ public class TestHessian2Servlet
   public Object replyDate_1()
   {
     long time = 894621091000L;
-      
+
     return new Date(time);
   }
 

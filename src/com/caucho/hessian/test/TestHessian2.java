@@ -6,7 +6,7 @@ import java.io.IOException;
  * The Test service is a quick sanity check service.  Developers of a
  * new Hessian implementation can use this service as an initial test.
  *
- * http://hessian.caucho.com/test2
+ * http://hessian.caucho.com/test/test2
  */
 public interface TestHessian2 {
   /**
@@ -517,7 +517,7 @@ public interface TestHessian2 {
   public Object replyDate_0();
 
   /**
-   * Date by millisecond (05-08-1998 07:51 GMT)
+   * Date by millisecond (05-08-1998 07:51:31.000 GMT)
    *
    * <code><pre>
    * x4a x00 x00 x00 xd0 x4b x92 x84 xb8
@@ -526,7 +526,7 @@ public interface TestHessian2 {
   public Object replyDate_1();
 
   /**
-   * Date by minute (05-08-1998 07:51 GMT)
+   * Date by minute (05-08-1998 07:51:00.000 GMT)
    *
    * <code><pre>
    * x4b x00 xe3 x83 x8f

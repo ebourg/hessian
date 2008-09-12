@@ -125,9 +125,14 @@ public class HessianProxy implements InvocationHandler {
 	  && params.length == 1 && params[0].equals(Object.class)) {
 	Object value = args[0];
 	if (value == null || ! Proxy.isProxyClass(value.getClass()))
-	  return new Boolean(false);
+	  return Boolean.FALSE;
 
-	HessianProxy handler = (HessianProxy) Proxy.getInvocationHandler(value);
+	Object proxyHandler = Proxy.getInvocationHandler(value);
+
+	if (! (proxyHandler instanceof HessianProxy))
+	  return Boolean.FALSE;
+	
+	HessianProxy handler = (HessianProxy) proxyHandler;
 
 	return new Boolean(_url.equals(handler.getURL()));
       }

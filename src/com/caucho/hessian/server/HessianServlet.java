@@ -362,8 +362,12 @@ public class HessianServlet extends GenericServlet {
       if (_log.isLoggable(Level.FINEST)
 	  || _isDebug && _log.isLoggable(Level.FINE)) {
 	PrintWriter dbg = new PrintWriter(new LogWriter(_log));
-	is = new HessianDebugInputStream(is, dbg);
-	os = new HessianDebugOutputStream(os, dbg);
+	HessianDebugInputStream dIs = new HessianDebugInputStream(is, dbg);
+	dIs.startTop2();
+	is = dIs;
+	HessianDebugOutputStream dOs = new HessianDebugOutputStream(os, dbg);
+	dOs.startTop2();
+	os = dOs;
       }
 
       int code = is.read();

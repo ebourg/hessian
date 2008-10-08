@@ -555,10 +555,19 @@ public class HessianDebugState implements Hessian2Constants
       println();
       
       if (ch == 'R') {
-	return new ReplyState(this);
+	return new Reply2State(this);
       }
       else if (ch == 'C') {
 	return new Call2State(this);
+      }
+      else if (ch == 'H') {
+	return new Hessian2State(this);
+      }
+      else if (ch == 'r') {
+	return new ReplyState(this);
+      }
+      else if (ch == 'c') {
+	return new CallState(this);
       }
       else
 	return nextObject(ch);
@@ -1324,6 +1333,10 @@ public class HessianDebugState implements Hessian2Constants
       _refId = refId;
       _state = FIELD;
 
+      if (def < 0 || _objectDefList.size() <= def) {
+	throw new IllegalStateException(def + " is an unknown object type");
+      }
+
       _def = _objectDefList.get(def);
 
       println("object " + _def.getType() + " (#" + _refId + ")");
@@ -1686,6 +1699,43 @@ public class HessianDebugState implements Hessian2Constants
     }
   }
   
+  class Hessian2State extends State {
+    private static final int MAJOR = 0;
+    private static final int MINOR = 1;
+
+    private int _state;
+    private int _major;
+    private int _minor;
+
+    Hessian2State(State next)
+    {
+      super(next);
+    }
+
+    int depth()
+    {
+      return _next.depth() + 2;
+    }
+    
+    State next(int ch)
+    {
+      switch (_state) {
+      case MAJOR:
+	_major = ch;
+	_state = MINOR;
+	return this;
+	
+      case MINOR:
+	_minor = ch;
+	println(-2, "hessian " + _major + "." + _minor);
+	return _next;
+
+      default:
+	throw new IllegalStateException();
+      }
+    }
+  }
+  
   class CallState extends State {
     private static final int MAJOR = 0;
     private static final int MINOR = 1;
@@ -1905,6 +1955,26 @@ public class HessianDebugState implements Hessian2Constants
       default:
 	throw new IllegalStateException();
       }
+    }
+  }
+  
+  class Reply2State extends State {
+    Reply2State(State next)
+    {
+      super(next);
+
+      println(-2, "Reply");
+    }
+
+    int depth()
+    {
+      return _next.depth() + 2;
+    }
+
+    @Override
+    State next(int ch)
+    {
+      return nextObject(ch);
     }
   }
   

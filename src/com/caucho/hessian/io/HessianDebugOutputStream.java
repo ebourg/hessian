@@ -83,6 +83,11 @@ public class HessianDebugOutputStream extends OutputStream
     this(os, new PrintWriter(new LogWriter(log, level)));
   }
 
+  public void startTop2()
+  {
+    _state.startTop2();
+  }
+
   /**
    * Writes a character.
    */

@@ -68,9 +68,9 @@ import java.util.HashMap;
  * Hessian2Output out = new Hessian2Output(os);
  * String value;
  *
- * out.startCall("hello");  // start hello call
- * out.writeString("arg1"); // write a string argument
- * out.completeCall();      // complete the call
+ * out.startCall("hello", 1); // start hello call
+ * out.writeString("arg1");   // write a string argument
+ * out.completeCall();        // complete the call
  * </pre>
  */
 public class Hessian2Output
@@ -253,9 +253,11 @@ public class Hessian2Output
   public void completeCall()
     throws IOException
   {
+    /*
     flushIfFull();
     
     _buffer[_offset++] = (byte) 'Z';
+    */
   }
 
   /**
@@ -343,17 +345,20 @@ public class Hessian2Output
    * <code><pre>
    * F map
    * </pre></code>
-   * &lt;string>code
-   * &lt;string>the fault code
    *
-   * &lt;string>message
-   * &lt;string>the fault mesage
+   * <code><pre>
+   * F H
+   * \x04code
+   * \x10the fault code
    *
-   * &lt;string>detail
-   * mt\x00\xnnjavax.ejb.FinderException
+   * \x07message
+   * \x11the fault message
+   *
+   * \x06detail
+   * M\xnnjavax.ejb.FinderException
    *     ...
-   * z
-   * z
+   * Z
+   * Z
    * </pre></code>
    *
    * @param code the fault code, a three digit
@@ -367,6 +372,8 @@ public class Hessian2Output
     
     _buffer[_offset++] = (byte) 'F';
     _buffer[_offset++] = (byte) 'H';
+
+    _refs.put(new HashMap(), _refs.size());
 
     writeString("code");
     writeString(code);

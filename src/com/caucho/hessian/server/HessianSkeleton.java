@@ -63,8 +63,8 @@ import java.util.logging.Logger;
  * Proxy class for Hessian services.
  */
 public class HessianSkeleton extends AbstractSkeleton {
-  private static final Logger
-    log = Logger.getLogger(HessianSkeleton.class.getName());
+  private static final Logger log
+    = Logger.getLogger(HessianSkeleton.class.getName());
   
   private Object _service;
   
@@ -146,11 +146,9 @@ public class HessianSkeleton extends AbstractSkeleton {
       method = getMethod(methodName);
 
     if (method == null) {
-      out.startReply();
       out.writeFault("NoSuchMethodException",
 		     "The service has no method named: " + in.getMethod(),
 		     null);
-      out.completeReply();
       out.close();
       return;
     }
@@ -167,11 +165,7 @@ public class HessianSkeleton extends AbstractSkeleton {
       else if ("java.object.class".equals(attrName))
 	value = getObjectClassName();
 
-      out.startReply();
-
-      out.writeObject(value);
-
-      out.completeReply();
+      out.writeReply(value);
       out.close();
       return;
     }
@@ -202,9 +196,7 @@ public class HessianSkeleton extends AbstractSkeleton {
 
       log.log(Level.FINE, this + " " + e.toString(), e);
       
-      out.startReply();
       out.writeFault("ServiceException", e.getMessage(), e);
-      out.completeReply();
       out.close();
       return;
     }
@@ -213,11 +205,8 @@ public class HessianSkeleton extends AbstractSkeleton {
     // trailing InputStream
     in.completeCall();
     
-    out.startReply();
+    out.writeReply(result);
 
-    out.writeObject(result);
-    
-    out.completeReply();
     out.close();
   }
 }

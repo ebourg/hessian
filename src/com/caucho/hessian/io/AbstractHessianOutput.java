@@ -495,6 +495,15 @@ abstract public class AbstractHessianOutput {
   {
   }
   
+  public void writeReply(Object o)
+    throws IOException
+  {
+    startReply();
+    writeObject(o);
+    completeReply();
+  }
+  
+  
   public void startReply()
     throws IOException
   {

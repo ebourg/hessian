@@ -316,8 +316,15 @@ public class Hessian2Input
     throws Throwable
   {
     int tag = read();
-    
-    if (tag != 'r') {
+
+    if (tag == 'R')
+      return readObject(expectedClass);
+    else if (tag == 'F') {
+      HashMap map = (HashMap) readObject(HashMap.class);
+
+      throw prepareFault(map);
+    }
+    else {
       StringBuilder sb = new StringBuilder();
       sb.append((char) tag);
       
@@ -333,25 +340,6 @@ public class Hessian2Input
       
       throw error("expected hessian reply at " + codeName(tag) + "\n"
 		  + sb);
-    }
-
-    int major = read();
-    int minor = read();
-
-    if (major > 2 || major == 2 && minor > 0)
-      throw error("Cannot understand Hessian " + major + "." + minor + " response");
-    tag = read();
-    if (tag == 'f')
-      throw prepareFault();
-    else {
-      if (tag >= 0)
-	_offset--;
-    
-      Object value = readObject(expectedClass);
-      
-      completeValueReply();
-      
-      return value;
     }
   }
 
@@ -367,47 +355,17 @@ public class Hessian2Input
   public void startReply()
     throws Throwable
   {
-    int tag = read();
+    // XXX: for variable length (?)
     
-    if (tag != 'r') {
-      StringBuilder sb = new StringBuilder();
-      sb.append((char) tag);
-      
-      try {
-	int ch;
-
-	while ((ch = read()) >= 0) {
-	  sb.append((char) ch);
-	}
-      } catch (IOException e) {
-	log.log(Level.FINE, e.toString(), e);
-      }
-      
-      throw error("expected hessian reply at " + codeName(tag) + "\n"
-		  + sb);
-    }
-
-    int major = read();
-    int minor = read();
-
-    if (major > 2 || major == 2 && minor > 0)
-      throw error("Cannot understand Hessian " + major + "." + minor + " response");
-    
-    tag = read();
-    if (tag == 'f')
-      throw prepareFault();
-    else if (tag >= 0)
-      _offset--;
+    readReply(Object.class);
   }
 
   /**
    * Prepares the fault.
    */
-  private Throwable prepareFault()
+  private Throwable prepareFault(HashMap fault)
     throws IOException
   {
-    HashMap fault = readFault();
-
     Object detail = fault.get("detail");
     String message = (String) fault.get("message");
 
@@ -445,10 +403,6 @@ public class Hessian2Input
   public void completeReply()
     throws IOException
   {
-    int tag = read();
-    
-    if (tag != 'Z')
-      error("expected end of reply at " + codeName(tag));
   }
 
   /**

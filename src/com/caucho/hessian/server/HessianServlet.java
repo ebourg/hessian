@@ -394,7 +394,11 @@ public class HessianServlet extends GenericServlet {
 	minor = is.read();
 
 	in = new HessianInput(is);
-	out = new HessianOutput(os);
+
+	if (major >= 2)
+	  out = new Hessian2Output(os);
+	else
+	  out = new HessianOutput(os);
       }
       else {
 	// XXX: deflate

@@ -215,24 +215,45 @@ public class HessianProxy implements InvocationHandler {
 
       if (log.isLoggable(Level.FINEST)) {
 	PrintWriter dbg = new PrintWriter(new LogWriter(log));
-	is = new HessianDebugInputStream(is, dbg);
+	HessianDebugInputStream dIs
+	  = new HessianDebugInputStream(is, dbg);
+
+	dIs.startTop2();
+	
+	is = dIs;
       }
 
-      AbstractHessianInput in = _factory.getHessianInput(is);
+      AbstractHessianInput in;
 
-      in.startReply();
+      int code = is.read();
 
-      Object value = in.readObject(method.getReturnType());
+      if (code == 'H') {
+	int major = is.read();
+	int minor = is.read();
 
-      if (value instanceof InputStream) {
-	value = new ResultInputStream(httpConn, is, in, (InputStream) value);
-	is = null;
-	httpConn = null;
+	in = _factory.getHessian2Input(is);
+
+	return in.readReply(method.getReturnType());
+      }
+      else if (code == 'r') {
+	in = _factory.getHessianInput(is);
+
+	in.startReply();
+
+	Object value = in.readObject(method.getReturnType());
+
+	if (value instanceof InputStream) {
+	  value = new ResultInputStream(httpConn, is, in, (InputStream) value);
+	  is = null;
+	  httpConn = null;
+	}
+	else
+	  in.completeReply();
+
+	return value;
       }
       else
-	in.completeReply();
-
-      return value;
+	throw new HessianProtocolException("'" + (char) code + "' is an unknown code");
     } catch (HessianProtocolException e) {
       throw new HessianRuntimeException(e);
     } finally {

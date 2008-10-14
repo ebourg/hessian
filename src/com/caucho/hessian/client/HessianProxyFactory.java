@@ -398,6 +398,27 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
   public AbstractHessianInput getHessianInput(InputStream is)
   {
+    return getHessian2Input(is);
+  }
+
+  public AbstractHessianInput getHessian1Input(InputStream is)
+  {
+    AbstractHessianInput in;
+
+    if (_isDebug)
+      is = new HessianDebugInputStream(is, new PrintWriter(System.out));
+
+    in = new HessianInput(is);
+    
+    in.setRemoteResolver(getRemoteResolver());
+
+    in.setSerializerFactory(getSerializerFactory());
+
+    return in;
+  }
+
+  public AbstractHessianInput getHessian2Input(InputStream is)
+  {
     AbstractHessianInput in;
 
     if (_isDebug)

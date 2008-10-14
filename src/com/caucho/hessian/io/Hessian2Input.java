@@ -2036,6 +2036,9 @@ public class Hessian2Input
       {
 	int ref = tag - 0x60;
 
+	if (_classDefs == null)
+	  throw error("No classes defined at reference '{0}'" + tag);
+	
 	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
 
 	return readObjectInstance(null, def);

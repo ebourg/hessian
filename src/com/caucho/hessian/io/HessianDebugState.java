@@ -496,10 +496,10 @@ public class HessianDebugState implements Hessian2Constants
 	return new MapState(this, _refId++, false);
 
       case BC_LIST_VARIABLE:
-	return new ListState(this, _refId++);
+	return new ListState(this, _refId++, true);
 
       case BC_LIST_VARIABLE_UNTYPED:
-	return new ListState(this, _refId++);
+	return new ListState(this, _refId++, false);
 
       case BC_LIST_FIXED:
 	return new CompactListState(this, _refId++, true);
@@ -1416,7 +1416,7 @@ public class HessianDebugState implements Hessian2Constants
     private int _count;
     private int _valueDepth;
 
-    ListState(State next, int refId)
+    ListState(State next, int refId, boolean isType)
     {
       super(next);
       

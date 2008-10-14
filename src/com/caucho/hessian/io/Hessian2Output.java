@@ -279,7 +279,7 @@ public class Hessian2Output
     _buffer[_offset++] = (byte) 'R';
   }
   
-  protected void writeVersion()
+  public void writeVersion()
     throws IOException
   {
     flushIfFull();

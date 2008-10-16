@@ -217,14 +217,21 @@ public class Hessian2Input
     throws IOException
   {
     int tag = read();
+    int version = 0;
+
+    if (tag == 'H') {
+      int major = read();
+      int minor = read();
+
+      version = (major << 16) + minor;
+
+      tag = read();
+    }
     
     if (tag != 'E')
       throw error("expected hessian Envelope ('E') at " + codeName(tag));
 
-    int major = read();
-    int minor = read();
-
-    return (major << 16) + minor;
+    return version;
   }
 
   /**
@@ -233,7 +240,7 @@ public class Hessian2Input
    * <p>A successful completion will have a single value:
    *
    * <pre>
-   * z
+   * Z
    * </pre>
    */
   public void completeEnvelope()

@@ -50,6 +50,7 @@ package com.caucho.hessian.io;
 
 import com.caucho.hessian.util.IdentityIntMap;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -156,7 +157,7 @@ public class Hessian2Output
     int offset = _offset;
 
     if (SIZE < offset + 32) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
 
@@ -202,7 +203,7 @@ public class Hessian2Output
     int offset = _offset;
 
     if (SIZE < offset + 32) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
 
@@ -486,7 +487,7 @@ public class Hessian2Output
     throws IOException
   {
     if (SIZE < _offset + 32)
-      flush();
+      flushBuffer();
 
     if (type != null) {
       _buffer[_offset++] = BC_MAP;
@@ -504,7 +505,7 @@ public class Hessian2Output
     throws IOException
   {
     if (SIZE < _offset + 32)
-      flush();
+      flushBuffer();
     
     _buffer[_offset++] = (byte) BC_END;
   }
@@ -528,7 +529,7 @@ public class Hessian2Output
       int ref = refV.intValue();
       
       if (SIZE < _offset + 32)
-	flush();
+	flushBuffer();
 
       if (ref <= OBJECT_DIRECT_MAX) {
 	_buffer[_offset++] = (byte) (BC_OBJECT_DIRECT + ref);
@@ -546,7 +547,7 @@ public class Hessian2Output
       _classRefs.put(type, Integer.valueOf(ref));
       
       if (SIZE < _offset + 32)
-	flush();
+	flushBuffer();
 
       _buffer[_offset++] = (byte) 'C';
 
@@ -621,7 +622,7 @@ public class Hessian2Output
     throws IOException
   {
     if (SIZE < _offset + 16)
-      flush();
+      flushBuffer();
 
     if (value)
       _buffer[_offset++] = (byte) 'T';
@@ -646,7 +647,7 @@ public class Hessian2Output
     byte []buffer = _buffer;
 
     if (SIZE <= offset + 16) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
     
@@ -689,7 +690,7 @@ public class Hessian2Output
     byte []buffer = _buffer;
 
     if (SIZE <= offset + 16) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
 
@@ -748,7 +749,7 @@ public class Hessian2Output
     byte []buffer = _buffer;
 
     if (SIZE <= offset + 16) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
     
@@ -831,7 +832,7 @@ public class Hessian2Output
     throws IOException
   {
     if (SIZE < _offset + 32)
-      flush();
+      flushBuffer();
 
     int offset = _offset;
     byte []buffer = _buffer;
@@ -883,7 +884,7 @@ public class Hessian2Output
     byte []buffer = _buffer;
 
     if (SIZE <= offset + 16) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
 
@@ -915,7 +916,7 @@ public class Hessian2Output
     byte []buffer = _buffer;
 
     if (SIZE <= offset + 16) {
-      flush();
+      flushBuffer();
       offset = _offset;
     }
     
@@ -934,7 +935,7 @@ public class Hessian2Output
 	offset = _offset;
 
 	if (SIZE <= offset + 16) {
-	  flush();
+	  flushBuffer();
 	  offset = _offset;
 	}
 
@@ -959,7 +960,7 @@ public class Hessian2Output
       offset = _offset;
 
       if (SIZE <= offset + 16) {
-	flush();
+	flushBuffer();
 	offset = _offset;
       }
 
@@ -1003,7 +1004,7 @@ public class Hessian2Output
   {
     if (buffer == null) {
       if (SIZE < _offset + 16)
-	flush();
+	flushBuffer();
       
       _buffer[_offset++] = (byte) ('N');
     }
@@ -1012,7 +1013,7 @@ public class Hessian2Output
         int sublen = 0x8000;
 
 	if (SIZE < _offset + 16)
-	  flush();
+	  flushBuffer();
 
 	// chunk can't end in high surrogate
 	char tail = buffer[offset + sublen - 1];
@@ -1031,7 +1032,7 @@ public class Hessian2Output
       }
 
       if (SIZE < _offset + 16)
-	flush();
+	flushBuffer();
 	
       if (length <= STRING_DIRECT_MAX) {
 	_buffer[_offset++] = (byte) (BC_STRING_DIRECT + length);
@@ -1071,7 +1072,7 @@ public class Hessian2Output
   {
     if (buffer == null) {
       if (SIZE < _offset + 16)
-	flush();
+	flushBuffer();
 
       _buffer[_offset++] = 'N';
     }
@@ -1105,7 +1106,7 @@ public class Hessian2Output
       _buffer[_offset++] = (byte) 'N';
     }
     else {
-      flush();
+      flushBuffer();
 
       while (SIZE - _offset - 3 < length) {
         int sublen = SIZE - _offset - 3;
@@ -1181,7 +1182,7 @@ public class Hessian2Output
       if (0x8000 < sublen)
 	sublen = 0x8000;
 
-      flush(); // bypass buffer
+      flushBuffer(); // bypass buffer
       
       _os.write(BC_BINARY_CHUNK);
       _os.write(sublen >> 8);
@@ -1217,6 +1218,36 @@ public class Hessian2Output
   }
 
   /**
+   * Writes a full output stream.
+   */
+  @Override
+  public void writeByteStream(InputStream is)
+    throws IOException
+  {
+    while (true) {
+      int len = SIZE - _offset - 3;
+
+      if (len < 16) {
+	flushBuffer();
+	len = SIZE - _offset - 3;
+      }
+
+      len = is.read(_buffer, _offset + 3, len);
+
+      if (len <= 0) {
+	_buffer[_offset++] = BC_BINARY_DIRECT;
+	return;
+      }
+
+      _buffer[_offset + 0] = (byte) BC_BINARY_CHUNK;
+      _buffer[_offset + 1] = (byte) (len >> 8);
+      _buffer[_offset + 2] = (byte) (len);
+
+      _offset += len + 3;
+    }
+  }
+
+  /**
    * Writes a reference.
    *
    * <code><pre>
@@ -1230,7 +1261,7 @@ public class Hessian2Output
     throws IOException
   {
     if (SIZE < _offset + 16)
-      flush();
+      flushBuffer();
     
     _buffer[_offset++] = (byte) BC_REF;
     
@@ -1333,7 +1364,7 @@ public class Hessian2Output
     if (_refs != null)
       _refs.clear();
     
-    flush();
+    flushBuffer();
 
     _isStreaming = true;
     _offset = 3;
@@ -1350,7 +1381,7 @@ public class Hessian2Output
 
     _isStreaming = false;
 
-    flush();
+    flushBuffer();
   }
 
   /**
@@ -1362,7 +1393,7 @@ public class Hessian2Output
     throws IOException
   {
     if (SIZE < _offset + 16)
-      flush();
+      flushBuffer();
     
     if (v == null) {
       _buffer[_offset++] = (byte) (0);
@@ -1402,7 +1433,7 @@ public class Hessian2Output
     for (int i = 0; i < length; i++) {
       if (SIZE <= offset + 16) {
 	_offset = offset;
-	flush();
+	flushBuffer();
 	offset = _offset;
       }
       
@@ -1438,7 +1469,7 @@ public class Hessian2Output
     for (int i = 0; i < length; i++) {
       if (SIZE <= offset + 16) {
 	_offset = offset;
-	flush();
+	flushBuffer();
 	offset = _offset;
       }
       
@@ -1523,7 +1554,7 @@ public class Hessian2Output
       throws IOException
     {
       if (SIZE < _offset + 16) {
-        Hessian2Output.this.flush();
+        Hessian2Output.this.flushBuffer();
       }
 
       _startOffset = _offset;
@@ -1541,7 +1572,7 @@ public class Hessian2Output
         _buffer[_startOffset + 1] = (byte) (length >> 8);
         _buffer[_startOffset + 2] = (byte) (length);
 
-        Hessian2Output.this.flush();
+        Hessian2Output.this.flushBuffer();
 
         _startOffset = _offset;
         _offset += 3;
@@ -1575,7 +1606,7 @@ public class Hessian2Output
           _buffer[_startOffset + 1] = (byte) (chunkLength >> 8);
           _buffer[_startOffset + 2] = (byte) (chunkLength);
 
-          Hessian2Output.this.flush();
+          Hessian2Output.this.flushBuffer();
 
           _startOffset = _offset;
           _offset += 3;
@@ -1599,7 +1630,7 @@ public class Hessian2Output
       _buffer[startOffset + 1] = (byte) (length >> 8);
       _buffer[startOffset + 2] = (byte) (length);
 
-      Hessian2Output.this.flush();
+      Hessian2Output.this.flushBuffer();
     }
   }
 }

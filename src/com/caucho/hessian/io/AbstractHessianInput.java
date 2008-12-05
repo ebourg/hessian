@@ -50,6 +50,7 @@ package com.caucho.hessian.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 
 /**
@@ -321,6 +322,34 @@ abstract public class AbstractHessianInput {
    */
   abstract public InputStream readInputStream()
     throws IOException;
+
+  /**
+   * Reads data to an output stream.
+   *
+   * <pre>
+   * b b16 b8 non-final binary chunk
+   * B b16 b8 final binary chunk
+   * </pre>
+   */
+  public void readToOutputStream(OutputStream os)
+    throws IOException
+  {
+    byte []buffer = new byte[256];
+
+    InputStream is = readInputStream();
+
+    try {
+      int len;
+
+      while ((len = is.read(buffer, 0, buffer.length)) > 0) {
+	os.write(buffer, 0, len);
+      }
+    } finally {
+      is.close();
+    }
+  }
+    
+	   
 
   /**
    * Reads a byte array.

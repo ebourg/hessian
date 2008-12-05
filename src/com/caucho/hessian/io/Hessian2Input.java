@@ -1339,9 +1339,9 @@ public class Hessian2Input
     case 'N':
       return null;
 
-    case 'B':
+    case BC_BINARY:
     case BC_BINARY_CHUNK:
-      _isLastChunk = tag == 'B';
+      _isLastChunk = tag == BC_BINARY;
       _chunkLength = (read() << 8) + read();
 
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -2538,9 +2538,9 @@ public class Hessian2Input
     case 'N':
       return null;
 
-    case 'B':
-    case 'b':
-      _isLastChunk = tag == 'B';
+    case BC_BINARY:
+    case BC_BINARY_CHUNK:
+      _isLastChunk = tag == BC_BINARY;
       _chunkLength = (read() << 8) + read();
       break;
 
@@ -2575,13 +2575,13 @@ public class Hessian2Input
         int code = read();
 
         switch (code) {
-        case 'b':
+        case BC_BINARY_CHUNK:
           _isLastChunk = false;
 
           _chunkLength = (read() << 8) + read();
           break;
         
-        case 'B':
+        case BC_BINARY:
           _isLastChunk = true;
 
           _chunkLength = (read() << 8) + read();

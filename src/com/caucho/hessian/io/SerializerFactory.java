@@ -180,6 +180,9 @@ public class SerializerFactory extends AbstractSerializerFactory
       serializer = factory.getSerializer(cl);
     }
 
+    if (serializer == null)
+      serializer = getCustomSerializer(cl);
+
     if (serializer != null) {
     }
 
@@ -244,6 +247,33 @@ public class SerializerFactory extends AbstractSerializerFactory
   }
 
   /**
+   * Returns a custom serializer the class
+   *
+   * @param cl the class of the object that needs to be serialized.
+   *
+   * @return a serializer object for the serialization.
+   */
+  protected Serializer getCustomSerializer(Class cl)
+  {
+    try {
+      Class serClass = Class.forName(cl.getName() + "HessianSerializer",
+				       false, cl.getClassLoader());
+      
+      Serializer ser = (Serializer) serClass.newInstance();
+
+      return ser;
+    } catch (ClassNotFoundException e) {
+      log.log(Level.FINEST, e.toString(), e);
+
+      return null;
+    } catch (Exception e) {
+      log.log(Level.FINE, e.toString(), e);
+
+      return null;
+    }
+  }
+
+  /**
    * Returns the default serializer for a class that isn't matched
    * directly.  Application can override this method to produce
    * bean-style serialization instead of field serialization.
@@ -300,6 +330,9 @@ public class SerializerFactory extends AbstractSerializerFactory
       deserializer = factory.getDeserializer(cl);
     }
 
+    if (deserializer == null)
+      deserializer = getCustomDeserializer(cl);
+
     if (deserializer != null) {
     }
 
@@ -335,6 +368,33 @@ public class SerializerFactory extends AbstractSerializerFactory
     }
 
     return deserializer;
+  }
+
+  /**
+   * Returns a custom serializer the class
+   *
+   * @param cl the class of the object that needs to be serialized.
+   *
+   * @return a serializer object for the serialization.
+   */
+  protected Deserializer getCustomDeserializer(Class cl)
+  {
+    try {
+      Class serClass = Class.forName(cl.getName() + "HessianDeserializer",
+				       false, cl.getClassLoader());
+      
+      Deserializer ser = (Deserializer) serClass.newInstance();
+
+      return ser;
+    } catch (ClassNotFoundException e) {
+      log.log(Level.FINEST, e.toString(), e);
+
+      return null;
+    } catch (Exception e) {
+      log.log(Level.FINE, e.toString(), e);
+
+      return null;
+    }
   }
 
   /**
@@ -421,7 +481,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     }
 
     if (log.isLoggable(Level.FINE)) {
-      log.fine("hessian: expected '" + cl.getName() + "' at '" + type + "' ("
+      log.fine("hessian: expected deserializer '" + cl.getName() + "' at '" + type + "' ("
 	       + reader.getType().getName() + ")");
     }
     

@@ -49,6 +49,7 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -67,6 +68,8 @@ import java.io.OutputStream;
 abstract public class AbstractHessianOutput {
   // serializer factory
   protected SerializerFactory _serializerFactory;
+
+  private byte []_byteBuffer;
 
   /**
    * Sets the serializer factory.
@@ -362,6 +365,38 @@ abstract public class AbstractHessianOutput {
 					  int offset,
 					  int length)
     throws IOException;
+
+  /**
+   * Writes a full output stream.
+   */
+  public void writeByteStream(InputStream is)
+    throws IOException
+  {
+    writeByteBufferStart();
+
+    if (_byteBuffer == null)
+      _byteBuffer = new byte[1024];
+
+    byte []buffer = _byteBuffer;
+    
+    int len;
+    while ((len = is.read(buffer, 0, buffer.length)) > 0) {
+      if (len < buffer.length) {
+	int len2 = is.read(buffer, len, buffer.length - len);
+
+	if (len2 < 0) {
+	  writeByteBufferEnd(buffer, 0, len);
+	  return;
+	}
+
+	len += len2;
+      }
+
+      writeByteBufferPart(buffer, 0, len);
+    }
+    
+    writeByteBufferEnd(buffer, 0, 0);
+  }
 
   /**
    * Writes a reference.

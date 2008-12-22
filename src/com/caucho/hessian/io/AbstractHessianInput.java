@@ -331,12 +331,15 @@ abstract public class AbstractHessianInput {
    * B b16 b8 final binary chunk
    * </pre>
    */
-  public void readToOutputStream(OutputStream os)
+  public boolean readToOutputStream(OutputStream os)
     throws IOException
   {
-    byte []buffer = new byte[256];
-
     InputStream is = readInputStream();
+
+    if (is == null)
+      return false;
+    
+    byte []buffer = new byte[256];
 
     try {
       int len;
@@ -344,6 +347,8 @@ abstract public class AbstractHessianInput {
       while ((len = is.read(buffer, 0, buffer.length)) > 0) {
 	os.write(buffer, 0, len);
       }
+
+      return true;
     } finally {
       is.close();
     }

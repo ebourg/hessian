@@ -534,6 +534,13 @@ public class HessianDebugState implements Hessian2Constants
   class InitialState extends State {
     State next(int ch)
     {
+      return nextObject(ch);
+    }
+  }
+  
+  class Top1State extends State {
+    State next(int ch)
+    {
       println();
       
       if (ch == 'r') {

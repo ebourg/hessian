@@ -97,9 +97,13 @@ abstract public class AbstractStreamSerializer extends AbstractSerializer
 
       InputStream is = getInputStream(obj);
       try {
-	out.writeByteStream(is);
+	if (is != null)
+	  out.writeByteStream(is);
+	else
+	  out.writeNull();
       } finally {
-	is.close();
+	if (is != null)
+	  is.close();
       }
     }
   }

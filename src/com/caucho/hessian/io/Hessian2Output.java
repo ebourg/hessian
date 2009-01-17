@@ -1371,17 +1371,24 @@ public class Hessian2Output
   public void endPacket()
     throws IOException
   {
-    int len = _offset - 2;
+    int offset = _offset;
+    
+    int len = offset - 2;
     
     _buffer[0] = (byte) (0x80 + ((len >> 7) & 0x7f));
     _buffer[1] = (byte) (len & 0x7f);
 
     // end chunk
-    _buffer[_offset++] = (byte) 0x00;
+    _buffer[offset++] = (byte) 0x00;
 
     _isPacket = false;
 
-    flushBuffer();
+    if (len < 0x80)
+      _os.write(_buffer, 1, offset - 1);
+    else
+      _os.write(_buffer, 0, offset);
+
+    offset = 0;
   }
 
   /**

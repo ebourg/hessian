@@ -97,7 +97,7 @@ public class Hessian2Output
   private final byte []_buffer = new byte[SIZE];
   private int _offset;
 
-  private boolean _isStreaming;
+  private boolean _isPacket;
   
   /**
    * Creates a new Hessian output stream, initialized with an
@@ -1342,23 +1342,21 @@ public class Hessian2Output
   public void writeStreamingObject(Object obj)
     throws IOException
   {
-    startStreamingPacket();
+    startPacket();
 
     writeObject(obj);
 
-    endStreamingPacket();
+    endPacket();
   }
 
   /**
    * Starts a streaming packet
    *
-   * <p>A streaming message starts with 'P'</p>
-   *
-   * <pre>
-   * P x02 x00
-   * </pre>
+   * <p>A streaming contains a set of chunks, ending with a zero chunk.
+   * Each chunk is a length followed by data where the length is
+   * encoded by (b1xxxxxxxx)* b0xxxxxxxx</p>
    */
-  public void startStreamingPacket()
+  public void startPacket()
     throws IOException
   {
     if (_refs != null)
@@ -1366,20 +1364,22 @@ public class Hessian2Output
     
     flushBuffer();
 
-    _isStreaming = true;
-    _offset = 3;
+    _isPacket = true;
+    _offset = 2;
   }
 
-  public void endStreamingPacket()
+  public void endPacket()
     throws IOException
   {
-    int len = _offset - 3;
+    int len = _offset - 2;
     
-    _buffer[0] = (byte) 'P';
-    _buffer[1] = (byte) (len >> 8);
-    _buffer[2] = (byte) len;
+    _buffer[0] = (byte) (0x80 + ((len >> 7) & 0x7f));
+    _buffer[1] = (byte) (len & 0x7f);
 
-    _isStreaming = false;
+    // end chunk
+    _buffer[_offset++] = (byte) 0x00;
+
+    _isPacket = false;
 
     flushBuffer();
   }
@@ -1516,17 +1516,16 @@ public class Hessian2Output
   {
     int offset = _offset;
 
-    if (! _isStreaming && offset > 0) {
+    if (! _isPacket && offset > 0) {
       _offset = 0;
       
       _os.write(_buffer, 0, offset);
     }
-    else if (_isStreaming && offset > 3) {
-      int len = offset - 3;
-      _buffer[0] = 'p';
-      _buffer[1] = (byte) (len >> 8);
-      _buffer[2] = (byte) len;
-      _offset = 3;
+    else if (_isPacket && offset > 2) {
+      int len = offset - 2;
+      _buffer[0] = (byte) (0x80 + ((len >> 7) & 0x7f));
+      _buffer[1] = (byte) (len & 0x7f);
+      _offset = 2;
 
       _os.write(_buffer, 0, offset);
     }

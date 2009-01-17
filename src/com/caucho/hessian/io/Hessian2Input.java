@@ -78,7 +78,6 @@ public class Hessian2Input
   private static final Logger log
     = Logger.getLogger(Hessian2Input.class.getName());
   
-  private static final double D_256 = 1.0 / 256.0;
   private static final int END_OF_DATA = -2;
 
   private static Field _detailMessageField;
@@ -444,7 +443,7 @@ public class Hessian2Input
   }
 
   /**
-   * Starts reading the message
+   * Starts reading a packet
    *
    * <pre>
    * p major minor
@@ -1302,8 +1301,9 @@ public class Hessian2Input
 
       _sbuf.setLength(0);
 
-      while ((ch = parseChar()) >= 0)
+      while ((ch = parseChar()) >= 0) {
         _sbuf.append((char) ch);
+      }
 
       return _sbuf.toString();
 

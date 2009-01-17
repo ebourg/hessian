@@ -56,6 +56,7 @@ import java.io.InputStream;
  */
 public class Hessian2StreamingInput
 {
+  private StreamingInputStream _is;
   private Hessian2Input _in;
   
   /**
@@ -66,7 +67,27 @@ public class Hessian2StreamingInput
    */
   public Hessian2StreamingInput(InputStream is)
   {
-    _in = new Hessian2Input(new StreamingInputStream(is));
+    _is = new StreamingInputStream(is);
+    _in = new Hessian2Input(_is);
+  }
+
+  public Hessian2Input startPacket()
+    throws IOException
+  {
+    _is.startPacket();
+
+    return _in;
+  }
+
+  public void endPacket()
+    throws IOException
+  {
+    _is.endPacket();
+  }
+
+  public Hessian2Input getHessianInput()
+  {
+    return _in;
   }
 
   /**
@@ -75,7 +96,13 @@ public class Hessian2StreamingInput
   public Object readObject()
     throws IOException
   {
-    return _in.readStreamingObject();
+    _is.startPacket();
+    
+    Object obj = _in.readStreamingObject();
+
+    _is.endPacket();
+
+    return obj;
   }
 
   /**
@@ -89,11 +116,30 @@ public class Hessian2StreamingInput
 
   static class StreamingInputStream extends InputStream {
     private InputStream _is;
+    
     private int _length;
+    private boolean _isPacketEnd;
 
     StreamingInputStream(InputStream is)
     {
       _is = is;
+    }
+
+    public void startPacket()
+    {
+      _isPacketEnd = false;
+    }
+
+    private void endPacket()
+      throws IOException
+    {
+      while (! _isPacketEnd) {
+	if (_length <= 0)
+	  _length = readChunkLength(_is);
+
+	if (_length > 0)
+	  _is.skip(_length);
+      }
     }
 
     public int read()
@@ -101,22 +147,11 @@ public class Hessian2StreamingInput
     {
       InputStream is = _is;
       
-      while (_length == 0) {
-	int code = is.read();
+      if (_length == 0) {
+	_length = readChunkLength(is);
 
-	if (code < 0)
+	if (_length <= 0)
 	  return -1;
-	else if (code != 'p' && code != 'P')
-	  throw new HessianProtocolException("expected streaming packet at 0x"
-					     + Integer.toHexString(code & 0xff));
-
-	int d1 = is.read();
-	int d2 = is.read();
-
-	if (d2 < 0)
-	  return -1;
-	
-	_length = (d1 << 8) + d2;
       }
 
       _length--;
@@ -128,24 +163,11 @@ public class Hessian2StreamingInput
     {
       InputStream is = _is;
       
-      while (_length == 0) {
-	int code = is.read();
+      if (_length <= 0) {
+	_length = readChunkLength(is);
 
-	if (code < 0)
+	if (_length <= 0)
 	  return -1;
-	else if (code != 'p' && code != 'P') {
-	  throw new HessianProtocolException("expected streaming packet at 0x"
-					     + Integer.toHexString(code & 0xff)
-					     + " (" + (char) code + ")");
-	}
-
-	int d1 = is.read();
-	int d2 = is.read();
-
-	if (d2 < 0)
-	  return -1;
-	
-	_length = (d1 << 8) + d2;
       }
 
       int sublen = _length;
@@ -160,6 +182,32 @@ public class Hessian2StreamingInput
       _length -= sublen;
 
       return sublen;
+    }
+
+    private int readChunkLength(InputStream is)
+      throws IOException
+    {
+      if (_isPacketEnd)
+	return -1;
+      
+      int length = 0;
+	
+      int code;
+
+      while ((code = is.read()) >= 0) {
+	length = 0x80 * length + (code & 0x7f);
+
+	if ((code & 0x80) == 0) {
+	  if (length == 0)
+	    _isPacketEnd = true;
+	  
+	  return length;
+	}
+      }
+
+      _isPacketEnd = true;
+
+      return -1;
     }
   }
 }

@@ -125,9 +125,15 @@ public class Hessian2StreamingInput
       _is = is;
     }
 
-    public void startPacket()
+    public boolean startPacket()
+      throws IOException
     {
-      _isPacketEnd = false;
+      // skip zero-length packets
+      do {
+	_isPacketEnd = false;
+      } while ((_length = readChunkLength(_is)) == 0);
+
+      return _length > 0;
     }
 
     private void endPacket()

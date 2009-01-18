@@ -119,7 +119,6 @@ public class Hessian2Output
   {
     return _isCloseStreamOnClose;
   }
-  
 
   /**
    * Writes a complete method call.
@@ -284,6 +283,7 @@ public class Hessian2Output
     throws IOException
   {
     flushIfFull();
+    
     _buffer[_offset++] = (byte) 'H';
     _buffer[_offset++] = (byte) 2;
     _buffer[_offset++] = (byte) 0;
@@ -1382,13 +1382,12 @@ public class Hessian2Output
     _buffer[offset++] = (byte) 0x00;
 
     _isPacket = false;
+    _offset = 0;
 
     if (len < 0x80)
       _os.write(_buffer, 1, offset - 1);
     else
       _os.write(_buffer, 0, offset);
-
-    offset = 0;
   }
 
   /**

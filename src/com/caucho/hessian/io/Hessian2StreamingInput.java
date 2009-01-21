@@ -74,9 +74,10 @@ public class Hessian2StreamingInput
   public Hessian2Input startPacket()
     throws IOException
   {
-    _is.startPacket();
-
-    return _in;
+    if (_is.startPacket())
+      return _in;
+    else
+      return null;
   }
 
   public void endPacket()
@@ -136,7 +137,7 @@ public class Hessian2StreamingInput
       return _length > 0;
     }
 
-    private void endPacket()
+    public void endPacket()
       throws IOException
     {
       while (! _isPacketEnd) {

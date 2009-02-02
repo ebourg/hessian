@@ -51,6 +51,8 @@ package com.caucho.hessian.io;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
+import com.caucho.hessian.HessianException;
+
 /**
  * Deserializing a string valued object
  */
@@ -59,10 +61,13 @@ public class SqlDateDeserializer extends AbstractDeserializer {
   private Constructor _constructor;
   
   public SqlDateDeserializer(Class cl)
-    throws NoSuchMethodException
   {
-    _cl = cl;
-    _constructor = cl.getConstructor(new Class[] { long.class });
+    try {
+      _cl = cl;
+      _constructor = cl.getConstructor(new Class[] { long.class });
+    } catch (NoSuchMethodException e) {
+      throw new HessianException(e);
+    }
   }
   
   public Class getType()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -49,103 +49,69 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import java.util.logging.*;
 
 import com.caucho.hessian.HessianException;
 
 /**
- * Serializing an object. 
+ * Proxy for a java annotation for known object types.
  */
-abstract public class AbstractSerializer implements Serializer {
-  public static final NullSerializer NULL = new NullSerializer();
-  
-  protected static final Logger log
-    = Logger.getLogger(AbstractSerializer.class.getName());
-  
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
+public class AnnotationInvocationHandler implements InvocationHandler {
+  private Class _annType;
+  private HashMap<String,Object> _valueMap;
+
+  public AnnotationInvocationHandler(Class annType,
+				     HashMap<String,Object> valueMap)
   {
-    if (out.addRef(obj)) {
-      return;
-    }
+    _annType = annType;
+    _valueMap = valueMap;
+  }
+
+  public Object invoke(Object proxy, Method method, Object []args)
+    throws Throwable
+  {
+    String name = method.getName();
+
+    if (args != null && args.length != 0)
+      return null;
+
+    if (name.equals("annotationType"))
+      return _annType;
+    else if (name.equals("toString"))
+      return toString();
+
+    return _valueMap.get(method.getName());
+  }
+
+  public String toString()
+  {
+    StringBuilder sb = new StringBuilder();
     
-    try {
-      Object replace = writeReplace(obj);
-      
-      if (replace != null) {
-	out.removeRef(obj);
+    sb.append("@");
+    sb.append(_annType.getName());
+    sb.append("[");
 
-	out.writeObject(replace);
+    boolean isFirst = true;
+    for (Map.Entry entry : _valueMap.entrySet()) {
+      if (! isFirst)
+	sb.append(", ");
+      isFirst = false;
 
-	out.replaceRef(replace, obj);
+      sb.append(entry.getKey());
+      sb.append("=");
 
-	return;
-      }
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (Exception e) {
-      // log.log(Level.FINE, e.toString(), e);
-      throw new HessianException(e);
+      if (entry.getValue() instanceof String)
+	sb.append('"').append(entry.getValue()).append('"');
+      else
+	sb.append(entry.getValue());
     }
+    sb.append("]");
 
-    Class cl = getClass(obj);
-
-    int ref = out.writeObjectBegin(cl.getName());
-
-    if (ref < -1) {
-      writeObject10(obj, out);
-    }
-    else {
-      if (ref == -1) {
-	writeDefinition20(cl, out);
-	
-	out.writeObjectBegin(cl.getName());
-      }
-
-      writeInstance(obj, out);
-    }
-  }
-
-  protected Object writeReplace(Object obj)
-  {
-    return null;
-  }
-
-  protected Class getClass(Object obj)
-  {
-    return obj.getClass();
-  }
-
-  protected void writeObject10(Object obj,
-			    AbstractHessianOutput out)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  protected void writeDefinition20(Class cl,
-				AbstractHessianOutput out)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  protected void writeInstance(Object obj,
-			    AbstractHessianOutput out)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  /**
-   * The NullSerializer exists as a marker for the factory classes so
-   * they save a null result.
-   */
-  static final class NullSerializer extends AbstractSerializer {
-    public void writeObject(Object obj, AbstractHessianOutput out)
-      throws IOException
-    {
-      throw new IllegalStateException(getClass().getName());
-    }
+    return sb.toString();
   }
 }

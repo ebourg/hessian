@@ -55,23 +55,16 @@ import java.util.Calendar;
  * Serializing a calendar.
  */
 public class CalendarSerializer extends AbstractSerializer {
-  private static CalendarSerializer SERIALIZER = new CalendarSerializer();
-
-  public static CalendarSerializer create()
-  {
-    return SERIALIZER;
-  }
+  public static final Serializer SER = new CalendarSerializer();
   
-  public void writeObject(Object obj, AbstractHessianOutput out)
-    throws IOException
+  /**
+   * java.util.Calendar serializes to com.caucho.hessian.io.CalendarHandle
+   */
+  @Override
+  public Object writeReplace(Object obj)
   {
-    if (obj == null)
-      out.writeNull();
-    else {
-      Calendar cal = (Calendar) obj;
+    Calendar cal = (Calendar) obj;
 
-      out.writeObject(new CalendarHandle(cal.getClass(),
-					 cal.getTimeInMillis()));
-    }
+    return new CalendarHandle(cal.getClass(), cal.getTimeInMillis());
   }
 }

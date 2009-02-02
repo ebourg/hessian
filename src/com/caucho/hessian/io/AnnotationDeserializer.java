@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -49,103 +49,88 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+
 import java.util.logging.*;
 
 import com.caucho.hessian.HessianException;
 
 /**
- * Serializing an object. 
+ * Deserializing a java annotation for known object types.
  */
-abstract public class AbstractSerializer implements Serializer {
-  public static final NullSerializer NULL = new NullSerializer();
+public class AnnotationDeserializer extends AbstractMapDeserializer {
+  private static final Logger log
+    = Logger.getLogger(AnnotationDeserializer.class.getName());
   
-  protected static final Logger log
-    = Logger.getLogger(AbstractSerializer.class.getName());
-  
-  public void writeObject(Object obj, AbstractHessianOutput out)
+  private Class _annType;
+
+  public AnnotationDeserializer(Class annType)
+  {
+    _annType = annType;
+  }
+
+  public Class getType()
+  {
+    return _annType;
+  }
+    
+  public Object readMap(AbstractHessianInput in)
     throws IOException
   {
-    if (out.addRef(obj)) {
-      return;
-    }
-    
     try {
-      Object replace = writeReplace(obj);
-      
-      if (replace != null) {
-	out.removeRef(obj);
+      int ref = in.addRef(null);
 
-	out.writeObject(replace);
+      HashMap<String,Object> valueMap = new HashMap<String,Object>(8);
 
-	out.replaceRef(replace, obj);
+      while (! in.isEnd()) {
+        String key = in.readString();
+	Object value = in.readObject();
 
-	return;
+	valueMap.put(key, value);
       }
-    } catch (RuntimeException e) {
+      
+      in.readMapEnd();
+
+      return Proxy.newProxyInstance(_annType.getClassLoader(),
+			       new Class[] { _annType },
+			       new AnnotationInvocationHandler(_annType, valueMap));
+			       
+    } catch (IOException e) {
       throw e;
     } catch (Exception e) {
-      // log.log(Level.FINE, e.toString(), e);
-      throw new HessianException(e);
+      throw new IOExceptionWrapper(e);
     }
+  }
+    
+  public Object readObject(AbstractHessianInput in,
+			   String []fieldNames)
+    throws IOException
+  {
+    try {
+      int ref = in.addRef(null);
 
-    Class cl = getClass(obj);
+      HashMap<String,Object> valueMap = new HashMap<String,Object>(8);
+      
+      for (int i = 0; i < fieldNames.length; i++) {
+        String name = fieldNames[i];
 
-    int ref = out.writeObjectBegin(cl.getName());
-
-    if (ref < -1) {
-      writeObject10(obj, out);
-    }
-    else {
-      if (ref == -1) {
-	writeDefinition20(cl, out);
-	
-	out.writeObjectBegin(cl.getName());
+	valueMap.put(name, in.readObject());
       }
 
-      writeInstance(obj, out);
-    }
-  }
-
-  protected Object writeReplace(Object obj)
-  {
-    return null;
-  }
-
-  protected Class getClass(Object obj)
-  {
-    return obj.getClass();
-  }
-
-  protected void writeObject10(Object obj,
-			    AbstractHessianOutput out)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  protected void writeDefinition20(Class cl,
-				AbstractHessianOutput out)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  protected void writeInstance(Object obj,
-			    AbstractHessianOutput out)
-    throws IOException
-  {
-    throw new UnsupportedOperationException(getClass().getName());
-  }
-
-  /**
-   * The NullSerializer exists as a marker for the factory classes so
-   * they save a null result.
-   */
-  static final class NullSerializer extends AbstractSerializer {
-    public void writeObject(Object obj, AbstractHessianOutput out)
-      throws IOException
-    {
-      throw new IllegalStateException(getClass().getName());
+      return Proxy.newProxyInstance(_annType.getClassLoader(),
+			       new Class[] { _annType },
+			       new AnnotationInvocationHandler(_annType, valueMap));
+			       
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HessianException(_annType.getName() + ":" + e, e);
     }
   }
 }

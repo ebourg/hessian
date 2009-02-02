@@ -228,7 +228,7 @@ public class JavaSerializer extends AbstractSerializer
     }
   }
   
-  private void writeObject10(Object obj, AbstractHessianOutput out)
+  protected void writeObject10(Object obj, AbstractHessianOutput out)
     throws IOException
   {
     for (int i = 0; i < _fields.length; i++) {

@@ -78,6 +78,8 @@ public class Hessian2Output
   extends AbstractHessianOutput
   implements Hessian2Constants
 {
+  public final static int SIZE = 4096;
+  
   // the output stream/
   protected OutputStream _os;
   
@@ -92,8 +94,6 @@ public class Hessian2Output
   // map of types
   private HashMap _typeRefs;
 
-  public final static int SIZE = 4096;
-  
   private final byte []_buffer = new byte[SIZE];
   private int _offset;
 

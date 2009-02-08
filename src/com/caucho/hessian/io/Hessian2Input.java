@@ -1998,7 +1998,8 @@ public class Hessian2Input
 	int ref = tag - 0x60;
 
 	if (_classDefs == null)
-	  throw error("No classes defined at reference '{0}'" + tag);
+	  throw error("No classes defined at reference '"
+		      + Integer.toHexString(tag) + "'");
 	
 	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
 
@@ -2634,6 +2635,14 @@ public class Hessian2Input
       return -1;
 
     return _buffer[_offset++] & 0xff;
+  }
+
+  protected void unread()
+  {
+    if (_offset <= 0)
+      throw new IllegalStateException();
+    
+    _offset--;
   }
 
   private final boolean readBuffer()

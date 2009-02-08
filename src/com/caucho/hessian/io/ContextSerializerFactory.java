@@ -338,14 +338,14 @@ public class ContextSerializerFactory
 	    try {
 	      apiClass = Class.forName(apiName, false, _loader);
 	    } catch (ClassNotFoundException e) {
-	      log.fine(url + ": " + apiName + " is not available in this context");
+	      log.fine(url + ": " + apiName + " is not available in this context: " + _loader);
 	      continue;
 	    }
 
 	    try {
 	      serializerClass = Class.forName(serializerName, false, _loader);
 	    } catch (ClassNotFoundException e) {
-	      log.fine(url + ": " + serializerName + " is not available in this context");
+	      log.fine(url + ": " + serializerName + " is not available in this context: " + _loader);
 	      continue;
 	    }
 

@@ -61,6 +61,11 @@ abstract public class AbstractDeserializer implements Deserializer {
     return Object.class;
   }
 
+  public boolean isReadResolve()
+  {
+    return false;
+  }
+
   public Object readObject(AbstractHessianInput in)
     throws IOException
   {

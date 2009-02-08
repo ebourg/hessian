@@ -323,7 +323,9 @@ public class HessianProxy implements InvocationHandler {
 
       if (log.isLoggable(Level.FINEST)) {
 	PrintWriter dbg = new PrintWriter(new LogWriter(log));
-	os = new HessianDebugOutputStream(os, dbg);
+	HessianDebugOutputStream dOs = new HessianDebugOutputStream(os, dbg);
+	dOs.startTop2();
+	os = dOs;
       }
       
       AbstractHessianOutput out = _factory.getHessianOutput(os);

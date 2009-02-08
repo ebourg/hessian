@@ -127,6 +127,8 @@ public class Hessian2Output
   public void call(String method, Object []args)
     throws IOException
   {
+    writeVersion();
+    
     int length = args != null ? args.length : 0;
     
     startCall(method, length);
@@ -135,6 +137,8 @@ public class Hessian2Output
       writeObject(args[i]);
     
     completeCall();
+
+    flush();
   }
   
   /**
@@ -1537,7 +1541,7 @@ public class Hessian2Output
     }
   }
 
-  public final void close()
+  public void close()
     throws IOException
   {
     // hessian/3a8c

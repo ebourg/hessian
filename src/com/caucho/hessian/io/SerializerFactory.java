@@ -215,6 +215,12 @@ public class SerializerFactory extends AbstractSerializerFactory
     if (JavaSerializer.getWriteReplace(cl) != null)
       return new JavaSerializer(cl, _loader);
 
+    else if (HessianRemoteObject.class.isAssignableFrom(cl))
+      serializer = new RemoteSerializer();
+
+    else if (BurlapRemoteObject.class.isAssignableFrom(cl))
+      serializer = new RemoteSerializer();
+
     else if (Map.class.isAssignableFrom(cl)) {
       if (_mapSerializer == null)
 	_mapSerializer = new MapSerializer();
@@ -474,6 +480,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     if (cl == null
 	|| cl.equals(reader.getType())
 	|| cl.isAssignableFrom(reader.getType())
+	|| reader.isReadResolve()
 	|| HessianHandle.class.isAssignableFrom(reader.getType())) {
       return reader;
     }

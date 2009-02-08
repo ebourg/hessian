@@ -119,7 +119,7 @@ public class BurlapProxy implements InvocationHandler {
     else if (methodName.equals("getBurlapURL"))
       return _url.toString();
     else if (methodName.equals("toString") && params.length == 0)
-      return "[BurlapProxy " + _url + "]";
+      return getClass().getSimpleName() +  "[" + _url + "]";
 
     InputStream is = null;
     
@@ -127,8 +127,12 @@ public class BurlapProxy implements InvocationHandler {
     HttpURLConnection httpConn = null;
     try {
       conn = _factory.openConnection(_url);
+      
+      httpConn = (HttpURLConnection) conn;
+      
+      httpConn.setRequestMethod("POST");
       conn.setRequestProperty("Content-Type", "text/xml");
-    
+
       OutputStream os;
 
       try {

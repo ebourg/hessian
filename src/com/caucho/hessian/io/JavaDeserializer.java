@@ -127,9 +127,16 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     }
   }
 
+  @Override
   public Class getType()
   {
     return _type;
+  }
+
+  @Override
+  public boolean isReadResolve()
+  {
+    return _readResolve != null;
   }
     
   public Object readMap(AbstractHessianInput in)

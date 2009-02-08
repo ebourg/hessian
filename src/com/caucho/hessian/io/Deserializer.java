@@ -56,6 +56,8 @@ import java.io.IOException;
 public interface Deserializer {
   public Class getType();
 
+  public boolean isReadResolve();
+
   public Object readObject(AbstractHessianInput in)
     throws IOException;
   

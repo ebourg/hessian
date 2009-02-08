@@ -145,12 +145,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     if (method == null)
       method = getMethod(methodName);
 
-    if (method == null) {
-      out.writeFault("NoSuchMethodException",
-		     "The service has no method named: " + in.getMethod(),
-		     null);
-      out.close();
-      return;
+    if (method != null) {
     }
     else if ("_hessian_getAttribute".equals(methodName)) {
       String attrName = in.readString();
@@ -166,6 +161,13 @@ public class HessianSkeleton extends AbstractSkeleton {
 	value = getObjectClassName();
 
       out.writeReply(value);
+      out.close();
+      return;
+    }
+    else if (method == null) {
+      out.writeFault("NoSuchMethodException",
+		     "The service has no method named: " + in.getMethod(),
+		     null);
       out.close();
       return;
     }

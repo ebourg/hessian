@@ -68,6 +68,7 @@ import java.io.Reader;
  */
 abstract public class AbstractHessianInput {
   private HessianRemoteResolver resolver;
+  private byte []_buffer;
   
   /**
    * Initialize the Hessian stream with the underlying input stream.
@@ -338,14 +339,15 @@ abstract public class AbstractHessianInput {
 
     if (is == null)
       return false;
-    
-    byte []buffer = new byte[256];
+
+    if (_buffer == null)
+      _buffer = new byte[256];
 
     try {
       int len;
 
-      while ((len = is.read(buffer, 0, buffer.length)) > 0) {
-	os.write(buffer, 0, len);
+      while ((len = is.read(_buffer, 0, _buffer.length)) > 0) {
+	os.write(_buffer, 0, len);
       }
 
       return true;

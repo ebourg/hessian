@@ -56,7 +56,7 @@ import java.io.IOException;
 public class ThrowableSerializer extends JavaSerializer {
   public ThrowableSerializer(Class cl, ClassLoader loader)
   {
-    super(cl, loader);
+    super(cl);
   }
   
   public void writeObject(Object obj, AbstractHessianOutput out)

@@ -54,6 +54,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,6 +66,9 @@ public class JavaSerializer extends AbstractSerializer
   private static final Logger log
     = Logger.getLogger(JavaSerializer.class.getName());
 
+  private static final WeakHashMap<Class,JavaSerializer> _serializerMap
+    = new WeakHashMap<Class,JavaSerializer>();
+
   private static Object []NULL_ARGS = new Object[0];
   
   private Field []_fields;
@@ -73,10 +77,31 @@ public class JavaSerializer extends AbstractSerializer
   private Object _writeReplaceFactory;
   private Method _writeReplace;
   
-  public JavaSerializer(Class cl, ClassLoader loader)
+  public JavaSerializer(Class cl)
   {
-    introspectWriteReplace(cl, loader);
-    
+    introspect(cl);
+
+    _writeReplace = getWriteReplace(cl);
+  }
+
+  public static JavaSerializer create(Class cl)
+  {
+    ClassLoader loader = cl.getClassLoader();
+
+    synchronized (_serializerMap) {
+      JavaSerializer base = _serializerMap.get(cl);
+
+      if (base == null) {
+	base = new JavaSerializer(cl);
+	_serializerMap.put(cl, base);
+      }
+
+      return base;
+    }
+  }
+
+  protected void introspect(Class cl)
+  {
     if (_writeReplace != null)
       _writeReplace.setAccessible(true);
 
@@ -116,31 +141,6 @@ public class JavaSerializer extends AbstractSerializer
     for (int i = 0; i < _fields.length; i++) {
       _fieldSerializers[i] = getFieldSerializer(_fields[i].getType());
     }
-  }
-
-  private void introspectWriteReplace(Class cl, ClassLoader loader)
-  {
-    try {
-      String className = cl.getName() + "HessianSerializer";
-
-      Class serializerClass = Class.forName(className, false, loader);
-
-      Object serializerObject = serializerClass.newInstance();
-
-      Method writeReplace = getWriteReplace(serializerClass, cl);
-
-      if (writeReplace != null) {
-	_writeReplaceFactory = serializerObject;
-	_writeReplace = writeReplace;
-
-	return;
-      }
-    } catch (ClassNotFoundException e) {
-    } catch (Exception e) {
-      log.log(Level.FINER, e.toString(), e);
-    }
-      
-    _writeReplace = getWriteReplace(cl);
   }
 
   /**

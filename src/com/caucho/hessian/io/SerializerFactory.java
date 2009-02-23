@@ -213,7 +213,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       return serializer;
     
     if (JavaSerializer.getWriteReplace(cl) != null)
-      return new JavaSerializer(cl, _loader);
+      return new WriteReplaceSerializer(cl, _loader);
 
     else if (HessianRemoteObject.class.isAssignableFrom(cl))
       serializer = new RemoteSerializer();
@@ -281,7 +281,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
     }
 
-    return new JavaSerializer(cl, _loader);
+    return JavaSerializer.create(cl);
   }
   
   /**

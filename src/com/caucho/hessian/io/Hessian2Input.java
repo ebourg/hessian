@@ -2010,6 +2010,9 @@ public class Hessian2Input
       {
 	int ref = readInt();
 
+	if (_classDefs == null || _classDefs.size() <= ref)
+	  throw error("Illegal object reference #" + ref);
+
 	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
 
 	return readObjectInstance(null, def);

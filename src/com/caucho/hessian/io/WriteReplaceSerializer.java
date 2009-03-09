@@ -97,6 +97,8 @@ public class WriteReplaceSerializer extends AbstractSerializer
     }
       
     _writeReplace = getWriteReplace(cl);
+    if (_writeReplace != null)
+      _writeReplace.setAccessible(true);
   }
 
   /**

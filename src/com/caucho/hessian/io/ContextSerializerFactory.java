@@ -58,6 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.annotation.Annotation;
+import java.lang.ref.WeakReference;
 
 /**
  * The classloader-specific Factory for returning serialization
@@ -78,7 +79,7 @@ public class ContextSerializerFactory
   private static HashMap _staticClassNameMap;
 
   private ContextSerializerFactory _parent;
-  private ClassLoader _loader;
+  private WeakReference<ClassLoader> _loader;
 
   private final HashSet<String> _serializerFiles = new HashSet<String>();
   private final HashSet<String> _deserializerFiles = new HashSet<String>();
@@ -110,7 +111,7 @@ public class ContextSerializerFactory
     if (loader == null)
       loader = ClassLoader.getSystemClassLoader();
     
-    _loader = loader;
+    _loader = new WeakReference<ClassLoader>(loader);
 
     init();
   }
@@ -142,7 +143,7 @@ public class ContextSerializerFactory
 
   public ClassLoader getClassLoader()
   {
-    return _loader;
+    return _loader.get();
   }
 
   /**
@@ -312,7 +313,7 @@ public class ContextSerializerFactory
     try {
       Enumeration iter;
 
-      iter = _loader.getResources(fileName);
+      iter = getClassLoader().getResources(fileName);
       while (iter.hasMoreElements()) {
 	URL url = (URL) iter.nextElement();
 	
@@ -336,16 +337,16 @@ public class ContextSerializerFactory
 	    Class serializerClass = null;
 
 	    try {
-	      apiClass = Class.forName(apiName, false, _loader);
+	      apiClass = Class.forName(apiName, false, getClassLoader());
 	    } catch (ClassNotFoundException e) {
-	      log.fine(url + ": " + apiName + " is not available in this context: " + _loader);
+	      log.fine(url + ": " + apiName + " is not available in this context: " + getClassLoader());
 	      continue;
 	    }
 
 	    try {
-	      serializerClass = Class.forName(serializerName, false, _loader);
+	      serializerClass = Class.forName(serializerName, false, getClassLoader());
 	    } catch (ClassNotFoundException e) {
-	      log.fine(url + ": " + serializerName + " is not available in this context: " + _loader);
+	      log.fine(url + ": " + serializerName + " is not available in this context: " + getClassLoader());
 	      continue;
 	    }
 

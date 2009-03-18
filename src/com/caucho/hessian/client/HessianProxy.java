@@ -65,13 +65,15 @@ import java.net.URLConnection;
  * Proxy implementation for Hessian clients.  Applications will generally
  * use HessianProxyFactory to create proxy clients.
  */
-public class HessianProxy implements InvocationHandler {
+public class HessianProxy implements InvocationHandler, Serializable {
   private static final Logger log
     = Logger.getLogger(HessianProxy.class.getName());
   
   protected HessianProxyFactory _factory;
   private WeakHashMap<Method,String> _mangleMap
     = new WeakHashMap<Method,String>();
+
+  private Class _type;
   private URL _url;
   
   /**
@@ -341,6 +343,13 @@ public class HessianProxy implements InvocationHandler {
 	((HttpURLConnection) conn).disconnect();
     }
   }
+
+  /*
+  public Object writeReplace()
+  {
+    return new HessianRemote(_type, _url);
+  }
+  */
 
   /**
    * Method that allows subclasses to add request headers such as cookies.

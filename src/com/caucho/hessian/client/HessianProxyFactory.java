@@ -401,6 +401,9 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       // clear old keepalive connections
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
+      conn.setConnectTimeout(10);
+      conn.setReadTimeout(10);
+
       conn.setRequestProperty("Connection", "close");
 
       InputStream is = conn.getInputStream();

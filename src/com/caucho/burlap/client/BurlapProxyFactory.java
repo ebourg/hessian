@@ -118,6 +118,7 @@ public class BurlapProxyFactory implements ServiceProxyFactory, ObjectFactory {
   private String _password;
   private String _basicAuth;
 
+  private long _readTimeout;
   private boolean _isOverloadEnabled = false;
 
   /**
@@ -243,6 +244,9 @@ public class BurlapProxyFactory implements ServiceProxyFactory, ObjectFactory {
     try {
       // clear old keepalive connections
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+      conn.setConnectTimeout(10);
+      conn.setReadTimeout(10);
 
       conn.setRequestProperty("Connection", "close");
 

@@ -1,0 +1,1 @@
+javax.management.ObjectName=com.caucho.hessian.io.ObjectNameDeserializer

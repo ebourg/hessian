@@ -85,6 +85,8 @@ public class Hessian2Input
   private static final int SIZE = 256;
   private static final int GAP = 16;
   
+  // standard, unmodified factory for deserializing objects
+  protected SerializerFactory _defaultSerializerFactory;
   // factory for deserializing objects in the input stream
   protected SerializerFactory _serializerFactory;
 
@@ -145,19 +147,28 @@ public class Hessian2Input
    */
   public SerializerFactory getSerializerFactory()
   {
+    // the default serializer factory cannot be modified by external
+    // callers
+    if (_serializerFactory == _defaultSerializerFactory) {
+      _serializerFactory = new SerializerFactory();
+    }
+    
     return _serializerFactory;
   }
 
   /**
-   * Gets the serializer factory, creating a default if necessary.
+   * Gets the serializer factory.
    */
-  public final SerializerFactory findSerializerFactory()
+  protected final SerializerFactory findSerializerFactory()
   {
     SerializerFactory factory = _serializerFactory;
 
-    if (factory == null)
-      _serializerFactory = factory = new SerializerFactory();
-    
+    if (factory == null) {
+      factory = SerializerFactory.create();
+      _defaultSerializerFactory = factory;
+      _serializerFactory = factory;
+    }
+
     return factory;
   }
 

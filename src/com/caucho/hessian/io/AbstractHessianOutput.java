@@ -67,6 +67,9 @@ import java.io.OutputStream;
  */
 abstract public class AbstractHessianOutput {
   // serializer factory
+  private SerializerFactory _defaultSerializerFactory;
+  
+  // serializer factory
   protected SerializerFactory _serializerFactory;
 
   private byte []_byteBuffer;
@@ -84,18 +87,27 @@ abstract public class AbstractHessianOutput {
    */
   public SerializerFactory getSerializerFactory()
   {
+    // the default serializer factory cannot be modified by external
+    // callers
+    if (_serializerFactory == _defaultSerializerFactory) {
+      _serializerFactory = new SerializerFactory();
+    }
+    
     return _serializerFactory;
   }
 
   /**
    * Gets the serializer factory.
    */
-  public final SerializerFactory findSerializerFactory()
+  protected final SerializerFactory findSerializerFactory()
   {
     SerializerFactory factory = _serializerFactory;
 
-    if (factory == null)
-      _serializerFactory = factory = new SerializerFactory();
+    if (factory == null) {
+      factory = SerializerFactory.create();
+      _defaultSerializerFactory = factory;
+      _serializerFactory = factory;
+    }
 
     return factory;
   }

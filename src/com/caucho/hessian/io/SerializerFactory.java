@@ -72,6 +72,9 @@ public class SerializerFactory extends AbstractSerializerFactory
   
   private static HashMap _staticTypeMap;
 
+  private WeakHashMap<ClassLoader,SerializerFactory> _defaultFactory
+    = new WeakHashMap<ClassLoader,SerializerFactory>();
+
   private ContextSerializerFactory _contextFactory;
   private ClassLoader _loader;
 
@@ -101,6 +104,22 @@ public class SerializerFactory extends AbstractSerializerFactory
     _loader = loader;
 
     _contextFactory = ContextSerializerFactory.create(loader);
+  }
+
+  public static SerializerFactory createDefault()
+  {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+    synchronized (_defaultFactory) {
+      SerializerFactory factory = _defaultFactory.get(loader);
+
+      if (factory == null)
+	factory = new SerializerFactory();
+
+      _defaultFactory.put(loader, factory);
+
+      return factory;
+    }
   }
 
   public ClassLoader getClassLoader()

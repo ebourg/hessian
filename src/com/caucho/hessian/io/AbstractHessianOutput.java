@@ -104,7 +104,7 @@ abstract public class AbstractHessianOutput {
     SerializerFactory factory = _serializerFactory;
 
     if (factory == null) {
-      factory = SerializerFactory.create();
+      factory = SerializerFactory.createDefault();
       _defaultSerializerFactory = factory;
       _serializerFactory = factory;
     }

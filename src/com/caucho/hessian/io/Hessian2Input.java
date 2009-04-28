@@ -164,7 +164,7 @@ public class Hessian2Input
     SerializerFactory factory = _serializerFactory;
 
     if (factory == null) {
-      factory = SerializerFactory.create();
+      factory = SerializerFactory.createDefault();
       _defaultSerializerFactory = factory;
       _serializerFactory = factory;
     }

@@ -72,7 +72,7 @@ public class SerializerFactory extends AbstractSerializerFactory
   
   private static HashMap _staticTypeMap;
 
-  private WeakHashMap<ClassLoader,SerializerFactory> _defaultFactory
+  private static WeakHashMap<ClassLoader,SerializerFactory> _defaultFactory
     = new WeakHashMap<ClassLoader,SerializerFactory>();
 
   private ContextSerializerFactory _contextFactory;

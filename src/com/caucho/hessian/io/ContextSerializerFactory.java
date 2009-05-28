@@ -415,6 +415,10 @@ public class ContextSerializerFactory
     addBasic(String[].class, "[string", BasicSerializer.STRING_ARRAY);
     addBasic(Object[].class, "[object", BasicSerializer.OBJECT_ARRAY);
 
+    Deserializer objectDeserializer = new JavaDeserializer(Object.class);
+    _staticDeserializerMap.put("object", objectDeserializer);
+    _staticClassNameMap.put("object", objectDeserializer);
+    
     _staticSerializerMap.put(Class.class.getName(), new ClassSerializer());
 
     _staticDeserializerMap.put(Number.class.getName(), new BasicDeserializer(BasicSerializer.NUMBER));

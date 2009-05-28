@@ -174,6 +174,24 @@ public class SerializerFactory extends AbstractSerializerFactory
    *
    * @return a serializer object for the serialization.
    */
+  public Serializer getObjectSerializer(Class cl)
+    throws HessianProtocolException
+  {
+    Serializer serializer = getSerializer(cl);
+
+    if (serializer instanceof ObjectSerializer)
+      return ((ObjectSerializer) serializer).getObjectSerializer();
+    else
+      return serializer;
+  }
+
+  /**
+   * Returns the serializer for a class.
+   *
+   * @param cl the class of the object that needs to be serialized.
+   *
+   * @return a serializer object for the serialization.
+   */
   public Serializer getSerializer(Class cl)
     throws HessianProtocolException
   {
@@ -219,12 +237,14 @@ public class SerializerFactory extends AbstractSerializerFactory
     if (serializer != null)
       return serializer;
 
+    ClassLoader loader = cl.getClassLoader();
+
+    if (loader == null)
+      loader = ClassLoader.getSystemClassLoader();
+    
     ContextSerializerFactory factory = null;
     
-    if (cl.getClassLoader() != null)
-      factory = ContextSerializerFactory.create(cl.getClassLoader());
-    else
-      factory = ContextSerializerFactory.create(ClassLoader.getSystemClassLoader());
+    factory = ContextSerializerFactory.create(loader);
     
     serializer = factory.getCustomSerializer(cl);
 
@@ -670,5 +690,8 @@ public class SerializerFactory extends AbstractSerializerFactory
     addBasic(char[].class, "[char", BasicSerializer.CHARACTER_ARRAY);
     addBasic(String[].class, "[string", BasicSerializer.STRING_ARRAY);
     addBasic(Object[].class, "[object", BasicSerializer.OBJECT_ARRAY);
+    
+    Deserializer objectDeserializer = new JavaDeserializer(Object.class);
+    _staticTypeMap.put("object", objectDeserializer);
   }
 }

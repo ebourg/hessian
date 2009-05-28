@@ -406,9 +406,8 @@ public class Hessian2Output
       return;
     }
 
-    Serializer serializer;
-
-    serializer = findSerializerFactory().getSerializer(object.getClass());
+    Serializer serializer
+      = findSerializerFactory().getObjectSerializer(object.getClass());
 
     serializer.writeObject(object, this);
   }

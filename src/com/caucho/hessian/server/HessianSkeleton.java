@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2009 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -50,10 +50,22 @@ package com.caucho.hessian.server;
 
 import com.caucho.hessian.io.AbstractHessianInput;
 import com.caucho.hessian.io.AbstractHessianOutput;
+import com.caucho.hessian.io.Hessian2Input;
+import com.caucho.hessian.io.Hessian2Output;
+import com.caucho.hessian.io.HessianInput;
+import com.caucho.hessian.io.HessianOutput;
+import com.caucho.hessian.io.HessianDebugInputStream;
+import com.caucho.hessian.io.HessianDebugOutputStream;
+import com.caucho.hessian.io.HessianInputFactory;
+import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.services.server.AbstractSkeleton;
 import com.caucho.services.server.ServiceContext;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
@@ -65,6 +77,9 @@ import java.util.logging.Logger;
 public class HessianSkeleton extends AbstractSkeleton {
   private static final Logger log
     = Logger.getLogger(HessianSkeleton.class.getName());
+
+  private boolean _isDebug;
+  private HessianInputFactory _inputFactory = new HessianInputFactory();
   
   private Object _service;
   
@@ -96,6 +111,95 @@ public class HessianSkeleton extends AbstractSkeleton {
   public HessianSkeleton(Class apiClass)
   {
     super(apiClass);
+  }
+
+  public void setDebug(boolean isDebug)
+  {
+    _isDebug = isDebug;
+  }
+
+  public boolean isDebug()
+  {
+    return _isDebug;
+  }
+
+  /**
+   * Invoke the object with the request from the input stream.
+   *
+   * @param in the Hessian input stream
+   * @param out the Hessian output stream
+   */
+  public void invoke(InputStream is, OutputStream os)
+    throws Exception
+  {
+    invoke(is, os, null);
+  }
+
+  /**
+   * Invoke the object with the request from the input stream.
+   *
+   * @param in the Hessian input stream
+   * @param out the Hessian output stream
+   */
+  public void invoke(InputStream is, OutputStream os,
+		     SerializerFactory serializerFactory)
+    throws Exception
+  {
+    boolean isDebug = false;
+    
+    if (log.isLoggable(Level.FINEST)
+	|| isDebug() && log.isLoggable(Level.FINE)) {
+      isDebug = true;
+      
+      PrintWriter dbg = new PrintWriter(new LogWriter(log));
+      HessianDebugInputStream dIs = new HessianDebugInputStream(is, dbg);
+      dIs.startTop2();
+      is = dIs;
+      HessianDebugOutputStream dOs = new HessianDebugOutputStream(os, dbg);
+      dOs.startTop2();
+      os = dOs;
+    }
+
+    HessianInputFactory.HeaderType header = _inputFactory.readHeader(is);
+
+    AbstractHessianInput in;
+    AbstractHessianOutput out;
+    
+    switch (header) {
+    case CALL_1_REPLY_1:
+      in = new HessianInput(is);
+      out = new HessianOutput(os);
+      break;
+      
+    case CALL_1_REPLY_2:
+      in = new HessianInput(is);
+      out = new Hessian2Output(os);
+      break;
+      
+    case HESSIAN_2:
+      in = new Hessian2Input(is);
+      in.readCall();
+      out = new Hessian2Output(os);
+      break;
+
+    default:
+      throw new IllegalStateException(header + " is an unknown Hessian call");
+    }
+
+    if (serializerFactory != null) {
+      in.setSerializerFactory(serializerFactory);
+      out.setSerializerFactory(serializerFactory);
+    }
+
+    try {
+      invoke(_service, in, out);
+    } finally {
+      in.close();
+      out.close();
+
+      if (isDebug)
+	os.close();
+    }
   }
 
   /**
@@ -210,5 +314,47 @@ public class HessianSkeleton extends AbstractSkeleton {
     out.writeReply(result);
 
     out.close();
+  }
+
+  static class LogWriter extends Writer {
+    private Logger _log;
+    private StringBuilder _sb = new StringBuilder();
+
+    LogWriter(Logger log)
+    {
+      _log = log;
+    }
+
+    public void write(char ch)
+    {
+      if (ch == '\n' && _sb.length() > 0) {
+	_log.fine(_sb.toString());
+	_sb.setLength(0);
+      }
+      else
+	_sb.append((char) ch);
+    }
+
+    public void write(char []buffer, int offset, int length)
+    {
+      for (int i = 0; i < length; i++) {
+	char ch = buffer[offset + i];
+	
+	if (ch == '\n' && _sb.length() > 0) {
+	  _log.fine(_sb.toString());
+	  _sb.setLength(0);
+	}
+	else
+	  _sb.append((char) ch);
+      }
+    }
+
+    public void flush()
+    {
+    }
+
+    public void close()
+    {
+    }
   }
 }

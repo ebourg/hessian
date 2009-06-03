@@ -50,6 +50,7 @@ package com.caucho.hessian.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -65,6 +66,14 @@ public class HessianDebugInputStream extends InputStream
   private InputStream _is;
   
   private HessianDebugState _state;
+  
+  /**
+   * Creates an uninitialized Hessian input stream.
+   */
+  public HessianDebugInputStream(InputStream is, OutputStream os)
+  {
+    this(is, new PrintWriter(os));
+  }
   
   /**
    * Creates an uninitialized Hessian input stream.
@@ -90,6 +99,11 @@ public class HessianDebugInputStream extends InputStream
   public void startTop2()
   {
     _state.startTop2();
+  }
+
+  public void startData1()
+  {
+    _state.startData1();
   }
 
   /**

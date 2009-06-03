@@ -133,7 +133,7 @@ public class Hessian2Output
     
     startCall(method, length);
     
-    for (int i = 0; i < args.length; i++)
+    for (int i = 0; i < length; i++)
       writeObject(args[i]);
     
     completeCall();

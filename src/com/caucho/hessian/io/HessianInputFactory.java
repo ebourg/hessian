@@ -68,6 +68,31 @@ public class HessianInputFactory
     return _serializerFactory;
   }
 
+  public HeaderType readHeader(InputStream is)
+    throws IOException
+  {
+    int code = is.read();
+
+    int major = is.read();
+    int minor = is.read();
+
+    switch (code) {
+    case 'c':
+      if (major >= 2)
+	return HeaderType.CALL_1_REPLY_2;
+      else
+	return HeaderType.CALL_1_REPLY_1;
+    case 'r':
+      return HeaderType.REPLY_1;
+      
+    case 'H':
+      return HeaderType.HESSIAN_2;
+
+    default:
+      throw new IOException((char) code + " is an unknown Hessian message code.");
+    }
+  }
+
   public AbstractHessianInput open(InputStream is)
     throws IOException
   {
@@ -94,6 +119,56 @@ public class HessianInputFactory
 
     default:
       throw new IOException((char) code + " is an unknown Hessian message code.");
+    }
+  }
+
+  public enum HeaderType {
+    CALL_1_REPLY_1,
+      CALL_1_REPLY_2,
+      HESSIAN_2,
+      REPLY_1,
+      REPLY_2;
+
+    public boolean isCall1()
+    {
+      switch (this) {
+      case CALL_1_REPLY_1:
+      case CALL_1_REPLY_2:
+	return true;
+      default:
+	return false;
+      }
+    }
+
+    public boolean isCall2()
+    {
+      switch (this) {
+      case HESSIAN_2:
+	return true;
+      default:
+	return false;
+      }
+    }
+
+    public boolean isReply1()
+    {
+      switch (this) {
+      case CALL_1_REPLY_1:
+	return true;
+      default:
+	return false;
+      }
+    }
+
+    public boolean isReply2()
+    {
+      switch (this) {
+      case CALL_1_REPLY_2:
+      case HESSIAN_2:
+	return true;
+      default:
+	return false;
+      }
     }
   }
 }

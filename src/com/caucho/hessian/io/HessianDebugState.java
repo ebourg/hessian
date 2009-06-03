@@ -89,6 +89,11 @@ public class HessianDebugState implements Hessian2Constants
     _state = new Top2State();
   }
 
+  public void startData1()
+  {
+    _state = new InitialState1();
+  }
+
   /**
    * Reads a character.
    */
@@ -530,6 +535,90 @@ public class HessianDebugState implements Hessian2Constants
       }
     }
   }
+
+  abstract class State1 extends State {
+    State1()
+    {
+    }
+
+    State1(State next)
+    {
+      super(next);
+    }
+    
+    protected State nextObject(int ch)
+    {
+      switch (ch) {
+      case -1:
+	println();
+	return this;
+	
+      case 'N':
+	if (isShift(null))
+	  return shift(null);
+	else {
+	  printObject("null");
+	  return this;
+	}
+	
+      case 'T':
+	if (isShift(Boolean.TRUE))
+	  return shift(Boolean.TRUE);
+	else {
+	  printObject("true");
+	  return this;
+	}
+	
+      case 'F':
+	if (isShift(Boolean.FALSE))
+	  return shift(Boolean.FALSE);
+	else {
+	  printObject("false");
+	  return this;
+	}
+
+      case 'I':
+	return new IntegerState(this, "int");
+
+      case 'L':
+	return new LongState(this, "long");
+	
+      case 'D':
+	return new DoubleState(this);
+
+      case 'Q':
+	return new RefState(this);
+
+      case 'd':
+	return new DateState(this);
+	
+      case 's':
+	return new StringState(this, 'S', false);
+
+      case 'S':
+	return new StringState(this, 'S', true);
+
+      case 'b':
+	return new BinaryState(this, 'B', false);
+
+      case 'B':
+	return new BinaryState(this, 'B', true);
+
+      case 'M':
+	return new MapState1(this, _refId++);
+
+      case 'V':
+	return new ListState1(this, _refId++);
+
+      case 'R':
+	return new IntegerState(new RefState1(this), "ref");
+	
+      default:
+	printObject("x" + String.format("%02x", ch));
+	return this;
+      }
+    }
+  }
   
   class InitialState extends State {
     State next(int ch)
@@ -538,16 +627,23 @@ public class HessianDebugState implements Hessian2Constants
     }
   }
   
-  class Top1State extends State {
+  class InitialState1 extends State1 {
+    State next(int ch)
+    {
+      return nextObject(ch);
+    }
+  }
+  
+  class Top1State extends State1 {
     State next(int ch)
     {
       println();
       
       if (ch == 'r') {
-	return new ReplyState(this);
+	return new ReplyState1(this);
       }
       else if (ch == 'c') {
-	return new CallState(this);
+	return new CallState1(this);
       }
       else
 	return nextObject(ch);
@@ -572,10 +668,10 @@ public class HessianDebugState implements Hessian2Constants
 	return new Hessian2State(this);
       }
       else if (ch == 'r') {
-	return new ReplyState(this);
+	return new ReplyState1(this);
       }
       else if (ch == 'c') {
-	return new CallState(this);
+	return new CallState1(this);
       }
       else
 	return nextObject(ch);
@@ -731,6 +827,35 @@ public class HessianDebugState implements Hessian2Constants
 
       _value = value;
       _length = length;
+    }
+
+    @Override
+    boolean isShift(Object o)
+    {
+      return true;
+    }
+
+    @Override
+    State shift(Object o)
+    {
+      println("ref #" + o);
+
+      return _next;
+    }
+
+    @Override
+    State next(int ch)
+    {
+      return nextObject(ch);
+    }
+  }
+  
+  class RefState1 extends State {
+    String _typeCode;
+    
+    RefState1(State next)
+    {
+      super(next);
     }
 
     @Override
@@ -1217,6 +1342,130 @@ public class HessianDebugState implements Hessian2Constants
     }
   }
   
+  class MapState1 extends State1 {
+    private static final int TYPE = 0;
+    private static final int KEY = 1;
+    private static final int VALUE = 2;
+
+    private int _refId;
+
+    private int _state;
+    private int _valueDepth;
+    private boolean _hasData;
+
+    MapState1(State next, int refId)
+    {
+      super(next);
+      
+      _refId = refId;
+      _state = TYPE;
+    }
+
+    MapState1(State next, int refId, boolean isType)
+    {
+      super(next);
+      
+      _refId = refId;
+
+      if (isType)
+	_state = TYPE;
+      else {
+	printObject("map (#" + _refId + ")");
+	_state = VALUE;
+      }
+    }
+
+    @Override
+    boolean isShift(Object value)
+    {
+      return _state == TYPE;
+    }
+
+    @Override
+    State shift(Object type)
+    {
+      if (_state == TYPE) {
+	if (type instanceof String) {
+	  _typeDefList.add((String) type);
+	}
+	else if (type instanceof Integer) {
+	  int iValue = (Integer) type;
+
+	  if (iValue >= 0 && iValue < _typeDefList.size())
+	    type = _typeDefList.get(iValue);
+	}
+	
+	printObject("map " + type + " (#" + _refId + ")");
+
+	_state = VALUE;
+      
+	return this;
+      }
+      else
+	throw new IllegalStateException();
+    }
+
+    @Override
+    int depth()
+    {
+      if (_state == TYPE)
+	return _next.depth();
+      else if (_state == KEY)
+	return _next.depth() + 2;
+      else
+	return _valueDepth;
+    }
+    
+    State next(int ch)
+    {
+      switch (_state) {
+      case TYPE:
+	if (ch == 't') {
+	  return new StringState(this, 't', true);
+	}
+	else if (ch == 'z') {
+	  println("map (#" + _refId + ")");
+	  return _next;
+	}
+	else {
+	  println("map (#" + _refId + ")");
+	  _hasData = true;
+	  _state = KEY;
+	  return nextObject(ch);
+	}
+	
+      case VALUE:
+	if (ch == 'z') {
+	  if (_hasData)
+	    println();
+	  
+	  return _next;
+	}
+	else {
+	  if (_hasData)
+	    println();
+
+	  _hasData = true;
+	  _state = KEY;
+	  
+	  return nextObject(ch);
+	}
+	
+      case KEY:
+	print(" => ");
+	_isObject = false;
+	_valueDepth = _column;
+
+	_state = VALUE;
+	
+	return nextObject(ch);
+
+      default:
+	throw new IllegalStateException();
+      }
+    }
+  }
+  
   class ObjectDefState extends State {
     private static final int TYPE = 1;
     private static final int COUNT = 2;
@@ -1405,6 +1654,122 @@ public class HessianDebugState implements Hessian2Constants
 
 	_isObject = false;
 	return nextObject(ch);
+
+      default:
+	throw new IllegalStateException();
+      }
+    }
+  }
+  
+  class ListState1 extends State1 {
+    private static final int TYPE = 0;
+    private static final int LENGTH = 1;
+    private static final int VALUE = 2;
+
+    private int _refId;
+
+    private int _state;
+    private boolean _hasData;
+    private int _count;
+    private int _valueDepth;
+
+    ListState1(State next, int refId)
+    {
+      super(next);
+      
+      _refId = refId;
+      
+      _state = TYPE;
+    }
+
+    @Override
+    boolean isShift(Object value)
+    {
+      return _state == TYPE || _state == LENGTH;
+    }
+
+    @Override
+    State shift(Object object)
+    {
+      if (_state == TYPE) {
+	Object type = object;
+	
+	if (type instanceof String) {
+	  _typeDefList.add((String) type);
+	}
+	else if (object instanceof Integer) {
+	  int index = (Integer) object;
+
+	  if (index >= 0 && index < _typeDefList.size())
+	    type = _typeDefList.get(index);
+	  else
+	    type = "type-unknown(" + index + ")";
+	}
+	
+	printObject("list " + type + "(#" + _refId + ")");
+      
+	_state = VALUE;
+      
+	return this;
+      }
+      else if (_state == LENGTH) {
+	_state = VALUE;
+
+	return this;
+      }
+      else
+	return this;
+    }
+
+    @Override
+    int depth()
+    {
+      if (_state <= LENGTH)
+	return _next.depth();
+      else if (_state == VALUE)
+	return _valueDepth;
+      else
+	return _next.depth() + 2;
+    }
+    
+    State next(int ch)
+    {
+      switch (_state) {
+      case TYPE:
+	if (ch == 'z') {
+	  printObject("list (#" + _refId + ")");
+	  
+	  return _next;
+	}
+	else if (ch == 't') {
+	  return new StringState(this, 't', true);
+	}
+	else {
+	  printObject("list (#" + _refId + ")");
+	  printObject("  " + _count++ + ": ");
+	  _valueDepth = _column;
+	  _isObject = false;
+	  _state = VALUE;
+	  
+	  return nextObject(ch);
+	}
+	
+      case VALUE:
+	if (ch == 'z') {
+	  if (_count > 0)
+	    println();
+	  
+	  return _next;
+	}
+	else {
+	  _valueDepth = _next.depth() + 2;
+	  println();
+	  printObject(_count++ + ": ");
+	  _valueDepth = _column;
+	  _isObject = false;
+	  
+	  return nextObject(ch);
+	}
 
       default:
 	throw new IllegalStateException();
@@ -1685,7 +2050,7 @@ public class HessianDebugState implements Hessian2Constants
 	
       case MINOR:
 	_minor = ch;
-	println(-2, "hessian " + _major + "." + _minor);
+	println(-2, "Hessian " + _major + "." + _minor);
 	return _next;
 
       default:
@@ -1694,7 +2059,7 @@ public class HessianDebugState implements Hessian2Constants
     }
   }
   
-  class CallState extends State {
+  class CallState1 extends State1 {
     private static final int MAJOR = 0;
     private static final int MINOR = 1;
     private static final int HEADER = 2;
@@ -1706,7 +2071,7 @@ public class HessianDebugState implements Hessian2Constants
     private int _major;
     private int _minor;
 
-    CallState(State next)
+    CallState1(State next)
     {
       super(next);
     }
@@ -1757,8 +2122,10 @@ public class HessianDebugState implements Hessian2Constants
 	return nextObject(ch);
 	
       case ARG:
-	if (ch == 'Z')
+	if (ch == 'z') {
+	  println();
 	  return _next;
+	}
 	else
 	  return nextObject(ch);
 
@@ -1809,13 +2176,15 @@ public class HessianDebugState implements Hessian2Constants
       
 	_state = ARG;
 
-	if (_count == 0)
+	if (_count == 0) {
 	  return _next;
+	}
 	else
 	  return this;
       }
-      else
+      else {
 	return this;
+      }
     }
 
     @Override
@@ -1829,8 +2198,10 @@ public class HessianDebugState implements Hessian2Constants
 	return nextObject(ch);
 	
       case ARG:
-	if (_count <= _i)
+	if (_count <= _i) {
+	  println();
 	  return _next.next(ch);
+	}
 	else {
 	  println();
 	  print(-3, _i++ + ": ");
@@ -1844,7 +2215,7 @@ public class HessianDebugState implements Hessian2Constants
     }
   }
   
-  class ReplyState extends State {
+  class ReplyState1 extends State1 {
     private static final int MAJOR = 0;
     private static final int MINOR = 1;
     private static final int HEADER = 2;
@@ -1855,7 +2226,7 @@ public class HessianDebugState implements Hessian2Constants
     private int _major;
     private int _minor;
 
-    ReplyState(State next)
+    ReplyState1(State next)
     {
       _next = next;
     }
@@ -1904,7 +2275,7 @@ public class HessianDebugState implements Hessian2Constants
 	
       case END:
 	println();
-	if (ch == 'Z') {
+	if (ch == 'z') {
 	  return _next;
 	}
 	else
@@ -1932,7 +2303,13 @@ public class HessianDebugState implements Hessian2Constants
     @Override
     State next(int ch)
     {
-      return nextObject(ch);
+      if (ch < 0) {
+	println();
+	return _next;
+      }
+      else {
+	return nextObject(ch);
+      }
     }
   }
   

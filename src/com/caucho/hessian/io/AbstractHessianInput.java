@@ -202,6 +202,15 @@ abstract public class AbstractHessianInput {
     throws Throwable;
 
   /**
+   * Starts reading the body of the reply, i.e. after the 'r' has been
+   * parsed.
+   */
+  public void startReplyBody()
+    throws Throwable
+  {
+  }
+
+  /**
    * Completes reading the call
    *
    * <p>A successful completion will have a single value:

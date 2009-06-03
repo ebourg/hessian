@@ -359,63 +359,12 @@ public class HessianServlet extends GenericServlet {
 
       response.setContentType("application/x-hessian");
 
-      if (_log.isLoggable(Level.FINEST)
-	  || _isDebug && _log.isLoggable(Level.FINE)) {
-	PrintWriter dbg = new PrintWriter(new LogWriter(_log));
-	HessianDebugInputStream dIs = new HessianDebugInputStream(is, dbg);
-	dIs.startTop2();
-	is = dIs;
-	HessianDebugOutputStream dOs = new HessianDebugOutputStream(os, dbg);
-	dOs.startTop2();
-	os = dOs;
-      }
-
-      int code = is.read();
-      int major;
-      int minor;
-
-      AbstractHessianInput in;
-      AbstractHessianOutput out;
-
-      if (code == 'H') {
-	major = is.read();
-	minor = is.read();
-
-	if (major != 0x02 || minor != 0x00)
-	  throw new IOException("Version " + major + "." + minor + " is not understood");
-
-	in = createHessian2Input(is);
-	out = new Hessian2Output(os);
-
-	in.readCall();
-      }
-      else if (code == 'c') {
-	major = is.read();
-	minor = is.read();
-
-	in = new HessianInput(is);
-
-	if (major >= 2)
-	  out = new Hessian2Output(os);
-	else
-	  out = new HessianOutput(os);
-      }
-      else {
-	// XXX: deflate
-	throw new IOException("expected 'H' (Hessian 2.0) or 'c' (Hessian 1.0) in hessian input at " + code);
-      }
-
       SerializerFactory serializerFactory = getSerializerFactory();
-      in.setSerializerFactory(serializerFactory);
-      
-      out.setSerializerFactory(serializerFactory);
 
       if (objectId != null)
-	_objectSkeleton.invoke(in, out);
+	_objectSkeleton.invoke(is, os, serializerFactory);
       else
-	_homeSkeleton.invoke(in, out);
-
-      out.close();
+	_homeSkeleton.invoke(is, os, serializerFactory);
     } catch (RuntimeException e) {
       throw e;
     } catch (ServletException e) {

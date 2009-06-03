@@ -328,8 +328,15 @@ public class HessianInput extends AbstractHessianInput {
 
     int major = read();
     int minor = read();
+
+    startReplyBody();
+  }
+
+  public void startReplyBody()
+    throws Throwable
+  {
+    int tag = read();
     
-    tag = read();
     if (tag == 'f')
       throw prepareFault();
     else

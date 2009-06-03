@@ -116,8 +116,10 @@ public class HessianDebugOutputStream extends OutputStream
     OutputStream os = _os;
     _os = null;
 
-    if (os != null)
+    if (os != null) {
+      _state.next(-1);
       os.close();
+    }
 
     _state.println();
   }

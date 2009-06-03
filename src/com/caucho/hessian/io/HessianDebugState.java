@@ -73,6 +73,8 @@ public class HessianDebugState implements Hessian2Constants
   private boolean _isNewline = true;
   private boolean _isObject = false;
   private int _column;
+
+  private int _depth = 0;
   
   /**
    * Creates an uninitialized Hessian input stream.
@@ -111,6 +113,16 @@ public class HessianDebugState implements Hessian2Constants
   State popStack()
   {
     return _stateStack.remove(_stateStack.size() - 1);
+  }
+
+  public void setDepth(int depth)
+  {
+    _depth = depth;
+  }
+
+  public int getDepth()
+  {
+    return _depth;
   }
 
   void println()
@@ -216,7 +228,7 @@ public class HessianDebugState implements Hessian2Constants
       if (_next != null)
 	return _next.depth();
       else
-	return 0;
+	return HessianDebugState.this.getDepth();
     }
 
     void printIndent(int depth)

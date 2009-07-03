@@ -257,10 +257,22 @@ public class JavaSerializer extends AbstractSerializer
   public void writeInstance(Object obj, AbstractHessianOutput out)
     throws IOException
   {
-    for (int i = 0; i < _fields.length; i++) {
-      Field field = _fields[i];
+    try {
+      for (int i = 0; i < _fields.length; i++) {
+	Field field = _fields[i];
 
-      _fieldSerializers[i].serialize(out, obj, field);
+	_fieldSerializers[i].serialize(out, obj, field);
+      }
+    } catch (RuntimeException e) {
+      throw new RuntimeException(e.getMessage() + "\n class: "
+				 + obj.getClass().getName()
+				 + " (object=" + obj + ")",
+				 e);
+    } catch (IOException e) {
+      throw new IOExceptionWrapper(e.getMessage() + "\n class: "
+				   + obj.getClass().getName()
+				   + " (object=" + obj + ")",
+				   e);
     }
   }
 
@@ -312,11 +324,15 @@ public class JavaSerializer extends AbstractSerializer
       try {
 	out.writeObject(value);
       } catch (RuntimeException e) {
-	throw new RuntimeException(e.getMessage() + "\n Java field: " + field,
+	throw new RuntimeException(e.getMessage() + "\n field: "
+				   + field.getDeclaringClass().getName()
+				   + '.' + field.getName(),
 				   e);
       } catch (IOException e) {
-	throw new IOExceptionWrapper(e.getMessage() + "\n Java field: " + field,
-			      e);
+	throw new IOExceptionWrapper(e.getMessage() + "\n field: "
+				     + field.getDeclaringClass().getName()
+				     + '.' + field.getName(),
+				     e);
       }
     }
   }

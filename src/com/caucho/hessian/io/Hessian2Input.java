@@ -1649,7 +1649,7 @@ public class Hessian2Input
 	String type = readType();
       
 	Deserializer reader;
-	reader = findSerializerFactory().getListDeserializer(null, cl);
+	reader = findSerializerFactory().getListDeserializer(type, cl);
 
 	Object v = reader.readLengthList(this, length);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Caucho Technology, Inc.  All rights reserved.
+ * Copyright (c) 2001-2008 Caucho Technology, Inc.  All rights reserved.
  *
  * The Apache Software License, Version 1.1
  *
@@ -22,7 +22,7 @@
  *    Alternately, this acknowlegement may appear in the software itself,
  *    if and wherever such third-party acknowlegements normally appear.
  *
- * 4. The names "Hessian", "Resin", and "Caucho" must not be used to
+ * 4. The names "Burlap", "Resin", and "Caucho" must not be used to
  *    endorse or promote products derived from this software without prior
  *    written permission. For written permission, please contact
  *    info@caucho.com.
@@ -48,83 +48,45 @@
 
 package com.caucho.hessian.io;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+
+import java.util.logging.*;
+
 /**
- * Encapsulates a remote address when no stub is available, e.g. for
- * Java MicroEdition.
+ * Serializing an object for known object types.
  */
-public class HessianRemote implements java.io.Serializable {
-  private String type;
-  private String url;
-
-  /**
-   * Creates a new Hessian remote object.
-   *
-   * @param type the remote stub interface
-   * @param url the remote url
-   */
-  public HessianRemote(String type, String url)
+public class RemoteDeserializer extends  JavaDeserializer {
+  private static final Logger log
+    = Logger.getLogger(RemoteDeserializer.class.getName());
+  
+  public static final Deserializer DESER = new RemoteDeserializer();
+  
+  public RemoteDeserializer()
   {
-    this.type = type;
-    this.url = url;
+    super(HessianRemote.class);
   }
 
-  /**
-   * Creates an uninitialized Hessian remote.
-   */
-  public HessianRemote()
+  @Override
+  public boolean isReadResolve()
   {
+    return true;
   }
 
-  /**
-   * Returns the remote api class name.
-   */
-  public String getType()
+  @Override
+  protected Object resolve(AbstractHessianInput in, Object obj)
+    throws Exception
   {
-    return type;
-  }
-
-  /**
-   * Returns the remote URL.
-   */
-  public String getURL()
-  {
-    return url;
-  }
-
-  /**
-   * Sets the remote URL.
-   */
-  public void setURL(String url)
-  {
-    this.url = url;
-  }
-
-  /**
-   * Defines the hashcode.
-   */
-  public int hashCode()
-  {
-    return url.hashCode();
-  }
-
-  /**
-   * Defines equality
-   */
-  public boolean equals(Object obj)
-  {
-    if (! (obj instanceof HessianRemote))
-      return false;
-
     HessianRemote remote = (HessianRemote) obj;
+    HessianRemoteResolver resolver = in.getRemoteResolver();
 
-    return url.equals(remote.url);
-  }
+    Object proxy = resolver.lookup(remote.getType(), remote.getURL());
 
-  /**
-   * Readable version of the remote.
-   */
-  public String toString()
-  {
-    return "HessianRemote[" + url + "]";
+    return proxy;
   }
 }

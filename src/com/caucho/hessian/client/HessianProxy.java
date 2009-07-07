@@ -235,7 +235,9 @@ public class HessianProxy implements InvocationHandler, Serializable {
 
 	in = _factory.getHessian2Input(is);
 
-	return in.readReply(method.getReturnType());
+	Object value = in.readReply(method.getReturnType());
+
+	return value;
       }
       else if (code == 'r') {
 	int major = is.read();

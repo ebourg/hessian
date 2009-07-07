@@ -693,5 +693,8 @@ public class SerializerFactory extends AbstractSerializerFactory
     
     Deserializer objectDeserializer = new JavaDeserializer(Object.class);
     _staticTypeMap.put("object", objectDeserializer);
+    _staticTypeMap.put(HessianRemote.class.getName(),
+		       RemoteDeserializer.DESER);
+    
   }
 }

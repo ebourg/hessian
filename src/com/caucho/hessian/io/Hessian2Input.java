@@ -311,6 +311,19 @@ public class Hessian2Input
     readMethod();
   }
 
+  public Object []readArguments()
+    throws IOException
+  {
+    int len = readInt();
+
+    Object []args = new Object[len];
+
+    for (int i = 0; i < len; i++)
+      args[i] = readObject();
+
+    return args;
+  }
+
   /**
    * Completes reading the call
    *

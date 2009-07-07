@@ -210,7 +210,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       
       in.readMapEnd();
 
-      Object resolve = resolve(obj);
+      Object resolve = resolve(in, obj);
 
       if (obj != resolve)
 	in.setRef(ref, resolve);
@@ -242,7 +242,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
           in.readObject();
       }
 
-      Object resolve = resolve(obj);
+      Object resolve = resolve(in, obj);
 
       if (obj != resolve)
 	in.setRef(ref, resolve);
@@ -255,7 +255,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     }
   }
 
-  private Object resolve(Object obj)
+  protected Object resolve(AbstractHessianInput in, Object obj)
     throws Exception
   {
     // if there's a readResolve method, call it

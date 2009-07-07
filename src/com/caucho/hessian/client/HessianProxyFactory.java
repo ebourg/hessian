@@ -414,7 +414,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     } catch (IOException e) {
     }
     
-    handler = new HessianProxy(this, url);
+    handler = new HessianProxy(url, this, api);
 
     return Proxy.newProxyInstance(loader,
                                   new Class[] { api,

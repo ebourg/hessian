@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,8 +162,9 @@ public class WriteReplaceSerializer extends AbstractSerializer
       out.replaceRef(repl, obj);
     } catch (RuntimeException e) {
       throw e;
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e.getCause());
     } catch (Exception e) {
-      // log.log(Level.FINE, e.toString(), e);
       throw new RuntimeException(e);
     }
   }

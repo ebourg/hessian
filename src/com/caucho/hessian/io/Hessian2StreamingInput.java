@@ -146,6 +146,8 @@ public class Hessian2StreamingInput
 
 	if (_length > 0)
 	  _is.skip(_length);
+        else
+          return;
       }
     }
 

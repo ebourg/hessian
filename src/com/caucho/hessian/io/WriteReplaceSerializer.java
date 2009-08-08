@@ -57,6 +57,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.hessian.HessianException;
+
 /**
  * Serializing an object for known object types.
  */
@@ -154,6 +156,9 @@ public class WriteReplaceSerializer extends AbstractSerializer
 	repl = _writeReplace.invoke(_writeReplaceFactory, obj);
       else
 	repl = _writeReplace.invoke(obj);
+
+      if (obj == repl)
+        throw new HessianException(this + ": Hessian writeReplace error.  The writeReplace method (" + _writeReplace + ") must not return the same object: " + obj);
 
       out.removeRef(obj);
 

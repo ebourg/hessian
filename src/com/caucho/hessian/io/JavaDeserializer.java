@@ -263,8 +263,10 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       if (_readResolve != null)
         return _readResolve.invoke(obj, new Object[0]);
     } catch (InvocationTargetException e) {
-      if (e.getTargetException() != null)
-	throw e;
+      if (e.getCause() instanceof Exception)
+        throw (Exception) e.getCause();
+      else
+        throw e;
     }
 
     return obj;

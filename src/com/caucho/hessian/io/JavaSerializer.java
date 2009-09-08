@@ -154,8 +154,8 @@ public class JavaSerializer extends AbstractSerializer
       for (int i = 0; i < methods.length; i++) {
 	Method method = methods[i];
 
-	if (method.getName().equals("writeReplace") &&
-	    method.getParameterTypes().length == 0)
+	if (method.getName().equals("writeReplace")
+            && method.getParameterTypes().length == 0)
 	  return method;
       }
     }

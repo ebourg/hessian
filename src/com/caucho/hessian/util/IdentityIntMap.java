@@ -57,7 +57,7 @@ package com.caucho.hessian.util;
  */
 public class IdentityIntMap {
   /**
-   * Encoding of a null entry.  Since NULL is equal to Integer.MIN_VALUE, 
+   * Encoding of a null entry.  Since NULL is equal to Integer.MIN_VALUE,
    * it's impossible to distinguish between the two.
    */
   public final static int NULL = 0xdeadbeef; // Integer.MIN_VALUE + 1;
@@ -111,7 +111,8 @@ public class IdentityIntMap {
   public int get(Object key)
   {
     int mask = _mask;
-    int hash = System.identityHashCode(key) % mask & mask;
+    // int hash = System.identityHashCode(key) % mask & mask;
+    int hash = key.hashCode() & mask;
 
     Object []keys = _keys;
 
@@ -146,7 +147,8 @@ public class IdentityIntMap {
       if (key == null || key == DELETED)
         continue;
 
-      int hash = System.identityHashCode(key) % mask & mask;
+      // int hash = System.identityHashCode(key) % mask & mask;
+      int hash = key.hashCode() & mask;
 
       while (true) {
         if (newKeys[hash] == null) {
@@ -169,7 +171,8 @@ public class IdentityIntMap {
   public int put(Object key, int value)
   {
     int mask = _mask;
-    int hash = System.identityHashCode(key) % mask & mask;
+    // int hash = System.identityHashCode(key) % mask & mask;
+    int hash = key.hashCode() & mask;
 
     Object []keys = _keys;
 
@@ -208,7 +211,8 @@ public class IdentityIntMap {
   public int remove(Object key)
   {
     int mask = _mask;
-    int hash = System.identityHashCode(key) % mask & mask;
+    // int hash = System.identityHashCode(key) % mask & mask;
+    int hash = key.hashCode() & mask;
 
     while (true) {
       Object mapKey = _keys[hash];

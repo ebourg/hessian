@@ -110,6 +110,20 @@ abstract public class AbstractDeserializer implements Deserializer {
     throw new UnsupportedOperationException(toString());
   }
 
+  public Object []createFieldReaders(SerializerFactory factory,
+                                     String []fieldNames)
+  {
+    return null;
+  }
+  
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames,
+                           Object []fieldReaders)
+    throws IOException
+  {
+    return readObject(in, fieldNames);
+  }
+
   protected HessianProtocolException error(String msg)
   {
     return new HessianProtocolException(msg);

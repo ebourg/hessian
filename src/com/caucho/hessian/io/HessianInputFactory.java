@@ -56,16 +56,16 @@ public class HessianInputFactory
   public static final Logger log
     = Logger.getLogger(HessianInputFactory.class.getName());
 
-  private SerializerFactory _serializerFactory;
+  private HessianFactory _factory = new HessianFactory();
 
   public void setSerializerFactory(SerializerFactory factory)
   {
-    _serializerFactory = factory;
+    _factory.setSerializerFactory(factory);
   }
 
   public SerializerFactory getSerializerFactory()
   {
-    return _serializerFactory;
+    return _factory.getSerializerFactory();
   }
 
   public HeaderType readHeader(InputStream is)
@@ -107,14 +107,10 @@ public class HessianInputFactory
     case 'r':
     case 'R':
       if (major >= 2) {
-	AbstractHessianInput in = new Hessian2Input(is);
-	in.setSerializerFactory(_serializerFactory);
-	return in;
+	return _factory.createHessian2Input(is);
       }
       else {
-	AbstractHessianInput in = new HessianInput(is);
-	in.setSerializerFactory(_serializerFactory);
-	return in;
+	return _factory.createHessianInput(is);
       }
 
     default:

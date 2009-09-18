@@ -84,7 +84,7 @@ public class Hessian2Output
   protected OutputStream _os;
 
   // map of references
-  private IdentityIntMap _refs = new IdentityIntMap();
+  private final IdentityIntMap _refs = new IdentityIntMap();
 
   private boolean _isCloseStreamOnClose;
 
@@ -106,6 +106,11 @@ public class Hessian2Output
    * @param os the underlying output stream.
    */
   public Hessian2Output(OutputStream os)
+  {
+    init(os);
+  }
+
+  public void init(OutputStream os)
   {
     _os = os;
   }
@@ -1564,6 +1569,17 @@ public class Hessian2Output
       if (_isCloseStreamOnClose)
         os.close();
     }
+  }
+
+  public void free()
+  {
+    _os = null;
+    _refs.clear();
+    _isCloseStreamOnClose = false;
+    _classRefs = null;
+    _typeRefs = null;
+    _offset = 0;
+    _isPacket = false;
   }
 
   class BytesOutputStream extends OutputStream {

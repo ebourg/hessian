@@ -154,8 +154,22 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       throw new IOExceptionWrapper(_type.getName() + ":" + e.getMessage(), e);
     }
   }
-    
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
+
+  public Object []createFieldReaders(SerializerFactory factory,
+                                     String []fieldNames)
+  {
+    Object []fieldReaders = new Object[fieldNames.length];
+
+    for (int i = 0; i < fieldNames.length; i++) {
+      fieldReaders[i] = _fieldMap.get(fieldNames[i]);
+    }
+
+    return fieldReaders;
+  }
+
+  @Override
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames)
     throws IOException
   {
     try {
@@ -182,8 +196,8 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       for (int i = 0; i < methods.length; i++) {
 	Method method = methods[i];
 
-	if (method.getName().equals("readResolve") &&
-	    method.getParameterTypes().length == 0)
+	if (method.getName().equals("readResolve")
+            && method.getParameterTypes().length == 0)
 	  return method;
       }
     }
@@ -222,10 +236,42 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       throw new IOExceptionWrapper(e);
     }
   }
-    
+
+  /*
   public Object readObject(AbstractHessianInput in,
 			   Object obj,
-			   String []fieldNames)
+                           Object []fieldReaders)
+    throws IOException
+  {
+    try {
+      int ref = in.addRef(obj);
+
+      for (int i = 0; i < fieldReaders.length; i++) {
+        FieldDeserializer reader = (FieldDeserializer) fieldReaders[i];
+
+        if (reader != null)
+	  reader.deserialize(in, obj);
+        else
+          in.readObject();
+      }
+
+      Object resolve = resolve(in, obj);
+
+      if (obj != resolve)
+	in.setRef(ref, resolve);
+
+      return resolve;
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new IOExceptionWrapper(obj.getClass().getName() + ":" + e, e);
+    }
+  }
+  */
+  
+  public Object readObject(AbstractHessianInput in,
+                           Object obj,
+                           String []fieldNames)
     throws IOException
   {
     try {
@@ -234,10 +280,10 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       for (int i = 0; i < fieldNames.length; i++) {
         String name = fieldNames[i];
         
-        FieldDeserializer deser = (FieldDeserializer) _fieldMap.get(name);
+        FieldDeserializer reader = (FieldDeserializer) _fieldMap.get(name);
 
-        if (deser != null)
-	  deser.deserialize(in, obj);
+        if (reader != null)
+	  reader.deserialize(in, obj);
         else
           in.readObject();
       }

@@ -111,8 +111,8 @@ public class IdentityIntMap {
   public int get(Object key)
   {
     int mask = _mask;
-    // int hash = System.identityHashCode(key) % mask & mask;
-    int hash = key.hashCode() & mask;
+    int hash = System.identityHashCode(key) % mask & mask;
+    // int hash = key.hashCode() & mask;
 
     Object []keys = _keys;
 
@@ -147,8 +147,8 @@ public class IdentityIntMap {
       if (key == null || key == DELETED)
         continue;
 
-      // int hash = System.identityHashCode(key) % mask & mask;
-      int hash = key.hashCode() & mask;
+      int hash = System.identityHashCode(key) & mask;
+      // int hash = key.hashCode() & mask;
 
       while (true) {
         if (newKeys[hash] == null) {
@@ -171,8 +171,8 @@ public class IdentityIntMap {
   public int put(Object key, int value)
   {
     int mask = _mask;
-    // int hash = System.identityHashCode(key) % mask & mask;
-    int hash = key.hashCode() & mask;
+    int hash = System.identityHashCode(key) & mask;
+    // int hash = key.hashCode() & mask;
 
     Object []keys = _keys;
 
@@ -211,8 +211,8 @@ public class IdentityIntMap {
   public int remove(Object key)
   {
     int mask = _mask;
-    // int hash = System.identityHashCode(key) % mask & mask;
-    int hash = key.hashCode() & mask;
+    int hash = System.identityHashCode(key) & mask;
+    // int hash = key.hashCode() & mask;
 
     while (true) {
       Object mapKey = _keys[hash];

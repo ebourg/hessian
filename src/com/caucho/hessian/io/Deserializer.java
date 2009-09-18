@@ -72,4 +72,14 @@ public interface Deserializer {
   
   public Object readObject(AbstractHessianInput in, String []fieldNames)
     throws IOException;
+
+  /*
+  public Object []createFieldReaders(SerializerFactory factory,
+                                     String []fieldNames);
+  
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames,
+                           Object []fieldReaders)
+    throws IOException;
+  */
 }

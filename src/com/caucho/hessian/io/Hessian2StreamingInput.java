@@ -71,6 +71,11 @@ public class Hessian2StreamingInput
     _in = new Hessian2Input(_is);
   }
 
+  public void setSerializerFactory(SerializerFactory factory)
+  {
+    _in.setSerializerFactory(factory);
+  }
+
   public Hessian2Input startPacket()
     throws IOException
   {

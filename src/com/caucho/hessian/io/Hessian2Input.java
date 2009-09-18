@@ -2074,7 +2074,16 @@ public class Hessian2Input
     for (int i = 0; i < len; i++)
       fieldNames[i] = readString();
 
-    ObjectDefinition def = new ObjectDefinition(type, fieldNames);
+    SerializerFactory factory = findSerializerFactory();
+    
+    Deserializer reader = factory.getObjectDeserializer(type, null);
+    /*
+    Object []fieldReaders
+      = reader.createFieldReaders(factory, fieldNames);
+    */
+    
+    ObjectDefinition def
+      = new ObjectDefinition(type, reader, fieldNames);
 
     if (_classDefs == null)
       _classDefs = new ArrayList();
@@ -2086,16 +2095,22 @@ public class Hessian2Input
     throws IOException
   {
     String type = def.getType();
+    Deserializer reader = def.getReader();
     String []fieldNames = def.getFieldNames();
+    // Object []fieldReaders = def.getFieldReaders();
+
+    SerializerFactory factory = findSerializerFactory();
     
     if (cl != null) {
-      Deserializer reader;
-      reader = findSerializerFactory().getObjectDeserializer(type, cl);
-
+      reader = factory.getObjectDeserializer(type, cl);
+      
+      return reader.readObject(this, fieldNames);
+    }
+    else if (reader != null) {
       return reader.readObject(this, fieldNames);
     }
     else {
-      return findSerializerFactory().readObject(this, type, fieldNames);
+      return factory.readObject(this, type, fieldNames);
     }
   }
 
@@ -2799,17 +2814,26 @@ public class Hessian2Input
 
   final static class ObjectDefinition {
     private final String _type;
+    private final Deserializer _reader;
     private final String []_fields;
 
-    ObjectDefinition(String type, String []fields)
+    ObjectDefinition(String type,
+                     Deserializer reader,
+                     String []fields)
     {
       _type = type;
+      _reader = reader;
       _fields = fields;
     }
 
     String getType()
     {
       return _type;
+    }
+
+    Deserializer getReader()
+    {
+      return _reader;
     }
 
     String []getFieldNames()

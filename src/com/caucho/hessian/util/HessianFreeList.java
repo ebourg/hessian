@@ -46,74 +46,100 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.io;
+package com.caucho.hessian.util;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
- * Output stream for Hessian 2 streaming requests.
+ * FreeList provides a simple class to manage free objects.  This is useful
+ * for large data structures that otherwise would gobble up huge GC time.
+ *
+ * <p>The free list is bounded.  Freeing an object when the list is full will
+ * do nothing.
  */
-public class Hessian2StreamingOutput
-{
-  private Hessian2Output _out;
-  
+public final class HessianFreeList<T> {
+  private final AtomicReferenceArray<T> _freeStack;
+  private final AtomicInteger _top = new AtomicInteger();
+
   /**
-   * Creates a new Hessian output stream, initialized with an
-   * underlying output stream.
+   * Create a new free list.
    *
-   * @param os the underlying output stream.
+   * @param initialSize maximum number of free objects to store.
    */
-  public Hessian2StreamingOutput(OutputStream os)
+  public HessianFreeList(int size)
   {
-    _out = new Hessian2Output(os);
+    _freeStack = new AtomicReferenceArray(size);
   }
   
-  public Hessian2StreamingOutput(Hessian2Output out)
+  /**
+   * Try to get an object from the free list.  Returns null if the free list
+   * is empty.
+   *
+   * @return the new object or null.
+   */
+  public T allocate()
   {
-    _out = out;
+    int top = _top.get();
+
+    if (top > 0 && _top.compareAndSet(top, top - 1))
+      return _freeStack.getAndSet(top - 1, null);
+    else
+      return null;
+  }
+  
+  /**
+   * Frees the object.  If the free list is full, the object will be garbage
+   * collected.
+   *
+   * @param obj the object to be freed.
+   */
+  public boolean free(T obj)
+  {
+    int top = _top.get();
+
+    if (top < _freeStack.length()) {
+      boolean isFree = _freeStack.compareAndSet(top, null, obj);
+      
+      _top.compareAndSet(top, top + 1);
+
+      return isFree;
+    }
+    else
+      return false;
   }
 
-  public Hessian2Output getHessian2Output()
+  public boolean allowFree(T obj)
   {
-    return _out;
-  }
-  
-  public void setCloseStreamOnClose(boolean isClose)
-  {
-    _out.setCloseStreamOnClose(isClose);
-  }
-  
-  public boolean isCloseStreamOnClose()
-  {
-    return _out.isCloseStreamOnClose();
+    return _top.get() < _freeStack.length();
   }
 
   /**
-   * Writes any object to the output stream.
+   * Frees the object.  If the free list is full, the object will be garbage
+   * collected.
+   *
+   * @param obj the object to be freed.
    */
-  public void writeObject(Object object)
-    throws IOException
+  public void freeCareful(T obj)
   {
-    _out.writeStreamingObject(object);
+    if (checkDuplicate(obj))
+      throw new IllegalStateException("tried to free object twice: " + obj);
+
+    free(obj);
   }
 
   /**
-   * Flushes the output.
+   * Debugging to see if the object has already been freed.
    */
-  public void flush()
-    throws IOException
+  public boolean checkDuplicate(T obj)
   {
-    _out.flush();
-  }
+    int top = _top.get();
 
-  /**
-   * Close the output.
-   */
-  public void close()
-    throws IOException
-  {
-    _out.close();
+    for (int i = top - 1; i >= 0; i--) {
+      if (_freeStack.get(i) == obj)
+	return true;
+    }
+
+    return false;
   }
 }

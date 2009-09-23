@@ -111,7 +111,7 @@ public class IdentityIntMap {
   public int get(Object key)
   {
     int mask = _mask;
-    int hash = System.identityHashCode(key) % mask & mask;
+    int hash = System.identityHashCode(key) & mask;
     // int hash = key.hashCode() & mask;
 
     Object []keys = _keys;

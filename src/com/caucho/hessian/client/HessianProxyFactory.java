@@ -119,7 +119,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   private HessianRemoteResolver _resolver;
 
   private ClassLoader _loader;
-  
+
   private String _user;
   private String _password;
   private String _basicAuth;
@@ -286,7 +286,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   {
     if (_serializerFactory == null)
       _serializerFactory = new SerializerFactory();
-    
+
     return _serializerFactory;
   }
 
@@ -302,13 +302,14 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     URLConnection conn = url.openConnection();
 
     HttpURLConnection httpConn = (HttpURLConnection) conn;
-    // httpConn.setMethod("POST");
+    // httpConn.setRequestMethod("POST");
+    // conn.setDoInput(true);
 
     conn.setDoOutput(true);
 
     if (_readTimeout > 0) {
       try {
-	conn.setReadTimeout((int) _readTimeout);
+        conn.setReadTimeout((int) _readTimeout);
       } catch (Throwable e) {
       }
     }
@@ -371,7 +372,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     throws MalformedURLException
   {
     return create(api, urlName,
-		  Thread.currentThread().getContextClassLoader());
+                  Thread.currentThread().getContextClassLoader());
   }
 
   /**
@@ -395,7 +396,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       throw new NullPointerException("api must not be null for HessianProxyFactory.create()");
     InvocationHandler handler = null;
 
-    URL url = new URL(urlName); 
+    URL url = new URL(urlName);
 
     try {
       // clear old keepalive connections
@@ -413,7 +414,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       conn.disconnect();
     } catch (IOException e) {
     }
-    
+
     handler = new HessianProxy(url, this, api);
 
     return Proxy.newProxyInstance(loader,
@@ -435,7 +436,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       is = new HessianDebugInputStream(is, new PrintWriter(System.out));
 
     in = new HessianInput(is);
-    
+
     in.setRemoteResolver(getRemoteResolver());
 
     in.setSerializerFactory(getSerializerFactory());
@@ -451,7 +452,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       is = new HessianDebugInputStream(is, new PrintWriter(System.out));
 
     in = new Hessian2Input(is);
-    
+
     in.setRemoteResolver(getRemoteResolver());
 
     in.setSerializerFactory(getSerializerFactory());
@@ -472,7 +473,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       if (_isHessian2Reply)
         out1.setVersion(2);
     }
-      
+
     out.setSerializerFactory(getSerializerFactory());
 
     return out;
@@ -499,13 +500,13 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       String value = (String) addr.getContent();
 
       if (type.equals("type"))
-	api = value;
+        api = value;
       else if (type.equals("url"))
-	url = value;
+        url = value;
       else if (type.equals("user"))
-	setUser(value);
+        setUser(value);
       else if (type.equals("password"))
-	setPassword(value);
+        setPassword(value);
     }
 
     if (url == null)
@@ -532,13 +533,13 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       long chunk = (int) value.charAt(i);
       chunk = (chunk << 8) + (int) value.charAt(i + 1);
       chunk = (chunk << 8) + (int) value.charAt(i + 2);
-        
+
       cb.append(encode(chunk >> 18));
       cb.append(encode(chunk >> 12));
       cb.append(encode(chunk >> 6));
       cb.append(encode(chunk));
     }
-    
+
     if (i + 1 < value.length()) {
       long chunk = (int) value.charAt(i);
       chunk = (chunk << 8) + (int) value.charAt(i + 1);

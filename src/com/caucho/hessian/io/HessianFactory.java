@@ -93,7 +93,7 @@ public class HessianFactory
     if (_serializerFactory == _defaultSerializerFactory) {
       _serializerFactory = new SerializerFactory();
     }
-    
+
     return _serializerFactory;
   }
 
@@ -206,5 +206,17 @@ public class HessianFactory
   public HessianOutput createHessianOutput(OutputStream os)
   {
     return new HessianOutput(os);
+  }
+
+  public OutputStream createHessian2DebugOutput(OutputStream os,
+                                                Logger log,
+                                                Level level)
+  {
+    HessianDebugOutputStream out
+      = new HessianDebugOutputStream(os, log, level);
+
+    out.startTop2();
+
+    return out;
   }
 }

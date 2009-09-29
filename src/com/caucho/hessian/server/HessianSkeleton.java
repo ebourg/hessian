@@ -80,9 +80,9 @@ public class HessianSkeleton extends AbstractSkeleton {
 
   private boolean _isDebug;
   private HessianInputFactory _inputFactory = new HessianInputFactory();
-  
+
   private Object _service;
-  
+
   /**
    * Create a new hessian skeleton.
    *
@@ -101,7 +101,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     if (! apiClass.isAssignableFrom(service.getClass()))
       throw new IllegalArgumentException("Service " + service + " must be an instance of " + apiClass.getName());
   }
-  
+
   /**
    * Create a new hessian skeleton.
    *
@@ -142,15 +142,15 @@ public class HessianSkeleton extends AbstractSkeleton {
    * @param out the Hessian output stream
    */
   public void invoke(InputStream is, OutputStream os,
-		     SerializerFactory serializerFactory)
+                     SerializerFactory serializerFactory)
     throws Exception
   {
     boolean isDebug = false;
-    
+
     if (log.isLoggable(Level.FINEST)
-	|| isDebug() && log.isLoggable(Level.FINE)) {
+        || isDebug() && log.isLoggable(Level.FINE)) {
       isDebug = true;
-      
+
       PrintWriter dbg = new PrintWriter(new LogWriter(log));
       HessianDebugInputStream dIs = new HessianDebugInputStream(is, dbg);
       dIs.startTop2();
@@ -164,18 +164,18 @@ public class HessianSkeleton extends AbstractSkeleton {
 
     AbstractHessianInput in;
     AbstractHessianOutput out;
-    
+
     switch (header) {
     case CALL_1_REPLY_1:
       in = new HessianInput(is);
       out = new HessianOutput(os);
       break;
-      
+
     case CALL_1_REPLY_2:
       in = new HessianInput(is);
       out = new Hessian2Output(os);
       break;
-      
+
     case HESSIAN_2:
       in = new Hessian2Input(is);
       in.readCall();
@@ -198,7 +198,7 @@ public class HessianSkeleton extends AbstractSkeleton {
       out.close();
 
       if (isDebug)
-	os.close();
+        os.close();
     }
   }
 
@@ -221,8 +221,8 @@ public class HessianSkeleton extends AbstractSkeleton {
    * @param out the Hessian output stream
    */
   public void invoke(Object service,
-		     AbstractHessianInput in,
-		     AbstractHessianOutput out)
+                     AbstractHessianInput in,
+                     AbstractHessianOutput out)
     throws Exception
   {
     ServiceContext context = ServiceContext.getContext();
@@ -241,9 +241,9 @@ public class HessianSkeleton extends AbstractSkeleton {
 
     String methodName = in.readMethod();
     int argLength = in.readMethodArgLength();
-    
+
     Method method;
-    
+
     method = getMethod(methodName + "__" + argLength);
 
     if (method == null)
@@ -258,11 +258,11 @@ public class HessianSkeleton extends AbstractSkeleton {
       String value = null;
 
       if ("java.api.class".equals(attrName))
-	value = getAPIClassName();
+        value = getAPIClassName();
       else if ("java.home.class".equals(attrName))
-	value = getHomeClassName();
+        value = getHomeClassName();
       else if ("java.object.class".equals(attrName))
-	value = getObjectClassName();
+        value = getObjectClassName();
 
       out.writeReply(value);
       out.close();
@@ -270,8 +270,8 @@ public class HessianSkeleton extends AbstractSkeleton {
     }
     else if (method == null) {
       out.writeFault("NoSuchMethodException",
-		     "The service has no method named: " + in.getMethod(),
-		     null);
+                     "The service has no method named: " + in.getMethod(),
+                     null);
       out.close();
       return;
     }
@@ -280,12 +280,12 @@ public class HessianSkeleton extends AbstractSkeleton {
 
     if (argLength != args.length && argLength >= 0) {
       out.writeFault("NoSuchMethod",
-		     "method " + method + " argument length mismatch, received length=" + argLength,
-		     null);
+                     "method " + method + " argument length mismatch, received length=" + argLength,
+                     null);
       out.close();
       return;
     }
-    
+
     Object []values = new Object[args.length];
 
     for (int i = 0; i < args.length; i++) {
@@ -293,7 +293,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     }
 
     Object result = null;
-    
+
     try {
       result = method.invoke(service, values);
     } catch (Throwable e) {
@@ -301,7 +301,7 @@ public class HessianSkeleton extends AbstractSkeleton {
         e = ((InvocationTargetException) e).getTargetException();
 
       log.log(Level.FINE, this + " " + e.toString(), e);
-      
+
       out.writeFault("ServiceException", e.getMessage(), e);
       out.close();
       return;
@@ -310,7 +310,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     // The complete call needs to be after the invoke to handle a
     // trailing InputStream
     in.completeCall();
-    
+
     out.writeReply(result);
 
     out.close();
@@ -328,24 +328,24 @@ public class HessianSkeleton extends AbstractSkeleton {
     public void write(char ch)
     {
       if (ch == '\n' && _sb.length() > 0) {
-	_log.fine(_sb.toString());
-	_sb.setLength(0);
+        _log.fine(_sb.toString());
+        _sb.setLength(0);
       }
       else
-	_sb.append((char) ch);
+        _sb.append((char) ch);
     }
 
     public void write(char []buffer, int offset, int length)
     {
       for (int i = 0; i < length; i++) {
-	char ch = buffer[offset + i];
-	
-	if (ch == '\n' && _sb.length() > 0) {
-	  _log.fine(_sb.toString());
-	  _sb.setLength(0);
-	}
-	else
-	  _sb.append((char) ch);
+        char ch = buffer[offset + i];
+
+        if (ch == '\n' && _sb.length() > 0) {
+          _log.fine(_sb.toString());
+          _sb.setLength(0);
+        }
+        else
+          _sb.append((char) ch);
       }
     }
 

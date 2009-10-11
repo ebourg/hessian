@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Output stream for Hessian 2 streaming requests.
+ * Input stream for Hessian 2 streaming requests using WebSocket.
  */
 public class Hessian2StreamingInput
 {
@@ -151,8 +151,6 @@ public class Hessian2StreamingInput
 
 	if (_length > 0)
 	  _is.skip(_length);
-        else
-          return;
       }
     }
 
@@ -206,15 +204,22 @@ public class Hessian2StreamingInput
       
       int length = 0;
 	
-      int code;
+      int code = is.read();
+
+      if (code < 0) {
+        _isPacketEnd = true;
+        return -1;
+      }
+      else if ((code & 0x80) != 0x80)
+        throw new IllegalStateException("WebSocket binary must begin with a 0x80 packet at 0x" + Integer.toHexString(code));
 
       while ((code = is.read()) >= 0) {
-	length = 0x80 * length + (code & 0x7f);
+	length = (length << 7) + (code & 0x7f);
 
 	if ((code & 0x80) == 0) {
 	  if (length == 0)
 	    _isPacketEnd = true;
-	  
+
 	  return length;
 	}
       }

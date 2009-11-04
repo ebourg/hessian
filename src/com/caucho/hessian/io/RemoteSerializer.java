@@ -59,7 +59,9 @@ public class RemoteSerializer extends AbstractSerializer {
   public void writeObject(Object obj, AbstractHessianOutput out)
     throws IOException
   {
-    // XXX: needs to be handled as a separate class
-    throw new UnsupportedOperationException(getClass().getName());
+    HessianRemoteObject remoteObject = (HessianRemoteObject) obj;
+
+    out.writeObject(new HessianRemote(remoteObject.getHessianType(),
+                                      remoteObject.getHessianURL()));
   }
 }

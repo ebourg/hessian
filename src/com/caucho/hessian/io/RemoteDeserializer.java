@@ -85,8 +85,12 @@ public class RemoteDeserializer extends  JavaDeserializer {
     HessianRemote remote = (HessianRemote) obj;
     HessianRemoteResolver resolver = in.getRemoteResolver();
 
-    Object proxy = resolver.lookup(remote.getType(), remote.getURL());
+    if (resolver != null) {
+      Object proxy = resolver.lookup(remote.getType(), remote.getURL());
 
-    return proxy;
+      return proxy;
+    }
+    else
+      return remote;
   }
 }

@@ -85,12 +85,16 @@ public class BasicSerializer extends AbstractSerializer
   
   public static final int BYTE_HANDLE = OBJECT_ARRAY + 1;
   public static final int SHORT_HANDLE = BYTE_HANDLE + 1;
+  public static final int FLOAT_HANDLE = SHORT_HANDLE + 1;
 
   private static final BasicSerializer BYTE_HANDLE_SERIALIZER
     = new BasicSerializer(BYTE_HANDLE);
 
   private static final BasicSerializer SHORT_HANDLE_SERIALIZER
     = new BasicSerializer(SHORT_HANDLE);
+
+  private static final BasicSerializer FLOAT_HANDLE_SERIALIZER
+    = new BasicSerializer(FLOAT_HANDLE);
 
   private int _code;
 
@@ -106,6 +110,8 @@ public class BasicSerializer extends AbstractSerializer
       return BYTE_HANDLE_SERIALIZER;
     case SHORT:
       return SHORT_HANDLE_SERIALIZER;
+    case FLOAT:
+      return FLOAT_HANDLE_SERIALIZER;
     default:
       return this;
     }
@@ -311,6 +317,10 @@ public class BasicSerializer extends AbstractSerializer
 
     case SHORT_HANDLE:
       out.writeObject(new ShortHandle((Short) obj));
+      break;
+
+    case FLOAT_HANDLE:
+      out.writeObject(new FloatHandle((Float) obj));
       break;
 
     default:

@@ -96,6 +96,11 @@ public class HessianDebugState implements Hessian2Constants
     _state = new InitialState1();
   }
 
+  public void startStreaming()
+  {
+    _state = new StreamingState(new InitialState(), false);
+  }
+
   /**
    * Reads a character.
    */

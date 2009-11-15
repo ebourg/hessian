@@ -79,8 +79,10 @@ public class Hessian2StreamingInput
   public Hessian2Input startPacket()
     throws IOException
   {
-    if (_is.startPacket())
+    if (_is.startPacket()) {
+      _in.resetReferences();
       return _in;
+    }
     else
       return null;
   }

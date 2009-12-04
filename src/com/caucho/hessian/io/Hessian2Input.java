@@ -2740,7 +2740,7 @@ public class Hessian2Input
 	else
 	  return error("expected " + expect
 		       + " at 0x" + Integer.toHexString(ch & 0xff) + " null");
-      } catch (IOException e) {
+      } catch (Exception e) {
 	log.log(Level.FINE, e.toString(), e);
 	
 	return error("expected " + expect

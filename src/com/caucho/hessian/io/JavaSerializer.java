@@ -50,6 +50,7 @@ package com.caucho.hessian.io;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -66,8 +67,8 @@ public class JavaSerializer extends AbstractSerializer
   private static final Logger log
     = Logger.getLogger(JavaSerializer.class.getName());
 
-  private static final WeakHashMap<Class,JavaSerializer> _serializerMap
-    = new WeakHashMap<Class,JavaSerializer>();
+  private static final WeakHashMap<Class,SoftReference<JavaSerializer>> _serializerMap
+    = new WeakHashMap<Class,SoftReference<JavaSerializer>>();
 
   private static Object []NULL_ARGS = new Object[0];
   
@@ -89,11 +90,15 @@ public class JavaSerializer extends AbstractSerializer
     ClassLoader loader = cl.getClassLoader();
 
     synchronized (_serializerMap) {
-      JavaSerializer base = _serializerMap.get(cl);
+      SoftReference<JavaSerializer> baseRef
+        = _serializerMap.get(cl);
+      
+      JavaSerializer base = baseRef != null ? baseRef.get() : null;
 
       if (base == null) {
 	base = new JavaSerializer(cl);
-	_serializerMap.put(cl, base);
+	baseRef = new SoftReference<JavaSerializer>(base);
+	_serializerMap.put(cl, baseRef);
       }
 
       return base;
@@ -187,7 +192,7 @@ public class JavaSerializer extends AbstractSerializer
       return;
     }
     
-    Class cl = obj.getClass();
+    Class<?> cl = obj.getClass();
 
     try {
       if (_writeReplace != null) {

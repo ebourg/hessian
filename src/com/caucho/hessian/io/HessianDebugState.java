@@ -2415,6 +2415,7 @@ public class HessianDebugState implements Hessian2Constants
   
   class StreamingState extends State {
     private int _digit;
+    private int _code;
     private int _length;
     private boolean _isLast;
     private boolean _isFirst = true;
@@ -2431,23 +2432,39 @@ public class HessianDebugState implements Hessian2Constants
     
     State next(int ch)
     {
-      if (_digit < 2) {
-	_length = 256 * _length + ch;
-	_digit++;
-
-	if (_digit == 2 && _length == 0 && _isLast) {
-	  _refId = 0;
-	  return _next;
-	}
-	else {
-	  if (_digit == 2)
-	    println(-1, "packet-start(" + _length + ")");
-	  
-	  return this;
-	}
+      if (_digit >= 0) {
+        if (_digit == 0) {
+          _code = ch;
+          _digit = 1;
+          _length = 0;
+        
+          return this;
+        }
+        else if ((ch & 0x80) == 0x80) {
+          _length = 128 * _length + (ch & 0x7f);
+        
+          return this;
+        }
+        else {
+          _length = 128 * _length + (ch & 0x7f);
+          _digit = -1;
+        }
+        
+        if (_isFirst)
+          println(-1, "packet-start(" + _length + ")");
+        _isFirst = false;
+        
+        if (_length == 0) {
+          _isFirst = true;
+          println(-1, "");
+          println(-1, "packet-end");
+          _refId = 0;
+          _digit = 0;
+        }
+        
+        return this;
       }
       else if (_length == 0) {
-	_isLast = (ch == 'P');
 	_digit = 0;
 	
 	return this;
@@ -2457,11 +2474,10 @@ public class HessianDebugState implements Hessian2Constants
 
       _length--;
 
-      if (_length == 0 && _isLast) {
-	println(-1, "");
-	println(-1, "packet-end");
-	_refId = 0;
-	return _next;
+      if (_length <= 0) {
+	_digit = 0;
+	_length = 0;
+	return this;
       }
       else
 	return this;

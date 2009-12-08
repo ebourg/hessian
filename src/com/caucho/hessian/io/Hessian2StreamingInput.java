@@ -213,7 +213,8 @@ public class Hessian2StreamingInput
         return -1;
       }
       else if ((code & 0x80) != 0x80)
-        throw new IllegalStateException("WebSocket binary must begin with a 0x80 packet at 0x" + Integer.toHexString(code));
+        throw new IllegalStateException("WebSocket binary must begin with a 0x80 packet at 0x" + Integer.toHexString(code)
+                                        + " ("+ (char) code + ")");
 
       while ((code = is.read()) >= 0) {
 	length = (length << 7) + (code & 0x7f);

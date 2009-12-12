@@ -67,28 +67,24 @@ public class JavaSerializer extends AbstractSerializer
   private static final Logger log
     = Logger.getLogger(JavaSerializer.class.getName());
 
-  private static final WeakHashMap<Class,SoftReference<JavaSerializer>> _serializerMap
-    = new WeakHashMap<Class,SoftReference<JavaSerializer>>();
+  private static final WeakHashMap<Class<?>,SoftReference<JavaSerializer>> _serializerMap
+    = new WeakHashMap<Class<?>,SoftReference<JavaSerializer>>();
 
-  private static Object []NULL_ARGS = new Object[0];
-  
   private Field []_fields;
   private FieldSerializer []_fieldSerializers;
 
   private Object _writeReplaceFactory;
   private Method _writeReplace;
   
-  public JavaSerializer(Class cl)
+  public JavaSerializer(Class<?> cl)
   {
     introspect(cl);
 
     _writeReplace = getWriteReplace(cl);
   }
 
-  public static JavaSerializer create(Class cl)
+  public static Serializer create(Class<?> cl)
   {
-    ClassLoader loader = cl.getClassLoader();
-
     synchronized (_serializerMap) {
       SoftReference<JavaSerializer> baseRef
         = _serializerMap.get(cl);
@@ -105,13 +101,13 @@ public class JavaSerializer extends AbstractSerializer
     }
   }
 
-  protected void introspect(Class cl)
+  protected void introspect(Class<?> cl)
   {
     if (_writeReplace != null)
       _writeReplace.setAccessible(true);
 
-    ArrayList primitiveFields = new ArrayList();
-    ArrayList compoundFields = new ArrayList();
+    ArrayList<Field> primitiveFields = new ArrayList<Field>();
+    ArrayList<Field> compoundFields = new ArrayList<Field>();
     
     for (; cl != null; cl = cl.getSuperclass()) {
       Field []fields = cl.getDeclaredFields();

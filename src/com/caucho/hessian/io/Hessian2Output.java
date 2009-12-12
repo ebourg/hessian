@@ -89,7 +89,7 @@ public class Hessian2Output
   private boolean _isCloseStreamOnClose;
 
   // map of classes
-  private HashMap _classRefs;
+  private HashMap<String,Integer> _classRefs;
 
   // map of types
   private HashMap _typeRefs;
@@ -1330,15 +1330,6 @@ public class Hessian2Output
   }
 
   /**
-   * Resets the references for streaming.
-   */
-  public void resetReferences()
-  {
-    if (_refs != null)
-      _refs.clear();
-  }
-
-  /**
    * Starts the streaming message
    *
    * <p>A streaming message starts with 'P'</p>
@@ -1585,9 +1576,29 @@ public class Hessian2Output
 
   public void free()
   {
+    reset();
+    
     _os = null;
-    _refs.clear();
     _isCloseStreamOnClose = false;
+  }
+
+  /**
+   * Resets the references for streaming.
+   */
+  @Override
+  public void resetReferences()
+  {
+    if (_refs != null)
+      _refs.clear();
+  }
+
+  /**
+   * Resets all counters and references
+   */
+  public void reset()
+  {
+    if (_refs != null)
+    _refs.clear();
     _classRefs = null;
     _typeRefs = null;
     _offset = 0;

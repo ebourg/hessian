@@ -73,7 +73,7 @@ abstract public class AbstractSerializer implements Serializer {
       Object replace = writeReplace(obj);
       
       if (replace != null) {
-	out.removeRef(obj);
+	// out.removeRef(obj);
 
 	out.writeObject(replace);
 
@@ -88,7 +88,7 @@ abstract public class AbstractSerializer implements Serializer {
       throw new HessianException(e);
     }
 
-    Class cl = getClass(obj);
+    Class<?> cl = getClass(obj);
 
     int ref = out.writeObjectBegin(cl.getName());
 
@@ -111,7 +111,7 @@ abstract public class AbstractSerializer implements Serializer {
     return null;
   }
 
-  protected Class getClass(Object obj)
+  protected Class<?> getClass(Object obj)
   {
     return obj.getClass();
   }
@@ -123,8 +123,8 @@ abstract public class AbstractSerializer implements Serializer {
     throw new UnsupportedOperationException(getClass().getName());
   }
 
-  protected void writeDefinition20(Class cl,
-				AbstractHessianOutput out)
+  protected void writeDefinition20(Class<?> cl,
+                                   AbstractHessianOutput out)
     throws IOException
   {
     throw new UnsupportedOperationException(getClass().getName());

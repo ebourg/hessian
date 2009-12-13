@@ -228,8 +228,14 @@ public class UnsafeSerializer extends AbstractSerializer
   {
     Class<?> type = field.getType();
     
-    if (byte.class.equals(type)) {
+    if (boolean.class.equals(type)) {
+      return new BooleanFieldSerializer(field);
+    }
+    else if (byte.class.equals(type)) {
       return new ByteFieldSerializer(field);
+    }
+    else if (char.class.equals(type)) {
+      return new CharFieldSerializer(field);
     }
     else if (short.class.equals(type)) {
       return new ShortFieldSerializer(field);
@@ -245,9 +251,6 @@ public class UnsafeSerializer extends AbstractSerializer
     }
     else if (float.class.equals(type)) {
       return new FloatFieldSerializer(field);
-    }
-    else if (boolean.class.equals(type)) {
-      return new BooleanFieldSerializer(field);
     }
     else if (String.class.equals(type)) {
       return new StringFieldSerializer(field);
@@ -343,6 +346,28 @@ public class UnsafeSerializer extends AbstractSerializer
       int value = _unsafe.getByte(obj, _offset);
 
       out.writeInt(value);
+    }
+  }
+
+  final static class CharFieldSerializer extends FieldSerializer {
+    private final Field _field;
+    private final long _offset;
+    
+    CharFieldSerializer(Field field)
+    {
+      _field = field;
+      _offset = _unsafe.objectFieldOffset(field);
+      
+      if (_offset == Unsafe.INVALID_FIELD_OFFSET)
+        throw new IllegalStateException();
+    }
+    
+    final void serialize(AbstractHessianOutput out, Object obj)
+      throws IOException
+    {
+      char value = _unsafe.getChar(obj, _offset);
+
+      out.writeString(String.valueOf(value));
     }
   }
 

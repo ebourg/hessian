@@ -49,21 +49,19 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Serializing an object for known object types.
  */
 public class ObjectDeserializer extends AbstractDeserializer {
-  private Class _cl;
+  private Class<?> _cl;
 
-  public ObjectDeserializer(Class cl)
+  public ObjectDeserializer(Class<?> cl)
   {
     _cl = cl;
   }
 
-  public Class getType()
+  public Class<?> getType()
   {
     return _cl;
   }
@@ -76,7 +74,7 @@ public class ObjectDeserializer extends AbstractDeserializer {
   }
 
   @Override
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
+  public Object readObject(AbstractHessianInput in, Object []fields)
     throws IOException
   {
     throw new UnsupportedOperationException(String.valueOf(this));

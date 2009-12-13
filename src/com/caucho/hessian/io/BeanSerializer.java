@@ -70,11 +70,11 @@ public class BeanSerializer extends AbstractSerializer {
   private Object _writeReplaceFactory;
   private Method _writeReplace;
   
-  public BeanSerializer(Class cl, ClassLoader loader)
+  public BeanSerializer(Class<?> cl, ClassLoader loader)
   {
     introspectWriteReplace(cl, loader);
 
-    ArrayList primitiveMethods = new ArrayList();
+    ArrayList<Method> primitiveMethods = new ArrayList<Method>();
     ArrayList compoundMethods = new ArrayList();
     
     for (; cl != null; cl = cl.getSuperclass()) {
@@ -222,7 +222,7 @@ public class BeanSerializer extends AbstractSerializer {
 	else
 	  repl = _writeReplace.invoke(obj);
 
-	out.removeRef(obj);
+	// out.removeRef(obj);
 
 	out.writeObject(repl);
 

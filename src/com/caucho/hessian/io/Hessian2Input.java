@@ -92,9 +92,9 @@ public class Hessian2Input
 
   private static boolean _isCloseStreamOnClose;
   
-  protected ArrayList _refs;
-  protected ArrayList _classDefs;
-  protected ArrayList _types;
+  protected ArrayList<Object> _refs;
+  protected ArrayList<ObjectDefinition> _classDefs;
+  protected ArrayList<String> _types;
   
   // the underlying input stream
   private InputStream _is;
@@ -104,16 +104,8 @@ public class Hessian2Input
   private int _offset;
   private int _length;
 
-  // true for streaming data
-  private boolean _isStreaming;
-  
   // the method for a call
   private String _method;
-  private int _argLength;
-
-  private Reader _chunkReader;
-  private InputStream _chunkInputStream;
-
   private Throwable _replyFault;
 
   private StringBuffer _sbuf = new StringBuffer();
@@ -478,11 +470,9 @@ public class Hessian2Input
   {
     int tag = read();
 
-    if (tag == 'p')
-      _isStreaming = false;
-    else if (tag == 'P')
-      _isStreaming = true;
-    else
+    if (tag == 'p') {
+    } else if (tag == 'P') {
+    } else
       throw error("expected Hessian message ('p') at " + codeName(tag));
 
     int major = read();
@@ -1611,7 +1601,7 @@ public class Hessian2Input
 	if (ref < 0 || size <= ref)
 	  throw new HessianProtocolException("'" + ref + "' is an unknown class definition");
 
-	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
+	ObjectDefinition def = _classDefs.get(ref);
 
 	return readObjectInstance(cl, def);
       }
@@ -1624,7 +1614,7 @@ public class Hessian2Input
 	if (ref < 0 || size <= ref)
 	  throw new HessianProtocolException("'" + ref + "' is an unknown class definition");
 
-	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
+	ObjectDefinition def = _classDefs.get(ref);
 
 	return readObjectInstance(cl, def);
       }
@@ -2025,7 +2015,7 @@ public class Hessian2Input
 	  throw error("No classes defined at reference '"
 		      + Integer.toHexString(tag) + "'");
 	
-	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
+	ObjectDefinition def = _classDefs.get(ref);
 
 	return readObjectInstance(null, def);
       }
@@ -2037,7 +2027,7 @@ public class Hessian2Input
 	if (_classDefs == null || _classDefs.size() <= ref)
 	  throw error("Illegal object reference #" + ref);
 
-	ObjectDefinition def = (ObjectDefinition) _classDefs.get(ref);
+	ObjectDefinition def = _classDefs.get(ref);
 
 	return readObjectInstance(null, def);
       }
@@ -2064,86 +2054,50 @@ public class Hessian2Input
    * O string <int> (string)* <value>*
    * </pre>
    */
-  private void readObjectDefinition(Class cl)
+  private void readObjectDefinition(Class<?> cl)
     throws IOException
   {
     String type = readString();
     int len = readInt();
 
-    String []fieldNames = new String[len];
-    for (int i = 0; i < len; i++)
-      fieldNames[i] = readString();
-
     SerializerFactory factory = findSerializerFactory();
     
     Deserializer reader = factory.getObjectDeserializer(type, null);
-    /*
-    Object []fieldReaders
-      = reader.createFieldReaders(factory, fieldNames);
-    */
     
-    ObjectDefinition def
-      = new ObjectDefinition(type, reader, fieldNames);
+    Object []fields = reader.createFields(len);
+    
+    for (int i = 0; i < len; i++) {
+      fields[i] = reader.createField(readString());
+    }
+    
+    ObjectDefinition def = new ObjectDefinition(type, reader, fields);
 
     if (_classDefs == null)
-      _classDefs = new ArrayList();
+      _classDefs = new ArrayList<ObjectDefinition>();
 
     _classDefs.add(def);
   }
 
-  private Object readObjectInstance(Class cl, ObjectDefinition def)
+  private Object readObjectInstance(Class<?> cl,
+                                    ObjectDefinition def)
     throws IOException
   {
     String type = def.getType();
     Deserializer reader = def.getReader();
-    String []fieldNames = def.getFieldNames();
-    // Object []fieldReaders = def.getFieldReaders();
+    Object []fields = def.getFields();
 
     SerializerFactory factory = findSerializerFactory();
     
-    if (cl != null) {
+    if (cl != reader.getType() && cl != null) {
       reader = factory.getObjectDeserializer(type, cl);
       
-      return reader.readObject(this, fieldNames);
-    }
-    else if (reader != null) {
-      return reader.readObject(this, fieldNames);
+      return reader.readObject(this, fields);
     }
     else {
-      return factory.readObject(this, type, fieldNames);
+      return reader.readObject(this, fields);
     }
   }
 
-  private String readLenString()
-    throws IOException
-  {
-    int len = readInt();
-    
-    _isLastChunk = true;
-    _chunkLength = len;
-
-    _sbuf.setLength(0);
-    int ch;
-    while ((ch = parseChar()) >= 0)
-      _sbuf.append((char) ch);
-
-    return _sbuf.toString();
-  }
-
-  private String readLenString(int len)
-    throws IOException
-  {
-    _isLastChunk = true;
-    _chunkLength = len;
-
-    _sbuf.setLength(0);
-    int ch;
-    while ((ch = parseChar()) >= 0)
-      _sbuf.append((char) ch);
-
-    return _sbuf.toString();
-  }
-  
   /**
    * Reads a remote object.
    */
@@ -2815,11 +2769,11 @@ public class Hessian2Input
   final static class ObjectDefinition {
     private final String _type;
     private final Deserializer _reader;
-    private final String []_fields;
+    private final Object []_fields;
 
     ObjectDefinition(String type,
                      Deserializer reader,
-                     String []fields)
+                     Object []fields)
     {
       _type = type;
       _reader = reader;
@@ -2836,7 +2790,7 @@ public class Hessian2Input
       return _reader;
     }
 
-    String []getFieldNames()
+    Object []getFields()
     {
       return _fields;
     }

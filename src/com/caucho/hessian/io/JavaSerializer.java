@@ -199,7 +199,7 @@ public class JavaSerializer extends AbstractSerializer
 	else
 	  repl = _writeReplace.invoke(obj);
 
-	out.removeRef(obj);
+	// out.removeRef(obj);
 
 	out.writeObject(repl);
 

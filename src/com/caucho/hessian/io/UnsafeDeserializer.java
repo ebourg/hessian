@@ -58,17 +58,26 @@ import java.util.HashMap;
 
 import java.util.logging.*;
 
+import com.caucho.hessian.io.JavaDeserializer.FieldDeserializer;
+import com.caucho.hessian.io.JavaDeserializer.NullFieldDeserializer;
+
+import sun.misc.Unsafe;
+
 /**
  * Serializing an object for known object types.
  */
-public class JavaDeserializer extends AbstractMapDeserializer {
+public class UnsafeDeserializer extends AbstractMapDeserializer {
+  private static final Logger log
+    = Logger.getLogger(JavaDeserializer.class.getName());
+
+  private static boolean _isEnabled;
+  private static Unsafe _unsafe;
+
   private Class<?> _type;
-  private HashMap<?,FieldDeserializer> _fieldMap;
+  private HashMap<String,FieldDeserializer> _fieldMap;
   private Method _readResolve;
-  private Constructor<?> _constructor;
-  private Object []_constructorArgs;
-  
-  public JavaDeserializer(Class<?> cl)
+
+  public UnsafeDeserializer(Class<?> cl)
   {
     _type = cl;
     _fieldMap = getFieldMap(cl);
@@ -78,50 +87,11 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     if (_readResolve != null) {
       _readResolve.setAccessible(true);
     }
-
-    Constructor<?> []constructors = cl.getDeclaredConstructors();
-    long bestCost = Long.MAX_VALUE;
-
-    for (int i = 0; i < constructors.length; i++) {
-      Class<?> []param = constructors[i].getParameterTypes();
-      long cost = 0;
-
-      for (int j = 0; j < param.length; j++) {
-	cost = 4 * cost;
-
-	if (Object.class.equals(param[j]))
-	  cost += 1;
-	else if (String.class.equals(param[j]))
-	  cost += 2;
-	else if (int.class.equals(param[j]))
-	  cost += 3;
-	else if (long.class.equals(param[j]))
-	  cost += 4;
-	else if (param[j].isPrimitive())
-	  cost += 5;
-	else
-	  cost += 6;
-      }
-
-      if (cost < 0 || cost > (1 << 48))
-	cost = 1 << 48;
-
-      cost += (long) param.length << 48;
-
-      if (cost < bestCost) {
-        _constructor = constructors[i];
-        bestCost = cost;
-      }
-    }
-
-    if (_constructor != null) {
-      _constructor.setAccessible(true);
-      Class<?> []params = _constructor.getParameterTypes();
-      _constructorArgs = new Object[params.length];
-      for (int i = 0; i < params.length; i++) {
-        _constructorArgs[i] = getParamArg(params[i]);
-      }
-    }
+  }
+  
+  public static boolean isEnabled()
+  {
+    return _isEnabled;
   }
 
   @Override
@@ -135,7 +105,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
   {
     return _readResolve != null;
   }
-    
+
   public Object readMap(AbstractHessianInput in)
     throws IOException
   {
@@ -193,19 +163,19 @@ public class JavaDeserializer extends AbstractMapDeserializer {
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       Method []methods = cl.getDeclaredMethods();
-      
-      for (int i = 0; i < methods.length; i++) {
-	Method method = methods[i];
 
-	if (method.getName().equals("readResolve")
+      for (int i = 0; i < methods.length; i++) {
+        Method method = methods[i];
+
+        if (method.getName().equals("readResolve")
             && method.getParameterTypes().length == 0)
-	  return method;
+          return method;
       }
     }
 
     return null;
   }
-    
+
   public Object readMap(AbstractHessianInput in, Object obj)
     throws IOException
   {
@@ -214,21 +184,21 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
       while (! in.isEnd()) {
         Object key = in.readObject();
-        
-        FieldDeserializer deser = _fieldMap.get(key);
+
+        FieldDeserializer deser = (FieldDeserializer) _fieldMap.get(key);
 
         if (deser != null)
-	  deser.deserialize(in, obj);
+          deser.deserialize(in, obj);
         else
           in.readObject();
       }
-      
+
       in.readMapEnd();
 
       Object resolve = resolve(in, obj);
 
       if (obj != resolve)
-	in.setRef(ref, resolve);
+        in.setRef(ref, resolve);
 
       return resolve;
     } catch (IOException e) {
@@ -237,10 +207,10 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       throw new IOExceptionWrapper(e);
     }
   }
-  
-  private Object readObject(AbstractHessianInput in,
-                            Object obj,
-                            FieldDeserializer []fields)
+
+  public Object readObject(AbstractHessianInput in,
+                           Object obj,
+                           FieldDeserializer []fields)
     throws IOException
   {
     try {
@@ -253,7 +223,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       Object resolve = resolve(in, obj);
 
       if (obj != resolve)
-	in.setRef(ref, resolve);
+        in.setRef(ref, resolve);
 
       return resolve;
     } catch (IOException e) {
@@ -283,31 +253,24 @@ public class JavaDeserializer extends AbstractMapDeserializer {
   protected Object instantiate()
     throws Exception
   {
-    try {
-      if (_constructor != null)
-	return _constructor.newInstance(_constructorArgs);
-      else
-	return _type.newInstance();
-    } catch (Exception e) {
-      throw new HessianProtocolException("'" + _type.getName() + "' could not be instantiated", e);
-    }
+    return _unsafe.allocateInstance(_type);
   }
 
   /**
    * Creates a map of the classes fields.
    */
-  protected HashMap<String,FieldDeserializer> getFieldMap(Class cl)
+  protected HashMap<String,FieldDeserializer> getFieldMap(Class<?> cl)
   {
     HashMap<String,FieldDeserializer> fieldMap
       = new HashMap<String,FieldDeserializer>();
-    
+
     for (; cl != null; cl = cl.getSuperclass()) {
       Field []fields = cl.getDeclaredFields();
       for (int i = 0; i < fields.length; i++) {
         Field field = fields[i];
 
         if (Modifier.isTransient(field.getModifiers())
-	    || Modifier.isStatic(field.getModifiers()))
+            || Modifier.isStatic(field.getModifiers()))
           continue;
         else if (fieldMap.get(field.getName()) != null)
           continue;
@@ -319,77 +282,54 @@ public class JavaDeserializer extends AbstractMapDeserializer {
           e.printStackTrace();
         }
 
-	Class<?> type = field.getType();
-	FieldDeserializer deser;
+        Class<?> type = field.getType();
+        FieldDeserializer deser;
 
-	if (String.class.equals(type))
-	  deser = new StringFieldDeserializer(field);
-	else if (byte.class.equals(type)) {
-	  deser = new ByteFieldDeserializer(field);
-	}
-	else if (short.class.equals(type)) {
-	  deser = new ShortFieldDeserializer(field);
-	}
-	else if (int.class.equals(type)) {
-	  deser = new IntFieldDeserializer(field);
-	}
-	else if (long.class.equals(type)) {
-	  deser = new LongFieldDeserializer(field);
-	}
-	else if (float.class.equals(type)) {
-	  deser = new FloatFieldDeserializer(field);
-	}
-	else if (double.class.equals(type)) {
-	  deser = new DoubleFieldDeserializer(field);
-	}
-	else if (boolean.class.equals(type)) {
-	  deser = new BooleanFieldDeserializer(field);
-	}
-	else if (java.sql.Date.class.equals(type)) {
-	  deser = new SqlDateFieldDeserializer(field);
-	}
-	else if (java.sql.Timestamp.class.equals(type)) {
-	  deser = new SqlTimestampFieldDeserializer(field);
-	}
-	else if (java.sql.Time.class.equals(type)) {
-	  deser = new SqlTimeFieldDeserializer(field);
-	}
-	else {
-	  deser = new ObjectFieldDeserializer(field);
-	}
+        if (String.class.equals(type)) {
+          deser = new StringFieldDeserializer(field);
+        }
+        else if (byte.class.equals(type)) {
+          deser = new ByteFieldDeserializer(field);
+        }
+        else if (char.class.equals(type)) {
+          deser = new CharFieldDeserializer(field);
+        }
+        else if (short.class.equals(type)) {
+          deser = new ShortFieldDeserializer(field);
+        }
+        else if (int.class.equals(type)) {
+          deser = new IntFieldDeserializer(field);
+        }
+        else if (long.class.equals(type)) {
+          deser = new LongFieldDeserializer(field);
+        }
+        else if (float.class.equals(type)) {
+          deser = new FloatFieldDeserializer(field);
+        }
+        else if (double.class.equals(type)) {
+          deser = new DoubleFieldDeserializer(field);
+        }
+        else if (boolean.class.equals(type)) {
+          deser = new BooleanFieldDeserializer(field);
+        }
+        else if (java.sql.Date.class.equals(type)) {
+          deser = new SqlDateFieldDeserializer(field);
+  }
+        else if (java.sql.Timestamp.class.equals(type)) {
+          deser = new SqlTimestampFieldDeserializer(field);
+  }
+        else if (java.sql.Time.class.equals(type)) {
+          deser = new SqlTimeFieldDeserializer(field);
+  }
+        else {
+          deser = new ObjectFieldDeserializer(field);
+        }
 
         fieldMap.put(field.getName(), deser);
       }
     }
 
     return fieldMap;
-  }
-
-  /**
-   * Creates a map of the classes fields.
-   */
-  protected static Object getParamArg(Class<?> cl)
-  {
-    if (! cl.isPrimitive())
-      return null;
-    else if (boolean.class.equals(cl))
-      return Boolean.FALSE;
-    else if (byte.class.equals(cl))
-      return new Byte((byte) 0);
-    else if (short.class.equals(cl))
-      return new Short((short) 0);
-    else if (char.class.equals(cl))
-      return new Character((char) 0);
-    else if (int.class.equals(cl))
-      return Integer.valueOf(0);
-    else if (long.class.equals(cl))
-      return Long.valueOf(0);
-    else if (float.class.equals(cl))
-      return Float.valueOf(0);
-    else if (double.class.equals(cl))
-      return Double.valueOf(0);
-    else
-      throw new UnsupportedOperationException();
   }
 
   abstract static class FieldDeserializer {
@@ -408,21 +348,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class ObjectFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     ObjectFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       Object value = null;
       
       try {
-	value = in.readObject(_field.getType());
-	
-	_field.set(obj, value);
+        value = in.readObject(_field.getType());
+
+        _unsafe.putObject(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -431,21 +373,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class BooleanFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     BooleanFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       boolean value = false;
       
       try {
-	value = in.readBoolean();
-	
-	_field.setBoolean(obj, value);
+        value = in.readBoolean();
+
+        _unsafe.putBoolean(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -454,21 +398,55 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class ByteFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     ByteFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       int value = 0;
       
       try {
-	value = in.readInt();
-	
-	_field.setByte(obj, (byte) value);
+        value = in.readInt();
+
+        _unsafe.putByte(obj, _offset, (byte) value);
+      } catch (Exception e) {
+        logDeserializeError(_field, obj, value, e);
+      }
+    }
+  }
+
+  static class CharFieldDeserializer extends FieldDeserializer {
+    private final Field _field;
+    private final long _offset;
+
+    CharFieldDeserializer(Field field)
+    {
+      _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
+    }
+
+    void deserialize(AbstractHessianInput in, Object obj)
+      throws IOException
+    {
+      String value = null;
+      
+      try {
+        value = in.readString();
+        
+        char ch;
+        
+        if (value != null && value.length() > 0)
+          ch = value.charAt(0);
+        else
+          ch = 0;
+
+        _unsafe.putChar(obj, _offset, ch);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -477,21 +455,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class ShortFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     ShortFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       int value = 0;
       
       try {
-	value = in.readInt();
-	
-	_field.setShort(obj, (short) value);
+        value = in.readInt();
+
+        _unsafe.putShort(obj, _offset, (short) value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -500,21 +480,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class IntFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     IntFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       int value = 0;
       
       try {
-	value = in.readInt();
-	
-	_field.setInt(obj, value);
+        value = in.readInt();
+
+        _unsafe.putInt(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -523,21 +505,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class LongFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     LongFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       long value = 0;
       
       try {
-	value = in.readLong();
-	
-	_field.setLong(obj, value);
+        value = in.readLong();
+
+        _unsafe.putLong(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -546,21 +530,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class FloatFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     FloatFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       double value = 0;
       
       try {
-	value = in.readDouble();
-	
-	_field.setFloat(obj, (float) value);
+        value = in.readDouble();
+
+        _unsafe.putFloat(obj, _offset, (float) value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -569,21 +555,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class DoubleFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     DoubleFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       double value = 0;
       
       try {
-	value = in.readDouble();
-	
-	_field.setDouble(obj, value);
+        value = in.readDouble();
+
+        _unsafe.putDouble(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -592,21 +580,23 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class StringFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     StringFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
       String value = null;
       
       try {
-	value = in.readString();
-	
-	_field.set(obj, value);
+        value = in.readString();
+
+        _unsafe.putObject(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -615,12 +605,14 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class SqlDateFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     SqlDateFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -630,7 +622,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
         java.util.Date date = (java.util.Date) in.readObject();
         value = new java.sql.Date(date.getTime());
 
-        _field.set(obj, value);
+        _unsafe.putObject(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -639,12 +631,14 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class SqlTimestampFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     SqlTimestampFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -654,7 +648,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
         java.util.Date date = (java.util.Date) in.readObject();
         value = new java.sql.Timestamp(date.getTime());
 
-        _field.set(obj, value);
+        _unsafe.putObject(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -663,12 +657,14 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
   static class SqlTimeFieldDeserializer extends FieldDeserializer {
     private final Field _field;
+    private final long _offset;
 
     SqlTimeFieldDeserializer(Field field)
     {
       _field = field;
+      _offset = _unsafe.objectFieldOffset(_field);
     }
-    
+
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -678,7 +674,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
         java.util.Date date = (java.util.Date) in.readObject();
         value = new java.sql.Time(date.getTime());
 
-        _field.set(obj, value);
+        _unsafe.putObject(obj, _offset, value);
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -696,11 +692,40 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       throw (HessianFieldException) e;
     else if (e instanceof IOException)
       throw new HessianFieldException(fieldName + ": " + e.getMessage(), e);
-    
+
     if (value != null)
       throw new HessianFieldException(fieldName + ": " + value.getClass().getName() + " (" + value + ")"
-				      + " cannot be assigned to '" + field.getType().getName() + "'", e);
+                                      + " cannot be assigned to '" + field.getType().getName() + "'", e);
     else
        throw new HessianFieldException(fieldName + ": " + field.getType().getName() + " cannot be assigned from null", e);
+  }
+
+  static {
+    boolean isEnabled = false;
+
+    try {
+      Class<?> unsafe = Class.forName("sun.misc.Unsafe");
+      Field theUnsafe = null;
+      for (Field field : unsafe.getDeclaredFields()) {
+        if (field.getName().equals("theUnsafe"))
+          theUnsafe = field;
+      }
+
+      if (theUnsafe != null) {
+        theUnsafe.setAccessible(true);
+        _unsafe = (Unsafe) theUnsafe.get(null);
+      }
+
+      isEnabled = _unsafe != null;
+
+      String unsafeProp = System.getProperty("com.caucho.hessian.unsafe");
+
+      if ("false".equals(unsafeProp))
+        isEnabled = false;
+    } catch (Throwable e) {
+      log.log(Level.FINER, e.toString(), e);
+    }
+
+    _isEnabled = isEnabled;
   }
 }

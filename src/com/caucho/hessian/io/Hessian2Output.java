@@ -84,12 +84,14 @@ public class Hessian2Output
   protected OutputStream _os;
 
   // map of references
-  private final IdentityIntMap _refs = new IdentityIntMap();
+  private final IdentityIntMap _refs
+    = new IdentityIntMap(256);
 
   private boolean _isCloseStreamOnClose;
 
   // map of classes
-  private HashMap<String,Integer> _classRefs;
+  private final IdentityIntMap _classRefs
+    = new IdentityIntMap(256);
 
   // map of types
   private HashMap _typeRefs;
@@ -383,7 +385,7 @@ public class Hessian2Output
     _buffer[_offset++] = (byte) 'F';
     _buffer[_offset++] = (byte) 'H';
 
-    _refs.put(new HashMap(), _refs.size());
+    _refs.put(new Object(), _refs.size(), false);
 
     writeString("code");
     writeString(code);
@@ -525,17 +527,14 @@ public class Hessian2Output
    * C &lt;string> &lt;int> &lt;string>*
    * </pre></code>
    */
+  @Override
   public int writeObjectBegin(String type)
     throws IOException
   {
-    if (_classRefs == null)
-      _classRefs = new HashMap();
+    int newRef = _classRefs.size();
+    int ref = _classRefs.put(type, newRef, false);
 
-    Integer refV = (Integer) _classRefs.get(type);
-
-    if (refV != null) {
-      int ref = refV.intValue();
-
+    if (newRef != ref) {
       if (SIZE < _offset + 32)
         flushBuffer();
 
@@ -550,10 +549,6 @@ public class Hessian2Output
       return ref;
     }
     else {
-      int ref = _classRefs.size();
-
-      _classRefs.put(type, Integer.valueOf(ref));
-
       if (SIZE < _offset + 32)
         flushBuffer();
 
@@ -1284,16 +1279,16 @@ public class Hessian2Output
   public boolean addRef(Object object)
     throws IOException
   {
-    int ref = _refs.get(object);
+    int newRef = _refs.size();
+    
+    int ref = _refs.put(object, newRef, false);
 
-    if (ref >= 0) {
+    if (ref != newRef) {
       writeRef(ref);
 
       return true;
     }
     else {
-      _refs.put(object, _refs.size());
-
       return false;
     }
   }
@@ -1301,17 +1296,19 @@ public class Hessian2Output
   /**
    * Removes a reference.
    */
-  public boolean removeRef(Object obj)
+  /*
+  private boolean removeRef(Object obj)
     throws IOException
   {
     if (_refs != null) {
-      _refs.remove(obj);
+      _refs.put(obj, -1);
 
       return true;
     }
     else
       return false;
   }
+  */
 
   /**
    * Replaces a reference from one object to another.
@@ -1319,10 +1316,11 @@ public class Hessian2Output
   public boolean replaceRef(Object oldRef, Object newRef)
     throws IOException
   {
-    Integer value = (Integer) _refs.remove(oldRef);
+    int value = _refs.get(oldRef);
 
-    if (value != null) {
-      _refs.put(newRef, value);
+    if (value >= 0) {
+      _refs.put(newRef, value, true);
+      
       return true;
     }
     else
@@ -1599,7 +1597,7 @@ public class Hessian2Output
   {
     if (_refs != null)
     _refs.clear();
-    _classRefs = null;
+    _classRefs.clear();
     _typeRefs = null;
     _offset = 0;
     _isPacket = false;

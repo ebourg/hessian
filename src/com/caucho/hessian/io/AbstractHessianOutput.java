@@ -425,8 +425,12 @@ abstract public class AbstractHessianOutput {
   /**
    * Removes a reference.
    */
-  abstract public boolean removeRef(Object obj)
-    throws IOException;
+  @Deprecated
+  public boolean removeRef(Object obj)
+    throws IOException
+  {
+    return false;
+  }
 
   /**
    * Replaces a reference from one object to another.

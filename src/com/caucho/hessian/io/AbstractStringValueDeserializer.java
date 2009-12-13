@@ -85,9 +85,11 @@ abstract public class AbstractStringValueDeserializer
   }
   
   @Override
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
+  public Object readObject(AbstractHessianInput in, Object []fields)
     throws IOException
   {
+    String []fieldNames = (String []) fields;
+    
     String value = null;
 
     for (int i = 0; i < fieldNames.length; i++) {

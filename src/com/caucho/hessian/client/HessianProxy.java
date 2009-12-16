@@ -73,7 +73,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
   private WeakHashMap<Method,String> _mangleMap
     = new WeakHashMap<Method,String>();
 
-  private Class _type;
+  private Class<?> _type;
   private URL _url;
 
   /**
@@ -87,7 +87,9 @@ public class HessianProxy implements InvocationHandler, Serializable {
   /**
    * Protected constructor for subclassing
    */
-  protected HessianProxy(URL url, HessianProxyFactory factory, Class type)
+  protected HessianProxy(URL url,
+                         HessianProxyFactory factory, 
+                         Class<?> type)
   {
     _factory = factory;
     _url = url;
@@ -123,7 +125,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
 
     if (mangleName == null) {
       String methodName = method.getName();
-      Class []params = method.getParameterTypes();
+      Class<?> []params = method.getParameterTypes();
 
       // equals and hashCode are special cased
       if (methodName.equals("equals")
@@ -285,7 +287,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
 
   protected String mangleName(Method method)
   {
-    Class []param = method.getParameterTypes();
+    Class<?> []param = method.getParameterTypes();
     
     if (param == null || param.length == 0)
       return method.getName();

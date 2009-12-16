@@ -92,9 +92,12 @@ public class Hessian2Input
 
   private static boolean _isCloseStreamOnClose;
   
-  protected ArrayList<Object> _refs;
-  protected ArrayList<ObjectDefinition> _classDefs;
-  protected ArrayList<String> _types;
+  protected ArrayList<Object> _refs
+    = new ArrayList<Object>();
+  protected ArrayList<ObjectDefinition> _classDefs
+    = new ArrayList<ObjectDefinition>();
+  protected ArrayList<String> _types
+    = new ArrayList<String>();
   
   // the underlying input stream
   private InputStream _is;
@@ -2011,7 +2014,7 @@ public class Hessian2Input
       {
 	int ref = tag - 0x60;
 
-	if (_classDefs == null)
+	if (_classDefs.size() <= ref)
 	  throw error("No classes defined at reference '"
 		      + Integer.toHexString(tag) + "'");
 	
@@ -2024,7 +2027,7 @@ public class Hessian2Input
       {
 	int ref = readInt();
 
-	if (_classDefs == null || _classDefs.size() <= ref)
+	if (_classDefs.size() <= ref)
 	  throw error("Illegal object reference #" + ref);
 
 	ObjectDefinition def = _classDefs.get(ref);
@@ -2071,9 +2074,6 @@ public class Hessian2Input
     }
     
     ObjectDefinition def = new ObjectDefinition(type, reader, fields);
-
-    if (_classDefs == null)
-      _classDefs = new ArrayList<ObjectDefinition>();
 
     _classDefs.add(def);
   }
@@ -2223,8 +2223,15 @@ public class Hessian2Input
    */
   public void resetReferences()
   {
-    if (_refs != null)
-      _refs.clear();
+    _refs.clear();
+  }
+  
+  public void reset()
+  {
+    resetReferences();
+    
+    _classDefs.clear();
+    _types.clear();
   }
 
   public Object readStreamingObject()

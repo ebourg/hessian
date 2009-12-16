@@ -118,8 +118,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   private SerializerFactory _serializerFactory;
   private HessianRemoteResolver _resolver;
 
-  private ClassLoader _loader;
-
   private String _user;
   private String _password;
   private String _basicAuth;
@@ -134,8 +132,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
   private long _readTimeout = -1;
 
-  private String _connectionFactoryName = "jms/ConnectionFactory";
-
   /**
    * Creates the new proxy factory.
    */
@@ -149,7 +145,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
    */
   public HessianProxyFactory(ClassLoader loader)
   {
-    _loader = loader;
     _resolver = new HessianProxyResolver(this);
   }
 
@@ -177,7 +172,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
    */
   public void setConnectionFactoryName(String connectionFactoryName)
   {
-    _connectionFactoryName = connectionFactoryName;
   }
 
   /**
@@ -301,7 +295,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
     URLConnection conn = url.openConnection();
 
-    HttpURLConnection httpConn = (HttpURLConnection) conn;
+    // HttpURLConnection httpConn = (HttpURLConnection) conn;
     // httpConn.setRequestMethod("POST");
     // conn.setDoInput(true);
 
@@ -349,7 +343,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-    Class apiClass = Class.forName(apiClassName, false, loader);
+    Class<?> apiClass = Class.forName(apiClassName, false, loader);
 
     return create(apiClass, url);
   }
@@ -392,12 +386,33 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public Object create(Class api, String urlName, ClassLoader loader)
     throws MalformedURLException
   {
+    URL url = new URL(urlName);
+    
+    return create(api, url, loader);
+  }
+
+  /**
+   * Creates a new proxy with the specified URL.  The returned object
+   * is a proxy with the interface specified by api.
+   *
+   * <pre>
+   * String url = "http://localhost:8080/ejb/hello");
+   * HelloHome hello = (HelloHome) factory.create(HelloHome.class, url);
+   * </pre>
+   *
+   * @param api the interface the proxy class needs to implement
+   * @param url the URL where the client object is located.
+   *
+   * @return a proxy to the object with the specified interface.
+   */
+  public Object create(Class<?> api, URL url, ClassLoader loader)
+  {
     if (api == null)
       throw new NullPointerException("api must not be null for HessianProxyFactory.create()");
     InvocationHandler handler = null;
 
-    URL url = new URL(urlName);
-
+    // XXX: this only exists for QA purposes
+    /*
     try {
       // clear old keepalive connections
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -414,6 +429,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       conn.disconnect();
     } catch (IOException e) {
     }
+    */
 
     handler = new HessianProxy(url, this, api);
 

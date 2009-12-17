@@ -474,6 +474,8 @@ public class SerializerFactory extends AbstractSerializerFactory
    */
   protected Deserializer getDefaultDeserializer(Class cl)
   {
+    if (InputStream.class.equals(cl))
+      return InputStreamDeserializer.DESER;
     
     if (_isEnableUnsafeSerializer) {
       return new UnsafeDeserializer(cl);

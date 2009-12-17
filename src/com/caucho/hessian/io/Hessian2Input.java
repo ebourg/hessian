@@ -1134,6 +1134,11 @@ public class Hessian2Input
 	_isLastChunk = true;
 	_chunkLength = tag - 0x00;
 	break;
+	
+      case 0x30: case 0x31: case 0x32: case 0x33:
+	_isLastChunk = true;
+	_chunkLength = (tag - 0x30) * 256 + read();
+	break;
 
       default:
         throw expect("string", tag);
@@ -1164,8 +1169,26 @@ public class Hessian2Input
           _isLastChunk = tag == 'S';
           _chunkLength = (read() << 8) + read();
           break;
+
+	case 0x00: case 0x01: case 0x02: case 0x03:
+	case 0x04: case 0x05: case 0x06: case 0x07:
+	case 0x08: case 0x09: case 0x0a: case 0x0b:
+	case 0x0c: case 0x0d: case 0x0e: case 0x0f:
+
+	case 0x10: case 0x11: case 0x12: case 0x13:
+	case 0x14: case 0x15: case 0x16: case 0x17:
+	case 0x18: case 0x19: case 0x1a: case 0x1b:
+	case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+	  _isLastChunk = true;
+	  _chunkLength = tag - 0x00;
+	  break;
+
+	case 0x30: case 0x31: case 0x32: case 0x33:
+	  _isLastChunk = true;
+	  _chunkLength = (tag - 0x30) * 256 + read();
+	  break;
       
-        default:
+	default:
           throw expect("string", tag);
         }
       }
@@ -1379,9 +1402,15 @@ public class Hessian2Input
 
 	byte []buffer = new byte[_chunkLength];
 
-	int k = 0;
-	while ((data = parseByte()) >= 0)
-	  buffer[k++] = (byte) data;
+	int offset = 0;
+	while (offset < _chunkLength) {
+	  int sublen = read(buffer, 0, _chunkLength - offset);
+
+	  if (sublen <= 0)
+	    break;
+	  
+	  offset += sublen;
+	}
 
 	return buffer;
       }
@@ -1392,10 +1421,15 @@ public class Hessian2Input
 	_chunkLength = (tag - 0x34) * 256 + read();
 
 	byte []buffer = new byte[_chunkLength];
-	int k = 0;
 
-	while ((data = parseByte()) >= 0) {
-	  buffer[k++] = (byte) data;
+	int offset = 0;
+	while (offset < _chunkLength) {
+	  int sublen = read(buffer, 0, _chunkLength - offset);
+
+	  if (sublen <= 0)
+	    break;
+	  
+	  offset += sublen;
 	}
 
 	return buffer;
@@ -1432,17 +1466,52 @@ public class Hessian2Input
 
     case 'B':
     case BC_BINARY_CHUNK:
-      _isLastChunk = tag == 'B';
-      _chunkLength = (read() << 8) + read();
+      {
+	_isLastChunk = tag == 'B';
+	_chunkLength = (read() << 8) + read();
 
-      int value = parseByte();
+	int value = parseByte();
 
-      // special code so successive read byte won't
-      // be read as a single object.
-      if (_chunkLength == 0 && _isLastChunk)
-        _chunkLength = END_OF_DATA;
+	// special code so successive read byte won't
+	// be read as a single object.
+	if (_chunkLength == 0 && _isLastChunk)
+	  _chunkLength = END_OF_DATA;
 
-      return value;
+	return value;
+      }
+
+    case 0x20: case 0x21: case 0x22: case 0x23:
+    case 0x24: case 0x25: case 0x26: case 0x27:
+    case 0x28: case 0x29: case 0x2a: case 0x2b:
+    case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+      {
+	_isLastChunk = true;
+	_chunkLength = tag - 0x20;
+
+	int value = parseByte();
+
+	// special code so successive read byte won't
+	// be read as a single object.
+	if (_chunkLength == 0)
+	  _chunkLength = END_OF_DATA;
+
+	return value;
+      }
+      
+    case 0x34: case 0x35: case 0x36: case 0x37:
+      {
+	_isLastChunk = true;
+	_chunkLength = (tag - 0x34) * 256 + read();
+
+	int value = parseByte();
+
+	// special code so successive read byte won't
+	// be read as a single object.
+	if (_chunkLength == 0)
+	  _chunkLength = END_OF_DATA;
+
+	return value;
+      }
       
     default:
       throw expect("binary", tag);
@@ -1473,6 +1542,23 @@ public class Hessian2Input
         _isLastChunk = tag == 'B';
         _chunkLength = (read() << 8) + read();
         break;
+
+    case 0x20: case 0x21: case 0x22: case 0x23:
+    case 0x24: case 0x25: case 0x26: case 0x27:
+    case 0x28: case 0x29: case 0x2a: case 0x2b:
+    case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+      {
+	_isLastChunk = true;
+	_chunkLength = tag - 0x20;
+	break;
+      }
+      
+    case 0x34: case 0x35: case 0x36: case 0x37:
+      {
+	_isLastChunk = true;
+	_chunkLength = (tag - 0x34) * 256 + read();
+	break;
+      }
       
       default:
         throw expect("binary", tag);
@@ -2441,6 +2527,11 @@ public class Hessian2Input
 	_isLastChunk = true;
 	_chunkLength = code - 0x00;
 	break;
+	
+      case 0x30: case 0x31: case 0x32: case 0x33:
+	_isLastChunk = true;
+	_chunkLength = (code - 0x30) * 256 + read();
+	break;
 
       default:
         throw expect("string", code);
@@ -2555,6 +2646,11 @@ public class Hessian2Input
       _isLastChunk = true;
       _chunkLength = tag - 0x20;
       break;
+
+    case 0x34: case 0x35: case 0x36: case 0x37:
+      _isLastChunk = true;
+      _chunkLength = (tag - 0x34) * 256 + read();
+      break;
       
     default:
       throw expect("binary", tag);
@@ -2597,6 +2693,11 @@ public class Hessian2Input
 	case 0x2c: case 0x2d: case 0x2e: case 0x2f:
 	  _isLastChunk = true;
 	  _chunkLength = code - 0x20;
+	  break;
+	  
+	case 0x34: case 0x35: case 0x36: case 0x37:
+	  _isLastChunk = true;
+	  _chunkLength = (code - 0x34) * 256 + read();
 	  break;
 
         default:

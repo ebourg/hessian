@@ -115,6 +115,8 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   protected static Logger log
     = Logger.getLogger(HessianProxyFactory.class.getName());
 
+  private final ClassLoader _loader;
+  
   private SerializerFactory _serializerFactory;
   private HessianRemoteResolver _resolver;
 
@@ -131,6 +133,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   private boolean _isDebug = false;
 
   private long _readTimeout = -1;
+  private long _connectTimeout = -1;
 
   /**
    * Creates the new proxy factory.
@@ -145,6 +148,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
    */
   public HessianProxyFactory(ClassLoader loader)
   {
+    _loader = loader;
     _resolver = new HessianProxyResolver(this);
   }
 
@@ -239,6 +243,22 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   }
 
   /**
+   * The socket connection timeout in milliseconds.
+   */
+  public long getConnectTimeout()
+  {
+    return _connectTimeout;
+  }
+
+  /**
+   * The socket connect timeout in milliseconds.
+   */
+  public void setConnectTimeout(long timeout)
+  {
+    _connectTimeout = timeout;
+  }
+
+  /**
    * True if the proxy can read Hessian 2 responses.
    */
   public void setHessian2Reply(boolean isHessian2)
@@ -279,7 +299,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public SerializerFactory getSerializerFactory()
   {
     if (_serializerFactory == null)
-      _serializerFactory = new SerializerFactory();
+      _serializerFactory = new SerializerFactory(_loader);
 
     return _serializerFactory;
   }
@@ -298,6 +318,9 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     // HttpURLConnection httpConn = (HttpURLConnection) conn;
     // httpConn.setRequestMethod("POST");
     // conn.setDoInput(true);
+
+    if (_connectTimeout >= 0)
+      conn.setConnectTimeout((int) _connectTimeout);
 
     conn.setDoOutput(true);
 
@@ -341,9 +364,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     if (apiClassName == null)
       throw new HessianRuntimeException(url + " has an unknown api.");
 
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
-    Class<?> apiClass = Class.forName(apiClassName, false, loader);
+    Class<?> apiClass = Class.forName(apiClassName, false, _loader);
 
     return create(apiClass, url);
   }
@@ -365,8 +386,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public Object create(Class api, String urlName)
     throws MalformedURLException
   {
-    return create(api, urlName,
-                  Thread.currentThread().getContextClassLoader());
+    return create(api, urlName, _loader);
   }
 
   /**
@@ -531,8 +551,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     if (api == null)
       throw new NamingException("`type' must be configured for HessianProxyFactory.");
 
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-    Class apiClass = Class.forName(api, false, loader);
+    Class apiClass = Class.forName(api, false, _loader);
 
     return create(apiClass, url);
   }

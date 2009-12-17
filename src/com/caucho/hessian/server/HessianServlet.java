@@ -307,12 +307,17 @@ public class HessianServlet extends GenericServlet {
   private Class loadClass(String className)
     throws ClassNotFoundException
   {
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
+    ClassLoader loader = getContextClassLoader();
+    
     if (loader != null)
       return Class.forName(className, false, loader);
     else
       return Class.forName(className);
+  }
+
+  protected ClassLoader getContextClassLoader()
+  {
+    return Thread.currentThread().getContextClassLoader();
   }
 
   private void init(Object service)

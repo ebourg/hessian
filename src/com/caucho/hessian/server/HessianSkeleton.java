@@ -147,11 +147,10 @@ public class HessianSkeleton extends AbstractSkeleton {
   {
     boolean isDebug = false;
 
-    if (log.isLoggable(Level.FINEST)
-        || isDebug() && log.isLoggable(Level.FINE)) {
+    if (isDebugInvoke()) {
       isDebug = true;
 
-      PrintWriter dbg = new PrintWriter(new LogWriter(log));
+      PrintWriter dbg = createDebugPrintWriter();
       HessianDebugInputStream dIs = new HessianDebugInputStream(is, dbg);
       dIs.startTop2();
       is = dIs;
@@ -314,6 +313,22 @@ public class HessianSkeleton extends AbstractSkeleton {
     out.writeReply(result);
 
     out.close();
+  }
+
+  protected boolean isDebugInvoke()
+  {
+    return (log.isLoggable(Level.FINEST)
+	    || isDebug() && log.isLoggable(Level.FINE));
+  }
+  
+  /**
+   * Creates the PrintWriter for debug output. The default is to
+   * write to java.util.Logging.
+   */
+  protected PrintWriter createDebugPrintWriter()
+    throws IOException
+  {
+    return new PrintWriter(new LogWriter(log));
   }
 
   static class LogWriter extends Writer {

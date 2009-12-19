@@ -105,6 +105,11 @@ public class HessianDebugInputStream extends InputStream
   {
     _state.startData1();
   }
+  
+  public void startStreaming()
+  {
+    _state.startStreaming();
+  }
 
   public void setDepth(int depth)
   {

@@ -78,9 +78,11 @@ abstract public class AbstractStreamDeserializer extends AbstractDeserializer {
     return value;
   }
   
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
+  public Object readObject(AbstractHessianInput in, Object []fields)
     throws IOException
   {
+    String []fieldNames = (String []) fields;
+    
     Object value = null;
 
     for (int i = 0; i < fieldNames.length; i++) {

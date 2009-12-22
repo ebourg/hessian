@@ -46,19 +46,61 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.io;
+package com.caucho.hessian.client;
 
 import java.net.URL;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 
 /**
- * Internal factory for creating connections to the server.  The default
- * factory is java.net
+ * Internal connection to a server.  The default connection is based on
+ * java.net
  */
-public interface HessianConnectionFactory {
+public interface HessianConnection {
   /**
-   * Opens a new or recycled connection to the HTTP server.
+   * Adds HTTP headers.
    */
-  public HessianConnection open(URL url)
+  public void addHeader(String key, String value);
+  
+  /**
+   * Returns the output stream for the request.
+   */
+  public OutputStream getOutputStream()
+    throws IOException;
+
+  /**
+   * Sends the query
+   */
+  public void sendRequest()
+    throws IOException;
+
+  /**
+   * Returns the status code.
+   */
+  public int getStatusCode();
+
+  /**
+   * Returns the status string.
+   */
+  public String getStatusMessage();
+
+  /**
+   * Returns the InputStream to the result
+   */
+  public InputStream getInputStream()
+    throws IOException;
+
+  /**
+   * Close/free the connection. If keepalive is allowed, it may be used.
+   */
+  public void close()
+    throws IOException;
+
+  /**
+   * Shut the connection down.
+   */
+  public void destroy()
     throws IOException;
 }
+

@@ -77,6 +77,9 @@ public class HessianInputFactory
     int minor = is.read();
 
     switch (code) {
+    case -1:
+      throw new IOException("Unexpected end of file for Hessian message");
+      
     case 'c':
       if (major >= 2)
 	return HeaderType.CALL_1_REPLY_2;
@@ -89,7 +92,7 @@ public class HessianInputFactory
       return HeaderType.HESSIAN_2;
 
     default:
-      throw new IOException((char) code + " is an unknown Hessian message code.");
+      throw new IOException((char) code + " 0x" + Integer.toHexString(code) + " is an unknown Hessian message code.");
     }
   }
 

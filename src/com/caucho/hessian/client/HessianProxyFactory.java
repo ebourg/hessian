@@ -118,6 +118,9 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   private final ClassLoader _loader;
   
   private SerializerFactory _serializerFactory;
+
+  private HessianConnectionFactory _connFactory;
+  
   private HessianRemoteResolver _resolver;
 
   private String _user;
@@ -170,12 +173,38 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     _basicAuth = null;
   }
 
-  /**
-   * Sets the name of the connection factory to use when connecting
-   * to JMS Hessian services.
-   */
-  public void setConnectionFactoryName(String connectionFactoryName)
+  public String getBasicAuth()
   {
+    if (_basicAuth != null)
+      return _basicAuth;
+
+    else if (_user != null && _password != null)
+      return "Basic " + base64(_user + ":" + _password);
+
+    else
+      return null;
+  }
+
+  /**
+   * Sets the connection factory to use when connecting
+   * to the Hessian service.
+   */
+  public void setConnectionFactory(HessianConnectionFactory factory)
+  {
+    _connFactory = factory;
+  }
+
+  /**
+   * Returns the connection factory to be used for the HTTP request.
+   */
+  public HessianConnectionFactory getConnectionFactory()
+  {
+    if (_connFactory == null) {
+      _connFactory = new HessianURLConnectionFactory();
+      _connFactory.setHessianProxyFactory(this);
+    }
+    
+    return _connFactory;
   }
 
   /**
@@ -305,45 +334,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   }
 
   /**
-   * Creates the URL connection.
-   */
-  protected URLConnection openConnection(URL url)
-    throws IOException
-  {
-    if (log.isLoggable(Level.FINER))
-      log.finer(this + " openConnection(" + url + ")");
-
-    URLConnection conn = url.openConnection();
-
-    // HttpURLConnection httpConn = (HttpURLConnection) conn;
-    // httpConn.setRequestMethod("POST");
-    // conn.setDoInput(true);
-
-    if (_connectTimeout >= 0)
-      conn.setConnectTimeout((int) _connectTimeout);
-
-    conn.setDoOutput(true);
-
-    if (_readTimeout > 0) {
-      try {
-        conn.setReadTimeout((int) _readTimeout);
-      } catch (Throwable e) {
-      }
-    }
-
-    conn.setRequestProperty("Content-Type", "x-application/hessian");
-
-    if (_basicAuth != null)
-      conn.setRequestProperty("Authorization", _basicAuth);
-    else if (_user != null && _password != null) {
-      _basicAuth = "Basic " + base64(_user + ":" + _password);
-      conn.setRequestProperty("Authorization", _basicAuth);
-    }
-
-    return conn;
-  }
-
-  /**
    * Creates a new proxy with the specified URL.  The API class uses
    * the java.api.class value from _hessian_
    *
@@ -430,26 +420,6 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     if (api == null)
       throw new NullPointerException("api must not be null for HessianProxyFactory.create()");
     InvocationHandler handler = null;
-
-    // XXX: this only exists for QA purposes
-    /*
-    try {
-      // clear old keepalive connections
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-      conn.setConnectTimeout(10);
-      conn.setReadTimeout(10);
-
-      conn.setRequestProperty("Connection", "close");
-
-      InputStream is = conn.getInputStream();
-
-      is.close();
-
-      conn.disconnect();
-    } catch (IOException e) {
-    }
-    */
 
     handler = new HessianProxy(url, this, api);
 

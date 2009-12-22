@@ -46,47 +46,24 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.io;
+package com.caucho.hessian.client;
 
 import java.net.URL;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 
 /**
- * Internal connection to a server.  The default connection is based on
- * java.net
+ * Internal factory for creating connections to the server.  The default
+ * factory is java.net
  */
-public interface HessianConnection {
+public interface HessianConnectionFactory {
   /**
-   * Returns the output stream for the request.
+   * Sets the HessianProxyFactory
    */
-  public OutputStream openOutputStream()
+  public void setHessianProxyFactory(HessianProxyFactory factory);
+  
+  /**
+   * Opens a new or recycled connection to the HTTP server.
+   */
+  public HessianConnection open(URL url)
     throws IOException;
-
-  /**
-   * Returns the status code.
-   */
-  public int getStatusCode();
-
-  /**
-   * Returns the status string.
-   */
-  public String getStatus();
-
-  /**
-   * Returns the error message for a failed status
-   */
-  public String getErrorMessage();
-
-  /**
-   * Returns the InputStream to the result
-   */
-  public InputStream getInputStream();
-
-  /**
-   * Close/free the connection
-   */
-  public void close();
 }
-

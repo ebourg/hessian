@@ -94,7 +94,7 @@ public class Hessian2Output
     = new IdentityIntMap(256);
 
   // map of types
-  private HashMap _typeRefs;
+  private HashMap<String,Integer> _typeRefs;
 
   private final byte []_buffer = new byte[SIZE];
   private int _offset;
@@ -596,7 +596,7 @@ public class Hessian2Output
     }
 
     if (_typeRefs == null)
-      _typeRefs = new HashMap();
+      _typeRefs = new HashMap<String,Integer>();
 
     Integer typeRefV = (Integer) _typeRefs.get(type);
 
@@ -1111,8 +1111,6 @@ public class Hessian2Output
       _buffer[_offset++] = (byte) 'N';
     }
     else {
-      flushBuffer();
-
       while (SIZE - _offset - 3 < length) {
         int sublen = SIZE - _offset - 3;
 
@@ -1182,19 +1180,20 @@ public class Hessian2Output
     throws IOException
   {
     while (length > 0) {
-      int sublen = length;
+      flushIfFull();
+      
+      int sublen = _buffer.length - _offset;
 
-      if (0x8000 < sublen)
-        sublen = 0x8000;
+      if (length < sublen)
+        sublen = length;
+ 
+      _buffer[_offset++] = BC_BINARY_CHUNK;
+      _buffer[_offset++] = (byte) (sublen >> 8);
+      _buffer[_offset++] = (byte) sublen;
+      
+      System.arraycopy(buffer, offset, _buffer, _offset, sublen);
 
-      flushBuffer(); // bypass buffer
-
-      _os.write(BC_BINARY_CHUNK);
-      _os.write(sublen >> 8);
-      _os.write(sublen);
-
-      _os.write(buffer, offset, sublen);
-
+     _offset += sublen;
       length -= sublen;
       offset += sublen;
     }
@@ -1380,7 +1379,7 @@ public class Hessian2Output
     }
     
     int len = offset - 3;
-
+    
     _buffer[0] = (byte) (0x80);
     _buffer[1] = (byte) (0x80 + ((len >> 7) & 0x7f));
     _buffer[2] = (byte) (len & 0x7f);
@@ -1518,11 +1517,7 @@ public class Hessian2Output
     int offset = _offset;
 
     if (SIZE < offset + 32) {
-      _offset = 0;
-
-      OutputStream os = _os;
-      if (os != null)
-        os.write(_buffer, 0, offset);
+      flushBuffer();
     }
   }
 

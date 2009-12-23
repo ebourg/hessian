@@ -2320,6 +2320,18 @@ public class Hessian2Input
     _types.clear();
   }
 
+  public void resetBuffer()
+  {
+    int offset = _offset;
+    _offset = 0;
+    
+    int length = _length;
+    _length = 0;
+
+    if (length > 0 && offset != length)
+      throw new IllegalStateException("offset=" + offset + " length=" + length);
+  }
+
   public Object readStreamingObject()
     throws IOException
   {
@@ -2792,12 +2804,16 @@ public class Hessian2Input
       _offset--;
 
       try {
+	int offset = _offset;
+	String context = new String(_buffer, 0, _length, "ISO-8859-1");
+	  
 	Object obj = readObject();
 
 	if (obj != null) {
 	  return error("expected " + expect
 		       + " at 0x" + Integer.toHexString(ch & 0xff)
-		       + " " + obj.getClass().getName() + " (" + obj + ")");
+		       + " " + obj.getClass().getName() + " (" + obj + ")"
+		       + "\n  offset=" + offset + "\n  context[" + context + "]");
 	}
 	else
 	  return error("expected " + expect

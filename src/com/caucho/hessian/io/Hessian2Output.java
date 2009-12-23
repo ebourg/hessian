@@ -114,6 +114,8 @@ public class Hessian2Output
 
   public void init(OutputStream os)
   {
+    reset();
+    
     _os = os;
   }
 
@@ -1397,8 +1399,9 @@ public class Hessian2Output
       else if (len < 0x80) {
         os.write(_buffer, 1, offset - 1);
       }
-      else
+      else {
         os.write(_buffer, 0, offset);
+      }
     }
   }
 
@@ -1596,7 +1599,8 @@ public class Hessian2Output
   public void reset()
   {
     if (_refs != null)
-    _refs.clear();
+      _refs.clear();
+    
     _classRefs.clear();
     _typeRefs = null;
     _offset = 0;

@@ -115,7 +115,7 @@ public class Hessian2Output
   public void init(OutputStream os)
   {
     reset();
-    
+
     _os = os;
   }
 
@@ -1181,16 +1181,16 @@ public class Hessian2Output
   {
     while (length > 0) {
       flushIfFull();
-      
+
       int sublen = _buffer.length - _offset;
 
       if (length < sublen)
         sublen = length;
- 
+
       _buffer[_offset++] = BC_BINARY_CHUNK;
       _buffer[_offset++] = (byte) (sublen >> 8);
       _buffer[_offset++] = (byte) sublen;
-      
+
       System.arraycopy(buffer, offset, _buffer, _offset, sublen);
 
      _offset += sublen;
@@ -1281,7 +1281,7 @@ public class Hessian2Output
     throws IOException
   {
     int newRef = _refs.size();
-    
+
     int ref = _refs.put(object, newRef, false);
 
     if (ref != newRef) {
@@ -1321,7 +1321,7 @@ public class Hessian2Output
 
     if (value >= 0) {
       _refs.put(newRef, value, true);
-      
+
       return true;
     }
     else
@@ -1380,9 +1380,9 @@ public class Hessian2Output
       _offset = 0;
       return;
     }
-    
+
     int len = offset - 3;
-    
+
     _buffer[0] = (byte) (0x80);
     _buffer[1] = (byte) (0x80 + ((len >> 7) & 0x7f));
     _buffer[2] = (byte) (len & 0x7f);
@@ -1402,16 +1402,7 @@ public class Hessian2Output
         os.write(_buffer, 1, offset - 1);
       }
       else {
-        if (_buffer[0] == 0x3 || _buffer[0] == 'N') {
-          System.out.println("EEK:" + _buffer[0]);
-          Thread.dumpStack();
-        }
-
         os.write(_buffer, 0, offset);
-        
-        if (_buffer[0] == 0x3 || _buffer[0] == 'N') {
-          System.out.println("OOK:");
-        }
       }
     }
   }
@@ -1565,11 +1556,11 @@ if (_buffer[0] == 'C' || _buffer[0] == 'N')
 
       if (os != null)
         os.write(_buffer, 0, offset);
-      
+
       _buffer[0] = (byte) 0x56;
       _buffer[1] = (byte) 0x56;
       _buffer[2] = (byte) 0x56;
-   
+
     }
   }
 
@@ -1591,7 +1582,7 @@ if (_buffer[0] == 'C' || _buffer[0] == 'N')
   public void free()
   {
     reset();
-    
+
     _os = null;
     _isCloseStreamOnClose = false;
   }
@@ -1613,7 +1604,7 @@ if (_buffer[0] == 'C' || _buffer[0] == 'N')
   {
     if (_refs != null)
       _refs.clear();
-    
+
     _classRefs.clear();
     _typeRefs = null;
     _offset = 0;

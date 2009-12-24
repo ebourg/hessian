@@ -275,7 +275,7 @@ public class HessianSkeleton extends AbstractSkeleton {
       return;
     }
 
-    Class []args = method.getParameterTypes();
+    Class<?> []args = method.getParameterTypes();
 
     if (argLength != args.length && argLength >= 0) {
       out.writeFault("NoSuchMethod",
@@ -288,6 +288,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     Object []values = new Object[args.length];
 
     for (int i = 0; i < args.length; i++) {
+      // XXX: needs Marshal object
       values[i] = in.readObject(args[i]);
     }
 
@@ -295,11 +296,12 @@ public class HessianSkeleton extends AbstractSkeleton {
 
     try {
       result = method.invoke(service, values);
-    } catch (Throwable e) {
-      if (e instanceof InvocationTargetException)
-        e = ((InvocationTargetException) e).getTargetException();
+    } catch (Exception e) {
+      Throwable e1 = e;
+      if (e1 instanceof InvocationTargetException)
+        e1 = ((InvocationTargetException) e).getTargetException();
 
-      log.log(Level.FINE, this + " " + e.toString(), e);
+      log.log(Level.FINE, this + " " + e1.toString(), e1);
 
       out.writeFault("ServiceException", e.getMessage(), e);
       out.close();

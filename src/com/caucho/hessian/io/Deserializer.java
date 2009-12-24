@@ -101,4 +101,8 @@ public interface Deserializer {
   public Object readObject(AbstractHessianInput in,
                            Object []fields)
     throws IOException;
+  
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames)
+    throws IOException;
 }

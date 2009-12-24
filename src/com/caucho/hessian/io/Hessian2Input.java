@@ -2154,12 +2154,17 @@ public class Hessian2Input
     Deserializer reader = factory.getObjectDeserializer(type, null);
     
     Object []fields = reader.createFields(len);
+    String []fieldNames = new String[len];
     
     for (int i = 0; i < len; i++) {
-      fields[i] = reader.createField(readString());
+      String name = readString();
+      
+      fields[i] = reader.createField(name);
+      fieldNames[i] = name;
     }
     
-    ObjectDefinition def = new ObjectDefinition(type, reader, fields);
+    ObjectDefinition def
+      = new ObjectDefinition(type, reader, fields, fieldNames);
 
     _classDefs.add(def);
   }
@@ -2177,7 +2182,7 @@ public class Hessian2Input
     if (cl != reader.getType() && cl != null) {
       reader = factory.getObjectDeserializer(type, cl);
       
-      return reader.readObject(this, fields);
+      return reader.readObject(this, def.getFieldNames());
     }
     else {
       return reader.readObject(this, fields);
@@ -2805,7 +2810,8 @@ public class Hessian2Input
 
       try {
 	int offset = _offset;
-	String context = new String(_buffer, 0, _length, "ISO-8859-1");
+	String context
+	  = buildDebugContext(_buffer, 0, _length, offset);
 	  
 	Object obj = readObject();
 
@@ -2813,7 +2819,7 @@ public class Hessian2Input
 	  return error("expected " + expect
 		       + " at 0x" + Integer.toHexString(ch & 0xff)
 		       + " " + obj.getClass().getName() + " (" + obj + ")"
-		       + "\n  offset=" + offset + "\n  context[" + context + "]");
+		       + "\n  " + context + "");
 	}
 	else
 	  return error("expected " + expect
@@ -2825,6 +2831,39 @@ public class Hessian2Input
 		     + " at 0x" + Integer.toHexString(ch & 0xff));
       }
     }
+  }
+  
+  private String buildDebugContext(byte []buffer, int offset, int length,
+                                   int errorOffset)
+  {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append("[");
+    for (int i = 0; i < errorOffset; i++) {
+      int ch = buffer[offset + i];
+      addDebugChar(sb, ch);
+    }
+    sb.append("] ");
+    addDebugChar(sb, buffer[offset + errorOffset]);
+    sb.append(" [");
+    for (int i = errorOffset + 1; i < length; i++) {
+      int ch = buffer[offset + i];
+      addDebugChar(sb, ch);
+    }
+    sb.append("]");
+    
+    return sb.toString();
+  }
+  
+  private void addDebugChar(StringBuilder sb, int ch)
+  {    
+    if (ch >= 0x20 && ch < 0x7f) {
+      sb.append((char) ch);
+    }
+    else if (ch == '\n')
+      sb.append((char) ch);
+    else
+      sb.append(String.format("\\x%02x", ch & 0xff));    
   }
 
   protected String codeName(int ch)
@@ -2894,14 +2933,17 @@ public class Hessian2Input
     private final String _type;
     private final Deserializer _reader;
     private final Object []_fields;
+    private final String []_fieldNames;
 
     ObjectDefinition(String type,
                      Deserializer reader,
-                     Object []fields)
+                     Object []fields,
+                     String []fieldNames)
     {
       _type = type;
       _reader = reader;
       _fields = fields;
+      _fieldNames = fieldNames;
     }
 
     String getType()
@@ -2917,6 +2959,11 @@ public class Hessian2Input
     Object []getFields()
     {
       return _fields;
+    }
+    
+    String []getFieldNames()
+    {
+      return _fieldNames;
     }
   }
 

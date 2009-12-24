@@ -109,9 +109,11 @@ public class AnnotationDeserializer extends AbstractMapDeserializer {
   }
     
   public Object readObject(AbstractHessianInput in,
-			   String []fieldNames)
+			   Object []fields)
     throws IOException
   {
+    String []fieldNames = (String []) fields;
+    
     try {
       int ref = in.addRef(null);
 

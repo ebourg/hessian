@@ -71,6 +71,7 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     = Logger.getLogger(JavaDeserializer.class.getName());
 
   private static boolean _isEnabled;
+  @SuppressWarnings("restriction")
   private static Unsafe _unsafe;
 
   private Class<?> _type;
@@ -147,6 +148,24 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
       Object obj = instantiate();
 
       return readObject(in, obj, (FieldDeserializer []) fields);
+    } catch (IOException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new IOExceptionWrapper(_type.getName() + ":" + e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames)
+    throws IOException
+  {
+    try {
+      Object obj = instantiate();
+
+      return readObject(in, obj, fieldNames);
     } catch (IOException e) {
       throw e;
     } catch (RuntimeException e) {
@@ -233,6 +252,36 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     }
   }
 
+  public Object readObject(AbstractHessianInput in,
+                           Object obj,
+                           String []fieldNames)
+    throws IOException
+  {
+    try {
+      int ref = in.addRef(obj);
+
+      for (String fieldName : fieldNames) {
+        FieldDeserializer reader = _fieldMap.get(fieldName);
+        
+        if (reader != null)
+          reader.deserialize(in, obj);
+        else
+          in.readObject();
+      }
+
+      Object resolve = resolve(in, obj);
+
+      if (obj != resolve)
+        in.setRef(ref, resolve);
+
+      return resolve;
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new IOExceptionWrapper(obj.getClass().getName() + ":" + e, e);
+    }
+  }
+
   protected Object resolve(AbstractHessianInput in, Object obj)
     throws Exception
   {
@@ -250,6 +299,7 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     return obj;
   }
 
+  @SuppressWarnings("restriction")
   protected Object instantiate()
     throws Exception
   {
@@ -337,7 +387,7 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
       throws IOException;
   }
   
-  static class NullFieldDeserializer {
+  static class NullFieldDeserializer extends FieldDeserializer {
     static NullFieldDeserializer DESER = new NullFieldDeserializer();
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
@@ -350,12 +400,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     ObjectFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -375,12 +427,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     BooleanFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -400,12 +454,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     ByteFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -425,12 +481,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     CharFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -457,12 +515,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     ShortFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -482,12 +542,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     IntFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -507,12 +569,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     LongFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -532,6 +596,7 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     FloatFieldDeserializer(Field field)
     {
       _field = field;
@@ -563,6 +628,7 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -582,12 +648,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     StringFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -607,12 +675,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     SqlDateFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -633,12 +703,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     SqlTimestampFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {
@@ -659,12 +731,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
     private final Field _field;
     private final long _offset;
 
+    @SuppressWarnings("restriction")
     SqlTimeFieldDeserializer(Field field)
     {
       _field = field;
       _offset = _unsafe.objectFieldOffset(_field);
     }
 
+    @SuppressWarnings("restriction")
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {

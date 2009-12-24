@@ -100,9 +100,12 @@ public class SqlDateDeserializer extends AbstractDeserializer {
     return value;
   }
   
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
+  public Object readObject(AbstractHessianInput in,
+                           Object []fields)
     throws IOException
   {
+    String []fieldNames = (String []) fields;
+    
     int ref = in.addRef(null);
     
     long initValue = Long.MIN_VALUE;

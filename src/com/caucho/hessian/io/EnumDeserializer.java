@@ -104,9 +104,11 @@ public class EnumDeserializer extends AbstractDeserializer {
     return obj;
   }
   
-  public Object readObject(AbstractHessianInput in, String []fieldNames)
+  @Override
+  public Object readObject(AbstractHessianInput in, Object []fields)
     throws IOException
   {
+    String []fieldNames = (String []) fields;
     String name = null;
 
     for (int i = 0; i < fieldNames.length; i++) {

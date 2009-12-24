@@ -95,9 +95,6 @@ public class HessianProxy implements InvocationHandler, Serializable {
     _factory = factory;
     _url = url;
     _type = type;
-
-    if (type == null)
-      Thread.dumpStack();
   }
 
   /**

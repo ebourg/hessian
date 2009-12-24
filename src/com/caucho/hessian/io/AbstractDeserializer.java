@@ -128,6 +128,13 @@ public class AbstractDeserializer implements Deserializer {
     return name;
   }
   
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames)
+    throws IOException
+  {
+    return readObject(in, (Object []) fieldNames);
+  }
+  
   /**
    * Reads an object instance from the input stream
    */

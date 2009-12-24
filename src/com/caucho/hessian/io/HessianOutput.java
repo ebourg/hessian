@@ -285,6 +285,11 @@ public class HessianOutput extends AbstractHessianOutput {
   public void writeFault(String code, String message, Object detail)
     throws IOException
   {
+    // hessian/3525
+    os.write('r');
+    os.write(1);
+    os.write(0);
+    
     os.write('f');
     writeString("code");
     writeString(code);
@@ -296,6 +301,8 @@ public class HessianOutput extends AbstractHessianOutput {
       writeString("detail");
       writeObject(detail);
     }
+    os.write('z');
+    
     os.write('z');
   }
 

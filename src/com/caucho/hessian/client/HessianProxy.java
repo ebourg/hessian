@@ -289,7 +289,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
 
       return conn;
     } finally {
-      if (! isValid)
+      if (! isValid && conn != null)
 	conn.destroy();
     }
   }

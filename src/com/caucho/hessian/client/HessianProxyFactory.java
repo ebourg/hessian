@@ -200,7 +200,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
   public HessianConnectionFactory getConnectionFactory()
   {
     if (_connFactory == null) {
-      _connFactory = new HessianURLConnectionFactory();
+      _connFactory = createHessianConnectionFactory();
       _connFactory.setHessianProxyFactory(this);
     }
     
@@ -333,6 +333,29 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
     return _serializerFactory;
   }
 
+  protected HessianConnectionFactory createHessianConnectionFactory()
+  {
+    String className
+      = System.getProperty(HessianConnectionFactory.class.getName());
+
+    HessianConnectionFactory factory = null;
+      
+    try {
+      if (className != null) {
+	ClassLoader loader = Thread.currentThread().getContextClassLoader();
+	
+	Class<?> cl = Class.forName(className, false, loader);
+
+	factory = (HessianConnectionFactory) cl.newInstance();
+
+	return factory;
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    return new HessianURLConnectionFactory();
+  }
   /**
    * Creates a new proxy with the specified URL.  The API class uses
    * the java.api.class value from _hessian_

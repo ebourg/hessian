@@ -1364,6 +1364,9 @@ public class Hessian2Output
 
     _isPacket = true;
     _offset = 3;
+    _buffer[0] = (byte) 0x55;
+    _buffer[1] = (byte) 0x55;
+    _buffer[2] = (byte) 0x55;
   }
 
   public void endPacket()
@@ -1399,7 +1402,16 @@ public class Hessian2Output
         os.write(_buffer, 1, offset - 1);
       }
       else {
+        if (_buffer[0] == 0x3 || _buffer[0] == 'N') {
+          System.out.println("EEK:" + _buffer[0]);
+          Thread.dumpStack();
+        }
+
         os.write(_buffer, 0, offset);
+        
+        if (_buffer[0] == 0x3 || _buffer[0] == 'N') {
+          System.out.println("OOK:");
+        }
       }
     }
   }
@@ -1539,7 +1551,8 @@ public class Hessian2Output
 
     if (! _isPacket && offset > 0) {
       _offset = 0;
-
+if (_buffer[0] == 'C' || _buffer[0] == 'N')
+  Thread.dumpStack();
       if (os != null)
         os.write(_buffer, 0, offset);
     }
@@ -1552,6 +1565,11 @@ public class Hessian2Output
 
       if (os != null)
         os.write(_buffer, 0, offset);
+      
+      _buffer[0] = (byte) 0x56;
+      _buffer[1] = (byte) 0x56;
+      _buffer[2] = (byte) 0x56;
+   
     }
   }
 

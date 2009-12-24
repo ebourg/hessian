@@ -1542,8 +1542,6 @@ public class Hessian2Output
 
     if (! _isPacket && offset > 0) {
       _offset = 0;
-if (_buffer[0] == 'C' || _buffer[0] == 'N')
-  Thread.dumpStack();
       if (os != null)
         os.write(_buffer, 0, offset);
     }

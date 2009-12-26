@@ -58,6 +58,8 @@ import java.util.HashMap;
 
 import java.util.logging.*;
 
+import com.caucho.hessian.io.UnsafeDeserializer.FieldDeserializer;
+
 /**
  * Serializing an object for known object types.
  */
@@ -186,6 +188,24 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     }
   }
 
+  @Override
+  public Object readObject(AbstractHessianInput in,
+                           String []fieldNames)
+    throws IOException
+  {
+    try {
+      Object obj = instantiate();
+
+      return readObject(in, obj, fieldNames);
+    } catch (IOException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new IOExceptionWrapper(_type.getName() + ":" + e.getMessage(), e);
+    }
+  }
+
   /**
    * Returns the readResolve method
    */
@@ -254,6 +274,36 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
       if (obj != resolve)
 	in.setRef(ref, resolve);
+
+      return resolve;
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new IOExceptionWrapper(obj.getClass().getName() + ":" + e, e);
+    }
+  }
+
+  public Object readObject(AbstractHessianInput in,
+                           Object obj,
+                           String []fieldNames)
+    throws IOException
+  {
+    try {
+      int ref = in.addRef(obj);
+
+      for (String fieldName : fieldNames) {
+        FieldDeserializer reader = _fieldMap.get(fieldName);
+        
+        if (reader != null)
+          reader.deserialize(in, obj);
+        else
+          in.readObject();
+      }
+
+      Object resolve = resolve(in, obj);
+
+      if (obj != resolve)
+        in.setRef(ref, resolve);
 
       return resolve;
     } catch (IOException e) {

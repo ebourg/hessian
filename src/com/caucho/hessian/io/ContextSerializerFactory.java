@@ -322,9 +322,16 @@ public class ContextSerializerFactory
                                    Class type)
   {
     try {
-      Enumeration iter;
+      ClassLoader classLoader = getClassLoader();
+      
+      // on systems with the security manager enabled, the system classloader
+      // is null
+      if (classLoader == null)
+        return;
 
-      iter = getClassLoader().getResources(fileName);
+      Enumeration iter;
+      
+      iter = classLoader.getResources(fileName);
       while (iter.hasMoreElements()) {
         URL url = (URL) iter.nextElement();
 
@@ -348,14 +355,14 @@ public class ContextSerializerFactory
             Class serializerClass = null;
 
             try {
-              apiClass = Class.forName(apiName, false, getClassLoader());
+              apiClass = Class.forName(apiName, false, classLoader);
             } catch (ClassNotFoundException e) {
               log.fine(url + ": " + apiName + " is not available in this context: " + getClassLoader());
               continue;
             }
 
             try {
-              serializerClass = Class.forName(serializerName, false, getClassLoader());
+              serializerClass = Class.forName(serializerName, false, classLoader);
             } catch (ClassNotFoundException e) {
               log.fine(url + ": " + serializerName + " is not available in this context: " + getClassLoader());
               continue;

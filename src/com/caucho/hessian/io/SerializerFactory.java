@@ -388,6 +388,9 @@ public class SerializerFactory extends AbstractSerializerFactory
       deserializer = factory.getDeserializer(cl);
     }
 
+    if (deserializer != null)
+      return deserializer;
+
     // XXX: need test
     deserializer = _contextFactory.getDeserializer(cl.getName());
 

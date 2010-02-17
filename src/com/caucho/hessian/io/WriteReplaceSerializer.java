@@ -152,10 +152,7 @@ public class WriteReplaceSerializer extends AbstractSerializer
     try {
       Object repl;
 
-      if (_writeReplaceFactory != null)
-	repl = _writeReplace.invoke(_writeReplaceFactory, obj);
-      else
-	repl = _writeReplace.invoke(obj);
+      repl = writeReplace(obj);
 
       if (obj == repl)
         throw new HessianException(this + ": Hessian writeReplace error.  The writeReplace method (" + _writeReplace + ") must not return the same object: " + obj);
@@ -165,6 +162,21 @@ public class WriteReplaceSerializer extends AbstractSerializer
       out.writeObject(repl);
 
       out.replaceRef(repl, obj);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  @Override
+  protected Object writeReplace(Object obj)
+  {
+    try {
+      if (_writeReplaceFactory != null)
+        return _writeReplace.invoke(_writeReplaceFactory, obj);
+      else
+        return _writeReplace.invoke(obj);
     } catch (RuntimeException e) {
       throw e;
     } catch (InvocationTargetException e) {

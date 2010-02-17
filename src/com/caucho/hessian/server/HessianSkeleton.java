@@ -52,6 +52,7 @@ import com.caucho.hessian.io.AbstractHessianInput;
 import com.caucho.hessian.io.AbstractHessianOutput;
 import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.Hessian2Output;
+import com.caucho.hessian.io.HessianFactory;
 import com.caucho.hessian.io.HessianInput;
 import com.caucho.hessian.io.HessianOutput;
 import com.caucho.hessian.io.HessianDebugInputStream;
@@ -79,7 +80,9 @@ public class HessianSkeleton extends AbstractSkeleton {
     = Logger.getLogger(HessianSkeleton.class.getName());
 
   private boolean _isDebug;
+  
   private HessianInputFactory _inputFactory = new HessianInputFactory();
+  private HessianFactory _hessianFactory = new HessianFactory();
 
   private Object _service;
 
@@ -121,6 +124,11 @@ public class HessianSkeleton extends AbstractSkeleton {
   public boolean isDebug()
   {
     return _isDebug;
+  }
+  
+  public void setHessianFactory(HessianFactory factory)
+  {
+    _hessianFactory = factory;
   }
 
   /**
@@ -166,19 +174,19 @@ public class HessianSkeleton extends AbstractSkeleton {
 
     switch (header) {
     case CALL_1_REPLY_1:
-      in = new HessianInput(is);
-      out = new HessianOutput(os);
+      in = _hessianFactory.createHessianInput(is);
+      out = _hessianFactory.createHessianOutput(os);
       break;
 
     case CALL_1_REPLY_2:
-      in = new HessianInput(is);
-      out = new Hessian2Output(os);
+      in = _hessianFactory.createHessianInput(is);
+      out = _hessianFactory.createHessian2Output(os);
       break;
 
     case HESSIAN_2:
-      in = new Hessian2Input(is);
+      in = _hessianFactory.createHessian2Input(is);
       in.readCall();
-      out = new Hessian2Output(os);
+      out = _hessianFactory.createHessian2Output(os);
       break;
 
     default:
@@ -303,7 +311,7 @@ public class HessianSkeleton extends AbstractSkeleton {
 
       log.log(Level.FINE, this + " " + e1.toString(), e1);
 
-      out.writeFault("ServiceException", e.getMessage(), e);
+      out.writeFault("ServiceException", e1.getMessage(), e1);
       out.close();
       return;
     }

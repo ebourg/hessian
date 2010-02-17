@@ -366,10 +366,7 @@ public class HessianServlet extends GenericServlet {
 
       SerializerFactory serializerFactory = getSerializerFactory();
 
-      if (objectId != null)
-	_objectSkeleton.invoke(is, os, serializerFactory);
-      else
-	_homeSkeleton.invoke(is, os, serializerFactory);
+      invoke(is, os, objectId, serializerFactory);
     } catch (RuntimeException e) {
       throw e;
     } catch (ServletException e) {
@@ -379,6 +376,17 @@ public class HessianServlet extends GenericServlet {
     } finally {
       ServiceContext.end();
     }
+  }
+  
+  protected void invoke(InputStream is, OutputStream os,
+                        String objectId,
+                        SerializerFactory serializerFactory)
+    throws Exception
+  {
+    if (objectId != null)
+      _objectSkeleton.invoke(is, os, serializerFactory);
+    else
+      _homeSkeleton.invoke(is, os, serializerFactory);
   }
 
   protected Hessian2Input createHessian2Input(InputStream is)

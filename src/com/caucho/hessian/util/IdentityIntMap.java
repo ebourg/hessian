@@ -170,6 +170,16 @@ public class IdentityIntMap {
   }
 
   /**
+   * Removes a value in the property table.
+   */
+  public final void remove(Object key)
+  {
+    if (put(key, -1, true) != -1) {
+      _size--;
+    }
+  }
+
+  /**
    * Expands the property table
    */
   private void resize(int newSize)

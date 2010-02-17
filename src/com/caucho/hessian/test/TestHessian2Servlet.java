@@ -1774,14 +1774,22 @@ public class TestHessian2Servlet
   protected String getInputDebug()
   {
     CharArrayWriter writer = _threadWriter.get();
-
     if (writer != null)
       return writer.toString();
     else
       return null;
   }
 
-  protected Hessian2Input createHessian2Input(InputStream is)
+  /**
+   * Invoke the object with the request from the input stream.
+   *
+   * @param in the Hessian input stream
+   * @param out the Hessian output stream
+   */
+  @Override
+  public void invoke(InputStream is, OutputStream os, String objectId,
+                     SerializerFactory serializerFactory)
+    throws Exception
   {
     CharArrayWriter writer = new CharArrayWriter();
 
@@ -1792,6 +1800,6 @@ public class TestHessian2Servlet
     HessianDebugInputStream debug = new HessianDebugInputStream(is, dbg);
     debug.startTop2();
     
-    return new Hessian2Input(debug);
+    super.invoke(debug, os, objectId, serializerFactory);
   }
 }

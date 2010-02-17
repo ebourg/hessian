@@ -1297,19 +1297,18 @@ public class Hessian2Output
   /**
    * Removes a reference.
    */
-  /*
-  private boolean removeRef(Object obj)
+  @Override
+  public boolean removeRef(Object obj)
     throws IOException
   {
     if (_refs != null) {
-      _refs.put(obj, -1);
+      _refs.remove(obj);
 
       return true;
     }
     else
       return false;
   }
-  */
 
   /**
    * Replaces a reference from one object to another.

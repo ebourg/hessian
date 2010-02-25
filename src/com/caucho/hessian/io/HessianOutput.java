@@ -817,6 +817,12 @@ public class HessianOutput extends AbstractHessianOutput {
       return false;
     }
   }
+  
+  @Override
+  public boolean isRefPresent(Object obj)
+  {
+    return _refs != null && _refs.get(obj) != null;
+  }
 
   /**
    * Resets the references for streaming.

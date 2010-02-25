@@ -1293,6 +1293,12 @@ public class Hessian2Output
       return false;
     }
   }
+  
+  @Override
+  public boolean isRefPresent(Object obj)
+  {
+    return _refs.get(obj) > 0;
+  }
 
   /**
    * Removes a reference.

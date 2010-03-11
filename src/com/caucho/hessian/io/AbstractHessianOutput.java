@@ -457,7 +457,7 @@ abstract public class AbstractHessianOutput {
    * @param obj
    * @return
    */
-  abstract public boolean isRefPresent(Object obj);
+  abstract public int getRef(Object obj);
 
   /**
    * Resets the references for streaming.

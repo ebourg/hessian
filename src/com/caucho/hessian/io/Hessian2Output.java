@@ -1283,7 +1283,7 @@ public class Hessian2Output
     int newRef = _refs.size();
 
     int ref = _refs.put(object, newRef, false);
-
+    
     if (ref != newRef) {
       writeRef(ref);
 
@@ -1295,9 +1295,9 @@ public class Hessian2Output
   }
   
   @Override
-  public boolean isRefPresent(Object obj)
+  public int getRef(Object obj)
   {
-    return _refs.get(obj) > 0;
+    return _refs.get(obj);
   }
 
   /**
@@ -1326,7 +1326,9 @@ public class Hessian2Output
 
     if (value >= 0) {
       _refs.put(newRef, value, true);
-
+      
+      _refs.remove(oldRef);
+      
       return true;
     }
     else

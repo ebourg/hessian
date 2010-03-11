@@ -819,9 +819,19 @@ public class HessianOutput extends AbstractHessianOutput {
   }
   
   @Override
-  public boolean isRefPresent(Object obj)
+  public int getRef(Object obj)
   {
-    return _refs != null && _refs.get(obj) != null;
+    Integer value;
+    
+    if (_refs == null)
+      return -1;
+    
+    value = (Integer) _refs.get(obj);
+    
+    if (value == null)
+      return -1;
+    else
+      return value;
   }
 
   /**
@@ -858,6 +868,7 @@ public class HessianOutput extends AbstractHessianOutput {
 
     if (value != null) {
       _refs.put(newRef, value);
+      
       return true;
     }
     else

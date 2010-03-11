@@ -750,9 +750,17 @@ public class BurlapOutput extends AbstractBurlapOutput {
   }
   
   @Override
-  public boolean isRefPresent(Object obj)
+  public int getRef(Object obj)
   {
-    return _refs != null && _refs.get(obj) != null;
+    if (_refs == null)
+      return -1;
+    
+    Integer ref = (Integer) _refs.get(obj);
+    
+    if (ref != null)
+      return ref;
+    else
+      return -1;
   }
 
   /**

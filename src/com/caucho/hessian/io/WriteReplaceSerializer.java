@@ -147,7 +147,11 @@ public class WriteReplaceSerializer extends AbstractSerializer
   public void writeObject(Object obj, AbstractHessianOutput out)
     throws IOException
   {
-    if (out.isRefPresent(obj)) {
+    int ref = out.getRef(obj);
+    
+    if (ref >= 0) {
+      out.writeRef(ref);
+      
       return;
     }
     

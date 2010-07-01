@@ -355,12 +355,12 @@ public class BurlapInput extends AbstractBurlapInput {
       _replyFault = (Throwable) detail;
       
       if (message != null && _detailMessageField != null) {
-	try {
-	  _detailMessageField.set(_replyFault, message);
-	} catch (Throwable e) {
-	}
+        try {
+          _detailMessageField.set(_replyFault, message);
+        } catch (Throwable e) {
+        }
       }
-	
+
       return _replyFault;
     }
 
@@ -1330,7 +1330,7 @@ public class BurlapInput extends AbstractBurlapInput {
       while (ch >= '0' && ch <= '9') {
         ms = 10 * ms + ch - '0';
 
-	ch = read();
+        ch = read();
       }
     }
 

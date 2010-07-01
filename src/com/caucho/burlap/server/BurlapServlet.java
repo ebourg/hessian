@@ -106,47 +106,47 @@ public class BurlapServlet extends GenericServlet {
     
     try {
       if (_service == null) {
-	String className = getInitParameter("service-class");
-	Class<?> serviceClass = null;
+        String className = getInitParameter("service-class");
+        Class<?> serviceClass = null;
 
-	if (className != null) {
-	  ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (className != null) {
+          ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-	  if (loader != null)
-	    serviceClass = Class.forName(className, false, loader);
-	  else
-	    serviceClass = Class.forName(className);
-	}
-	else {
-	  if (getClass().equals(BurlapServlet.class))
-	    throw new ServletException("server must extend BurlapServlet");
+          if (loader != null)
+            serviceClass = Class.forName(className, false, loader);
+          else
+            serviceClass = Class.forName(className);
+        }
+        else {
+          if (getClass().equals(BurlapServlet.class))
+            throw new ServletException("server must extend BurlapServlet");
 
-	  serviceClass = getClass();
-	}
+          serviceClass = getClass();
+        }
 
-	_service = serviceClass.newInstance();
+        _service = serviceClass.newInstance();
 
-	if (_service instanceof BurlapServlet)
-	  ((BurlapServlet) _service).setService(this);
-	if (_service instanceof Service)
-	  ((Service) _service).init(getServletConfig());
-	else if (_service instanceof Servlet)
-	  ((Servlet) _service).init(getServletConfig());
+        if (_service instanceof BurlapServlet)
+          ((BurlapServlet) _service).setService(this);
+        if (_service instanceof Service)
+          ((Service) _service).init(getServletConfig());
+        else if (_service instanceof Servlet)
+          ((Servlet) _service).init(getServletConfig());
       }
       
       if (_apiClass == null) {
-	String className = getInitParameter("api-class");
+        String className = getInitParameter("api-class");
 
-	if (className != null) {
-	  ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (className != null) {
+          ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-	  if (loader != null)
-	    _apiClass = Class.forName(className, false, loader);
-	  else
-	    _apiClass = Class.forName(className);
-	}
-	else
-	  _apiClass = _service.getClass();
+          if (loader != null)
+            _apiClass = Class.forName(className, false, loader);
+          else
+            _apiClass = Class.forName(className);
+        }
+        else
+          _apiClass = _service.getClass();
       }
 
       _skeleton = new BurlapSkeleton(_service, _apiClass);

@@ -70,7 +70,7 @@ public class EnumDeserializer extends AbstractDeserializer {
 
     try {
       _valueOf = _enumType.getMethod("valueOf",
-			     new Class[] { Class.class, String.class });
+                             new Class[] { Class.class, String.class });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -92,7 +92,7 @@ public class EnumDeserializer extends AbstractDeserializer {
       if (key.equals("name"))
         name = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     in.readMapEnd();
@@ -115,7 +115,7 @@ public class EnumDeserializer extends AbstractDeserializer {
       if ("name".equals(fieldNames[i]))
         name = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     Object obj = create(name);

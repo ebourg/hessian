@@ -77,9 +77,9 @@ public class CalendarHandle implements java.io.Serializable, HessianHandle {
       Calendar cal;
       
       if (this.type != null)
-	cal = (Calendar) this.type.newInstance();
+        cal = (Calendar) this.type.newInstance();
       else
-	cal = new GregorianCalendar();
+        cal = new GregorianCalendar();
       
       cal.setTimeInMillis(this.date.getTime());
 

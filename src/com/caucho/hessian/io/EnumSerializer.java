@@ -97,9 +97,9 @@ public class EnumSerializer extends AbstractSerializer {
     }
     else {
       if (ref == -1) {
-	out.writeClassFieldLength(1);
-	out.writeString("name");
-	out.writeObjectBegin(cl.getName());
+        out.writeClassFieldLength(1);
+        out.writeString("name");
+        out.writeObjectBegin(cl.getName());
       }
 
       out.writeString(name);

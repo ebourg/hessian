@@ -358,12 +358,12 @@ public class HessianInput extends AbstractHessianInput {
       _replyFault = (Throwable) detail;
       
       if (message != null && _detailMessageField != null) {
-	try {
-	  _detailMessageField.set(_replyFault, message);
-	} catch (Throwable e) {
-	}
+        try {
+          _detailMessageField.set(_replyFault, message);
+        } catch (Throwable e) {
+        }
       }
-	
+
       return _replyFault;
     }
 
@@ -1023,14 +1023,14 @@ public class HessianInput extends AbstractHessianInput {
 
       // hessian/3386
       if ("".equals(type)) {
-	Deserializer reader;
-	reader = _serializerFactory.getDeserializer(cl);
+        Deserializer reader;
+        reader = _serializerFactory.getDeserializer(cl);
 
-	return reader.readMap(this);
+        return reader.readMap(this);
       }
       else {
-	Deserializer reader;
-	reader = _serializerFactory.getObjectDeserializer(type);
+        Deserializer reader;
+        reader = _serializerFactory.getObjectDeserializer(type);
 
         return reader.readMap(this);
       }
@@ -1566,42 +1566,42 @@ public class HessianInput extends AbstractHessianInput {
     }
     
     return new InputStream() {
-	boolean _isClosed = false;
-	
-	public int read()
-	  throws IOException
-	{
-	  if (_isClosed || _is == null)
-	    return -1;
+        boolean _isClosed = false;
 
-	  int ch = parseByte();
-	  if (ch < 0)
-	    _isClosed = true;
+        public int read()
+          throws IOException
+        {
+          if (_isClosed || _is == null)
+            return -1;
 
-	  return ch;
-	}
-	
-	public int read(byte []buffer, int offset, int length)
-	  throws IOException
-	{
-	  if (_isClosed || _is == null)
-	    return -1;
+          int ch = parseByte();
+          if (ch < 0)
+            _isClosed = true;
 
-	  int len = HessianInput.this.read(buffer, offset, length);
-	  if (len < 0)
-	    _isClosed = true;
+          return ch;
+        }
 
-	  return len;
-	}
+        public int read(byte []buffer, int offset, int length)
+          throws IOException
+        {
+          if (_isClosed || _is == null)
+            return -1;
 
-	public void close()
-	  throws IOException
-	{
-	  while (read() >= 0) {
-	  }
+          int len = HessianInput.this.read(buffer, offset, length);
+          if (len < 0)
+            _isClosed = true;
 
-	  _isClosed = true;
-	}
+          return len;
+        }
+
+        public void close()
+          throws IOException
+        {
+          while (read() >= 0) {
+          }
+
+          _isClosed = true;
+        }
       };
   }
   

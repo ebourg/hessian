@@ -342,13 +342,13 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
       
     try {
       if (className != null) {
-	ClassLoader loader = Thread.currentThread().getContextClassLoader();
-	
-	Class<?> cl = Class.forName(className, false, loader);
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-	factory = (HessianConnectionFactory) cl.newInstance();
+        Class<?> cl = Class.forName(className, false, loader);
 
-	return factory;
+        factory = (HessianConnectionFactory) cl.newInstance();
+
+        return factory;
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

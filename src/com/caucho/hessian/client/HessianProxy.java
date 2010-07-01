@@ -127,36 +127,36 @@ public class HessianProxy implements InvocationHandler, Serializable {
 
       // equals and hashCode are special cased
       if (methodName.equals("equals")
-	  && params.length == 1 && params[0].equals(Object.class)) {
-	Object value = args[0];
-	if (value == null || ! Proxy.isProxyClass(value.getClass()))
-	  return Boolean.FALSE;
+          && params.length == 1 && params[0].equals(Object.class)) {
+        Object value = args[0];
+        if (value == null || ! Proxy.isProxyClass(value.getClass()))
+          return Boolean.FALSE;
 
-	Object proxyHandler = Proxy.getInvocationHandler(value);
+        Object proxyHandler = Proxy.getInvocationHandler(value);
 
-	if (! (proxyHandler instanceof HessianProxy))
-	  return Boolean.FALSE;
-	
-	HessianProxy handler = (HessianProxy) proxyHandler;
+        if (! (proxyHandler instanceof HessianProxy))
+          return Boolean.FALSE;
 
-	return new Boolean(_url.equals(handler.getURL()));
+        HessianProxy handler = (HessianProxy) proxyHandler;
+
+        return new Boolean(_url.equals(handler.getURL()));
       }
       else if (methodName.equals("hashCode") && params.length == 0)
-	return new Integer(_url.hashCode());
+        return new Integer(_url.hashCode());
       else if (methodName.equals("getHessianType"))
-	return proxy.getClass().getInterfaces()[0].getName();
+        return proxy.getClass().getInterfaces()[0].getName();
       else if (methodName.equals("getHessianURL"))
-	return _url.toString();
+        return _url.toString();
       else if (methodName.equals("toString") && params.length == 0)
-	return "HessianProxy[" + _url + "]";
+        return "HessianProxy[" + _url + "]";
       
       if (! _factory.isOverloadEnabled())
-	mangleName = method.getName();
+        mangleName = method.getName();
       else
         mangleName = mangleName(method);
 
       synchronized (_mangleMap) {
-	_mangleMap.put(method, mangleName);
+        _mangleMap.put(method, mangleName);
       }
     }
 
@@ -165,20 +165,20 @@ public class HessianProxy implements InvocationHandler, Serializable {
     
     try {
       if (log.isLoggable(Level.FINER))
-	log.finer("Hessian[" + _url + "] calling " + mangleName);
+        log.finer("Hessian[" + _url + "] calling " + mangleName);
       
       conn = sendRequest(mangleName, args);
 
       is = conn.getInputStream();
 
       if (log.isLoggable(Level.FINEST)) {
-	PrintWriter dbg = new PrintWriter(new LogWriter(log));
-	HessianDebugInputStream dIs
-	  = new HessianDebugInputStream(is, dbg);
+        PrintWriter dbg = new PrintWriter(new LogWriter(log));
+        HessianDebugInputStream dIs
+          = new HessianDebugInputStream(is, dbg);
 
-	dIs.startTop2();
-	
-	is = dIs;
+        dIs.startTop2();
+
+        is = dIs;
       }
 
       AbstractHessianInput in;
@@ -186,52 +186,52 @@ public class HessianProxy implements InvocationHandler, Serializable {
       int code = is.read();
 
       if (code == 'H') {
-	int major = is.read();
-	int minor = is.read();
+        int major = is.read();
+        int minor = is.read();
 
-	in = _factory.getHessian2Input(is);
+        in = _factory.getHessian2Input(is);
 
-	Object value = in.readReply(method.getReturnType());
+        Object value = in.readReply(method.getReturnType());
 
-	return value;
+        return value;
       }
       else if (code == 'r') {
-	int major = is.read();
-	int minor = is.read();
-	
-	in = _factory.getHessianInput(is);
+        int major = is.read();
+        int minor = is.read();
 
-	in.startReplyBody();
+        in = _factory.getHessianInput(is);
 
-	Object value = in.readObject(method.getReturnType());
+        in.startReplyBody();
 
-	if (value instanceof InputStream) {
-	  value = new ResultInputStream(conn, is, in, (InputStream) value);
-	  is = null;
-	  conn = null;
-	}
-	else
-	  in.completeReply();
+        Object value = in.readObject(method.getReturnType());
 
-	return value;
+        if (value instanceof InputStream) {
+          value = new ResultInputStream(conn, is, in, (InputStream) value);
+          is = null;
+          conn = null;
+        }
+        else
+          in.completeReply();
+
+        return value;
       }
       else
-	throw new HessianProtocolException("'" + (char) code + "' is an unknown code");
+        throw new HessianProtocolException("'" + (char) code + "' is an unknown code");
     } catch (HessianProtocolException e) {
       throw new HessianRuntimeException(e);
     } finally {
       try {
-	if (is != null)
-	  is.close();
+        if (is != null)
+          is.close();
       } catch (Exception e) {
-	log.log(Level.FINE, e.toString(), e);
+        log.log(Level.FINE, e.toString(), e);
       }
       
       try {
-	if (conn != null)
-	  conn.destroy();
+        if (conn != null)
+          conn.destroy();
       } catch (Exception e) {
-	log.log(Level.FINE, e.toString(), e);
+        log.log(Level.FINE, e.toString(), e);
       }
     }
   }
@@ -263,16 +263,16 @@ public class HessianProxy implements InvocationHandler, Serializable {
       OutputStream os = null;
 
       try {
-	os = conn.getOutputStream();
+        os = conn.getOutputStream();
       } catch (Exception e) {
-	throw new HessianRuntimeException(e);
+        throw new HessianRuntimeException(e);
       }
 
       if (log.isLoggable(Level.FINEST)) {
-	PrintWriter dbg = new PrintWriter(new LogWriter(log));
-	HessianDebugOutputStream dOs = new HessianDebugOutputStream(os, dbg);
-	dOs.startTop2();
-	os = dOs;
+        PrintWriter dbg = new PrintWriter(new LogWriter(log));
+        HessianDebugOutputStream dOs = new HessianDebugOutputStream(os, dbg);
+        dOs.startTop2();
+        os = dOs;
       }
       
       AbstractHessianOutput out = _factory.getHessianOutput(os);
@@ -287,7 +287,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
       return conn;
     } finally {
       if (! isValid && conn != null)
-	conn.destroy();
+        conn.destroy();
     }
   }
 
@@ -326,9 +326,9 @@ public class HessianProxy implements InvocationHandler, Serializable {
     private InputStream _hessianIs;
 
     ResultInputStream(HessianConnection conn,
-		      InputStream is,
-		      AbstractHessianInput in,
-		      InputStream hessianIs)
+                      InputStream is,
+                      AbstractHessianInput in,
+                      InputStream hessianIs)
     {
       _conn = conn;
       _connIs = is;
@@ -340,30 +340,30 @@ public class HessianProxy implements InvocationHandler, Serializable {
       throws IOException
     {
       if (_hessianIs != null) {
-	int value = _hessianIs.read();
+        int value = _hessianIs.read();
 
-	if (value < 0)
-	  close();
+        if (value < 0)
+          close();
 
-	return value;
+        return value;
       }
       else
-	return -1;
+        return -1;
     }
 
     public int read(byte []buffer, int offset, int length)
       throws IOException
     {
       if (_hessianIs != null) {
-	int value = _hessianIs.read(buffer, offset, length);
+        int value = _hessianIs.read(buffer, offset, length);
 
-	if (value < 0)
-	  close();
+        if (value < 0)
+          close();
 
-	return value;
+        return value;
       }
       else
-	return -1;
+        return -1;
     }
 
     public void close()
@@ -382,35 +382,35 @@ public class HessianProxy implements InvocationHandler, Serializable {
       _hessianIs = null;
 
       try {
-	if (hessianIs != null)
-	  hessianIs.close();
+        if (hessianIs != null)
+          hessianIs.close();
       } catch (Exception e) {
-	log.log(Level.FINE, e.toString(), e);
+        log.log(Level.FINE, e.toString(), e);
       }
 
       try {
-	if (in != null) {
-	  in.completeReply();
-	  in.close();
-	}
+        if (in != null) {
+          in.completeReply();
+          in.close();
+        }
       } catch (Exception e) {
-	log.log(Level.FINE, e.toString(), e);
+        log.log(Level.FINE, e.toString(), e);
       }
 
       try {
-	if (connIs != null) {
-	  connIs.close();
-	}
+        if (connIs != null) {
+          connIs.close();
+        }
       } catch (Exception e) {
-	log.log(Level.FINE, e.toString(), e);
+        log.log(Level.FINE, e.toString(), e);
       }
 
       try {
-	if (conn != null) {
-	  conn.close();
-	}
+        if (conn != null) {
+          conn.close();
+        }
       } catch (Exception e) {
-	log.log(Level.FINE, e.toString(), e);
+        log.log(Level.FINE, e.toString(), e);
       }
     }
   }
@@ -428,24 +428,24 @@ public class HessianProxy implements InvocationHandler, Serializable {
     public void write(char ch)
     {
       if (ch == '\n' && _sb.length() > 0) {
-	_log.fine(_sb.toString());
-	_sb.setLength(0);
+        _log.fine(_sb.toString());
+        _sb.setLength(0);
       }
       else
-	_sb.append((char) ch);
+        _sb.append((char) ch);
     }
 
     public void write(char []buffer, int offset, int length)
     {
       for (int i = 0; i < length; i++) {
-	char ch = buffer[offset + i];
-	
-	if (ch == '\n' && _sb.length() > 0) {
-	  _log.log(_level, _sb.toString());
-	  _sb.setLength(0);
-	}
-	else
-	  _sb.append((char) ch);
+        char ch = buffer[offset + i];
+
+        if (ch == '\n' && _sb.length() > 0) {
+          _log.log(_level, _sb.toString());
+          _sb.setLength(0);
+        }
+        else
+          _sb.append((char) ch);
       }
     }
 
@@ -456,7 +456,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
     public void close()
     {
       if (_sb.length() > 0)
-	_log.log(_level, _sb.toString());
+        _log.log(_level, _sb.toString());
     }
   }
 }

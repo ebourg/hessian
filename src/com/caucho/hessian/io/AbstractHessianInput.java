@@ -356,7 +356,7 @@ abstract public class AbstractHessianInput {
       int len;
 
       while ((len = is.read(_buffer, 0, _buffer.length)) > 0) {
-	os.write(_buffer, 0, len);
+        os.write(_buffer, 0, len);
       }
 
       return true;
@@ -365,7 +365,7 @@ abstract public class AbstractHessianInput {
     }
   }
     
-	   
+
 
   /**
    * Reads a byte array.

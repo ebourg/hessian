@@ -89,8 +89,8 @@ public class CollectionSerializer extends AbstractSerializer
     boolean hasEnd;
     
     if (cl.equals(ArrayList.class)
-	|| ! _sendJavaType
-	|| ! Serializable.class.isAssignableFrom(cl))
+        || ! _sendJavaType
+        || ! Serializable.class.isAssignableFrom(cl))
       hasEnd = out.writeListBegin(list.size(), null);
     else
       hasEnd = out.writeListBegin(list.size(), obj.getClass().getName());

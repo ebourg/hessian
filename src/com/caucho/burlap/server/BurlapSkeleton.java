@@ -137,11 +137,11 @@ public class BurlapSkeleton extends AbstractSkeleton {
       String value = null;
 
       if ("java.api.class".equals(attrName))
-	value = getAPIClassName();
+        value = getAPIClassName();
       else if ("java.home.class".equals(attrName))
-	value = getHomeClassName();
+        value = getHomeClassName();
       else if ("java.object.class".equals(attrName))
-	value = getObjectClassName();
+        value = getObjectClassName();
 
       out.startReply();
 
@@ -153,8 +153,8 @@ public class BurlapSkeleton extends AbstractSkeleton {
     else if (method == null) {
       out.startReply();
       out.writeFault("NoSuchMethodException",
-		     "The service has no method named: " + in.getMethod(),
-		     null);
+                     "The service has no method named: " + in.getMethod(),
+                     null);
       out.completeReply();
       return;
     }
@@ -173,12 +173,12 @@ public class BurlapSkeleton extends AbstractSkeleton {
       result = method.invoke(service, values);
     } catch (Throwable e) {
       log.log(Level.FINE,
-	      service + "." + method.getName() + "() failed with exception:\n"
-	      + e.toString(),
-	      e);
+              service + "." + method.getName() + "() failed with exception:\n"
+              + e.toString(),
+              e);
       
       if (e instanceof InvocationTargetException
-	  && e.getCause() instanceof Exception)
+          && e.getCause() instanceof Exception)
         e = ((InvocationTargetException) e).getTargetException();
       out.startReply();
       out.writeFault("ServiceException", e.getMessage(), e);

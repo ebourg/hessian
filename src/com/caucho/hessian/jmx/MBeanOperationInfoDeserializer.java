@@ -77,18 +77,18 @@ public class MBeanOperationInfoDeserializer extends AbstractDeserializer {
       String key = in.readString();
 
       if ("name".equals(key))
-	name = in.readString();
+        name = in.readString();
       else if ("description".equals(key))
-	description = in.readString();
+        description = in.readString();
       else if ("type".equals(key))
-	type = in.readString();
+        type = in.readString();
       else if ("impact".equals(key))
-	impact = in.readInt();
+        impact = in.readInt();
       else if ("signature".equals(key)) {
-	sig = (MBeanParameterInfo[]) in.readObject(MBeanParameterInfo[].class);
+        sig = (MBeanParameterInfo[]) in.readObject(MBeanParameterInfo[].class);
       }
       else {
-	in.readObject();
+        in.readObject();
       }
     }
 

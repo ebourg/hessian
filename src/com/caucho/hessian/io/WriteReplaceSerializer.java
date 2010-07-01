@@ -74,8 +74,8 @@ public class WriteReplaceSerializer extends AbstractSerializer
   private Serializer _baseSerializer;
   
   public WriteReplaceSerializer(Class<?> cl,
-				ClassLoader loader,
-				Serializer baseSerializer)
+                                ClassLoader loader,
+                                Serializer baseSerializer)
   {
     introspectWriteReplace(cl, loader);
     
@@ -94,8 +94,8 @@ public class WriteReplaceSerializer extends AbstractSerializer
       Method writeReplace = getWriteReplace(serializerClass, cl);
 
       if (writeReplace != null) {
-	_writeReplaceFactory = serializerObject;
-	_writeReplace = writeReplace;
+        _writeReplaceFactory = serializerObject;
+        _writeReplace = writeReplace;
       }
     } catch (ClassNotFoundException e) {
     } catch (Exception e) {
@@ -114,10 +114,10 @@ public class WriteReplaceSerializer extends AbstractSerializer
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       for (Method method : cl.getDeclaredMethods()) {
-	if (method.getName().equals("writeReplace")
-	    && method.getParameterTypes().length == 1
-	    && param.equals(method.getParameterTypes()[0]))
-	  return method;
+        if (method.getName().equals("writeReplace")
+            && method.getParameterTypes().length == 1
+            && param.equals(method.getParameterTypes()[0]))
+          return method;
       }
     }
 
@@ -133,11 +133,11 @@ public class WriteReplaceSerializer extends AbstractSerializer
       Method []methods = cl.getDeclaredMethods();
       
       for (int i = 0; i < methods.length; i++) {
-	Method method = methods[i];
+        Method method = methods[i];
 
-	if (method.getName().equals("writeReplace") &&
-	    method.getParameterTypes().length == 0)
-	  return method;
+        if (method.getName().equals("writeReplace") &&
+            method.getParameterTypes().length == 0)
+          return method;
       }
     }
 

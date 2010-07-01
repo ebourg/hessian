@@ -86,8 +86,8 @@ public class MapSerializer extends AbstractSerializer {
     Class cl = obj.getClass();
     
     if (cl.equals(HashMap.class)
-	|| ! _isSendJavaType
-	|| ! (obj instanceof java.io.Serializable))
+        || ! _isSendJavaType
+        || ! (obj instanceof java.io.Serializable))
       out.writeMapBegin(null);
     else
       out.writeMapBegin(obj.getClass().getName());

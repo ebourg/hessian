@@ -81,20 +81,20 @@ public class MBeanInfoDeserializer extends AbstractDeserializer {
       String key = in.readString();
 
       if ("className".equals(key))
-	className = in.readString();
+        className = in.readString();
       else if ("description".equals(key))
-	description = in.readString();
+        description = in.readString();
       else if ("attributes".equals(key)) {
-	attributes = (MBeanAttributeInfo []) in.readObject(MBeanAttributeInfo[].class);
+        attributes = (MBeanAttributeInfo []) in.readObject(MBeanAttributeInfo[].class);
       }
       /*
       else if ("isWrite".equals(key))
-	isWrite = in.readBoolean();
+        isWrite = in.readBoolean();
       else if ("isIs".equals(key))
-	isIs = in.readBoolean();
+        isIs = in.readBoolean();
       */
       else
-	in.readObject();
+        in.readObject();
     }
 
     in.readMapEnd();
@@ -103,7 +103,7 @@ public class MBeanInfoDeserializer extends AbstractDeserializer {
       MBeanInfo info;
       
       info = new MBeanInfo(className, description, attributes,
-			   constructors, operations, notifications);
+                           constructors, operations, notifications);
 
       return info;
     } catch (Exception e) {

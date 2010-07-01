@@ -86,9 +86,9 @@ public class SqlDateDeserializer extends AbstractDeserializer {
       String key = in.readString();
 
       if (key.equals("value"))
-	initValue = in.readUTCDate();
+        initValue = in.readUTCDate();
       else
-	in.readString();
+        in.readString();
     }
 
     in.readMapEnd();
@@ -114,9 +114,9 @@ public class SqlDateDeserializer extends AbstractDeserializer {
       String key = fieldNames[i];
 
       if (key.equals("value"))
-	initValue = in.readUTCDate();
+        initValue = in.readUTCDate();
       else
-	in.readObject();
+        in.readObject();
     }
 
     Object value = create(initValue);

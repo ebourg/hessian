@@ -177,31 +177,31 @@ abstract public class AbstractSkeleton {
     if (name.equals("boolean") || name.equals("java.lang.Boolean"))
       return "boolean";
     else if (name.equals("int") || name.equals("java.lang.Integer")
-	     || name.equals("short") || name.equals("java.lang.Short")
-	     || name.equals("byte") || name.equals("java.lang.Byte"))
+             || name.equals("short") || name.equals("java.lang.Short")
+             || name.equals("byte") || name.equals("java.lang.Byte"))
       return "int";
     else if (name.equals("long") || name.equals("java.lang.Long"))
       return "long";
     else if (name.equals("float") || name.equals("java.lang.Float")
-	     || name.equals("double") || name.equals("java.lang.Double"))
+             || name.equals("double") || name.equals("java.lang.Double"))
       return "double";
     else if (name.equals("java.lang.String")
-	     || name.equals("com.caucho.util.CharBuffer")
-	     || name.equals("char") || name.equals("java.lang.Character")
-	     || name.equals("java.io.Reader"))
+             || name.equals("com.caucho.util.CharBuffer")
+             || name.equals("char") || name.equals("java.lang.Character")
+             || name.equals("java.io.Reader"))
       return "string";
     else if (name.equals("java.util.Date")
-	     || name.equals("com.caucho.util.QDate"))
+             || name.equals("com.caucho.util.QDate"))
       return "date";
     else if (InputStream.class.isAssignableFrom(cl)
-	     || name.equals("[B"))
+             || name.equals("[B"))
       return "binary";
     else if (cl.isArray()) {
       return "[" + mangleClass(cl.getComponentType(), isFull);
     }
     else if (name.equals("org.w3c.dom.Node")
-	     || name.equals("org.w3c.dom.Element")
-	     || name.equals("org.w3c.dom.Document"))
+             || name.equals("org.w3c.dom.Element")
+             || name.equals("org.w3c.dom.Document"))
       return "xml";
     else if (isFull)
       return name;

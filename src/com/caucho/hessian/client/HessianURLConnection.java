@@ -106,7 +106,7 @@ public class HessianURLConnection extends AbstractHessianConnection {
       _statusCode = 500;
 
       try {
-	_statusCode = httpConn.getResponseCode();
+        _statusCode = httpConn.getResponseCode();
       } catch (Exception e) {
       }
 
@@ -115,39 +115,39 @@ public class HessianURLConnection extends AbstractHessianConnection {
       InputStream is = null;
 
       if (_statusCode != 200) {
-	StringBuffer sb = new StringBuffer();
-	int ch;
+        StringBuffer sb = new StringBuffer();
+        int ch;
 
-	try {
-	  is = httpConn.getInputStream();
+        try {
+          is = httpConn.getInputStream();
 
-	  if (is != null) {
-	    while ((ch = is.read()) >= 0)
-	      sb.append((char) ch);
+          if (is != null) {
+            while ((ch = is.read()) >= 0)
+              sb.append((char) ch);
 
-	    is.close();
-	  }
+            is.close();
+          }
 
-	  is = httpConn.getErrorStream();
-	  if (is != null) {
-	    while ((ch = is.read()) >= 0)
-	      sb.append((char) ch);
-	  }
+          is = httpConn.getErrorStream();
+          if (is != null) {
+            while ((ch = is.read()) >= 0)
+              sb.append((char) ch);
+          }
 
-	  _statusMessage = sb.toString();
-	} catch (FileNotFoundException e) {
-	  throw new HessianConnectionException("HessianProxy cannot connect to '" + _url, e);
-	} catch (IOException e) {
-	  if (is == null)
-	    throw new HessianConnectionException(_statusCode + ": " + e, e);
-	  else
-	    throw new HessianConnectionException(_statusCode + ": " + sb, e);
-	}
+          _statusMessage = sb.toString();
+        } catch (FileNotFoundException e) {
+          throw new HessianConnectionException("HessianProxy cannot connect to '" + _url, e);
+        } catch (IOException e) {
+          if (is == null)
+            throw new HessianConnectionException(_statusCode + ": " + e, e);
+          else
+            throw new HessianConnectionException(_statusCode + ": " + sb, e);
+        }
 
-	if (is != null)
-	  is.close();
+        if (is != null)
+          is.close();
 
-	throw new HessianConnectionException(_statusCode + ": " + sb.toString());
+        throw new HessianConnectionException(_statusCode + ": " + sb.toString());
       }
     }
   }

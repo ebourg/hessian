@@ -123,7 +123,7 @@ public class BeanDeserializer extends AbstractMapDeserializer {
 
         if (method != null) {
           Object value = in.readObject(method.getParameterTypes()[0]);
-	  
+
           method.invoke(obj, new Object[] {value });
         }
         else {
@@ -136,7 +136,7 @@ public class BeanDeserializer extends AbstractMapDeserializer {
       Object resolve = resolve(obj);
 
       if (obj != resolve)
-	in.setRef(ref, resolve);
+        in.setRef(ref, resolve);
 
       return resolve;
     } catch (IOException e) {
@@ -173,11 +173,11 @@ public class BeanDeserializer extends AbstractMapDeserializer {
       Method []methods = cl.getDeclaredMethods();
       
       for (int i = 0; i < methods.length; i++) {
-	Method method = methods[i];
+        Method method = methods[i];
 
-	if (method.getName().equals("readResolve") &&
-	    method.getParameterTypes().length == 0)
-	  return method;
+        if (method.getName().equals("readResolve") &&
+            method.getParameterTypes().length == 0)
+          return method;
       }
     }
 
@@ -195,46 +195,46 @@ public class BeanDeserializer extends AbstractMapDeserializer {
       Method []methods = cl.getDeclaredMethods();
       
       for (int i = 0; i < methods.length; i++) {
-	Method method = methods[i];
+        Method method = methods[i];
 
-	if (Modifier.isStatic(method.getModifiers()))
-	  continue;
+        if (Modifier.isStatic(method.getModifiers()))
+          continue;
 
-	String name = method.getName();
+        String name = method.getName();
 
-	if (! name.startsWith("set"))
-	  continue;
+        if (! name.startsWith("set"))
+          continue;
 
-	Class []paramTypes = method.getParameterTypes();
-	if (paramTypes.length != 1)
-	  continue;
+        Class []paramTypes = method.getParameterTypes();
+        if (paramTypes.length != 1)
+          continue;
 
-	if (! method.getReturnType().equals(void.class))
-	  continue;
+        if (! method.getReturnType().equals(void.class))
+          continue;
 
-	if (findGetter(methods, name, paramTypes[0]) == null)
-	  continue;
+        if (findGetter(methods, name, paramTypes[0]) == null)
+          continue;
 
-	// XXX: could parameterize the handler to only deal with public
-	try {
-	  method.setAccessible(true);
-	} catch (Throwable e) {
-	  e.printStackTrace();
-	}
+        // XXX: could parameterize the handler to only deal with public
+        try {
+          method.setAccessible(true);
+        } catch (Throwable e) {
+          e.printStackTrace();
+        }
     
-	name = name.substring(3);
+        name = name.substring(3);
 
-	int j = 0;
-	for (; j < name.length() && Character.isUpperCase(name.charAt(j)); j++) {
-	}
+        int j = 0;
+        for (; j < name.length() && Character.isUpperCase(name.charAt(j)); j++) {
+        }
 
-	if (j == 1)
-	  name = name.substring(0, j).toLowerCase() + name.substring(j);
-	else if (j > 1)
-	  name = name.substring(0, j - 1).toLowerCase() + name.substring(j - 1);
+        if (j == 1)
+          name = name.substring(0, j).toLowerCase() + name.substring(j);
+        else if (j > 1)
+          name = name.substring(0, j - 1).toLowerCase() + name.substring(j - 1);
 
 
-	methodMap.put(name, method);
+        methodMap.put(name, method);
       }
     }
 
@@ -252,15 +252,15 @@ public class BeanDeserializer extends AbstractMapDeserializer {
       Method method = methods[i];
 
       if (! method.getName().equals(getterName))
-	continue;
+        continue;
       
       if (! method.getReturnType().equals(arg))
-	continue;
+        continue;
 
       Class []params = method.getParameterTypes();
 
       if (params.length == 0)
-	return method;
+        return method;
     }
 
     return null;

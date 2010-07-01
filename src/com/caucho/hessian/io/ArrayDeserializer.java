@@ -139,11 +139,11 @@ public class ArrayDeserializer extends AbstractListDeserializer {
       
     if (_componentType != null) {
       for (int i = 0; i < data.length; i++)
-	data[i] = in.readObject(_componentType);
+        data[i] = in.readObject(_componentType);
     }
     else {
       for (int i = 0; i < data.length; i++)
-	data[i] = in.readObject();
+        data[i] = in.readObject();
     }
 
     return data;

@@ -164,7 +164,7 @@ public class BasicSerializer extends AbstractSerializer
         out.writeBoolean(data[i]);
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       
       break;
     }
@@ -188,7 +188,7 @@ public class BasicSerializer extends AbstractSerializer
         out.writeInt(data[i]);
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       break;
     }
 
@@ -205,7 +205,7 @@ public class BasicSerializer extends AbstractSerializer
         out.writeInt(data[i]);
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       
       break;
     }
@@ -223,7 +223,7 @@ public class BasicSerializer extends AbstractSerializer
         out.writeLong(data[i]);
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       break;
     }
 
@@ -240,7 +240,7 @@ public class BasicSerializer extends AbstractSerializer
         out.writeDouble(data[i]);
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       break;
     }
 
@@ -256,7 +256,7 @@ public class BasicSerializer extends AbstractSerializer
         out.writeDouble(data[i]);
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       break;
     }
 
@@ -274,7 +274,7 @@ public class BasicSerializer extends AbstractSerializer
       }
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       break;
     }
 
@@ -299,7 +299,7 @@ public class BasicSerializer extends AbstractSerializer
       }
 
       if (hasEnd)
-	out.writeListEnd();
+        out.writeListEnd();
       break;
     }
     

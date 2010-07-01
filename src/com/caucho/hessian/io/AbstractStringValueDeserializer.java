@@ -72,7 +72,7 @@ abstract public class AbstractStringValueDeserializer
       if (key.equals("value"))
         value = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     in.readMapEnd();
@@ -96,7 +96,7 @@ abstract public class AbstractStringValueDeserializer
       if ("value".equals(fieldNames[i]))
         value = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     Object object = create(value);

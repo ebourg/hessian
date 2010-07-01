@@ -63,25 +63,25 @@ public class StringValueSerializer extends AbstractSerializer {
       out.writeNull();
     else {
       if (out.addRef(obj))
-	return;
+        return;
       
       Class cl = obj.getClass();
 
       int ref = out.writeObjectBegin(cl.getName());
 
       if (ref < -1) {
-	out.writeString("value");
-	out.writeString(obj.toString());
-	out.writeMapEnd();
+        out.writeString("value");
+        out.writeString(obj.toString());
+        out.writeMapEnd();
       }
       else {
-	if (ref == -1) {
-	  out.writeInt(1);
-	  out.writeString("value");
-	  out.writeObjectBegin(cl.getName());
-	}
+        if (ref == -1) {
+          out.writeInt(1);
+          out.writeString("value");
+          out.writeObjectBegin(cl.getName());
+        }
 
-	out.writeString(obj.toString());
+        out.writeString(obj.toString());
       }
     }
   }

@@ -82,9 +82,9 @@ public class HessianInputFactory
       
     case 'c':
       if (major >= 2)
-	return HeaderType.CALL_1_REPLY_2;
+        return HeaderType.CALL_1_REPLY_2;
       else
-	return HeaderType.CALL_1_REPLY_1;
+        return HeaderType.CALL_1_REPLY_1;
     case 'r':
       return HeaderType.REPLY_1;
       
@@ -110,10 +110,10 @@ public class HessianInputFactory
     case 'r':
     case 'R':
       if (major >= 2) {
-	return _factory.createHessian2Input(is);
+        return _factory.createHessian2Input(is);
       }
       else {
-	return _factory.createHessianInput(is);
+        return _factory.createHessianInput(is);
       }
 
     default:
@@ -133,9 +133,9 @@ public class HessianInputFactory
       switch (this) {
       case CALL_1_REPLY_1:
       case CALL_1_REPLY_2:
-	return true;
+        return true;
       default:
-	return false;
+        return false;
       }
     }
 
@@ -143,9 +143,9 @@ public class HessianInputFactory
     {
       switch (this) {
       case HESSIAN_2:
-	return true;
+        return true;
       default:
-	return false;
+        return false;
       }
     }
 
@@ -153,9 +153,9 @@ public class HessianInputFactory
     {
       switch (this) {
       case CALL_1_REPLY_1:
-	return true;
+        return true;
       default:
-	return false;
+        return false;
       }
     }
 
@@ -164,9 +164,9 @@ public class HessianInputFactory
       switch (this) {
       case CALL_1_REPLY_2:
       case HESSIAN_2:
-	return true;
+        return true;
       default:
-	return false;
+        return false;
       }
     }
   }

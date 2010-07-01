@@ -65,7 +65,7 @@ abstract public class ValueDeserializer extends AbstractDeserializer {
       if (key.equals("value"))
         initValue = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     in.readMapEnd();
@@ -82,7 +82,7 @@ abstract public class ValueDeserializer extends AbstractDeserializer {
       if ("value".equals(fieldNames[i]))
         initValue = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     return create(initValue);

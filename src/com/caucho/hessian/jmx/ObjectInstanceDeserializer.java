@@ -76,11 +76,11 @@ public class ObjectInstanceDeserializer extends AbstractDeserializer {
       String key = in.readString();
 
       if ("className".equals(key))
-	className = in.readString();
+        className = in.readString();
       else if ("name".equals(key))
-	objectName = (ObjectName) in.readObject(ObjectName.class);
+        objectName = (ObjectName) in.readObject(ObjectName.class);
       else
-	in.readObject();
+        in.readObject();
     }
 
     in.readMapEnd();

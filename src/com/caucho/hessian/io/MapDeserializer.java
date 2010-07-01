@@ -69,14 +69,14 @@ public class MapDeserializer extends AbstractMapDeserializer {
     Constructor<?> []ctors = type.getConstructors();
     for (int i = 0; i < ctors.length; i++) {
       if (ctors[i].getParameterTypes().length == 0)
-	_ctor = ctors[i];
+        _ctor = ctors[i];
     }
 
     if (_ctor == null) {
       try {
-	_ctor = HashMap.class.getConstructor(new Class[0]);
+        _ctor = HashMap.class.getConstructor(new Class[0]);
       } catch (Exception e) {
-	throw new IllegalStateException(e);
+        throw new IllegalStateException(e);
       }
     }
   }
@@ -121,7 +121,7 @@ public class MapDeserializer extends AbstractMapDeserializer {
 
   @Override
   public Object readObject(AbstractHessianInput in,
-			   Object []fields)
+                           Object []fields)
     throws IOException
   {
     String []fieldNames = (String []) fields;

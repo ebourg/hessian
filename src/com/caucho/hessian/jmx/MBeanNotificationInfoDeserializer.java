@@ -74,13 +74,13 @@ public class MBeanNotificationInfoDeserializer extends AbstractDeserializer {
       String key = in.readString();
 
       if ("name".equals(key))
-	name = in.readString();
+        name = in.readString();
       else if ("description".equals(key))
-	description = in.readString();
+        description = in.readString();
       else if ("types".equals(key))
-	types = (String[]) in.readObject(String[].class);
+        types = (String[]) in.readObject(String[].class);
       else {
-	in.readObject();
+        in.readObject();
       }
     }
 

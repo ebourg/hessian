@@ -740,7 +740,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -752,7 +752,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 1)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -764,7 +764,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 47)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -776,7 +776,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -16)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -790,7 +790,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0x30)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -802,7 +802,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0x7ff)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -814,7 +814,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -17)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -826,7 +826,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -0x800)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -838,7 +838,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0x800)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -850,7 +850,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0x3ffff)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -862,7 +862,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -0x801)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -874,7 +874,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -0x40000)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -888,7 +888,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0x40000)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -900,7 +900,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == 0x7fffffff)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -912,7 +912,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -0x40001)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -924,7 +924,7 @@ public class TestHessian2Servlet
       Integer value = (Integer) v;
 
       if (value == -0x80000000)
-	return true;
+        return true;
     }
     
     return getInputDebug();
@@ -1743,7 +1743,7 @@ public class TestHessian2Servlet
 
     for (int i = 0; i < a.length; i++) {
       if (! a[i].equals(b[i]))
-	return false;
+        return false;
     }
 
     return true;
@@ -1764,7 +1764,7 @@ public class TestHessian2Servlet
 
     for (int i = 0; i < a.length; i++) {
       if (a[i] != b[i]) {
-	return false;
+        return false;
       }
     }
 

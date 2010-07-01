@@ -203,87 +203,87 @@ public class HessianServlet extends GenericServlet {
       if (_homeImpl != null) {
       }
       else if (getInitParameter("home-class") != null) {
-	String className = getInitParameter("home-class");
-	
-	Class homeClass = loadClass(className);
+        String className = getInitParameter("home-class");
 
-	_homeImpl = homeClass.newInstance();
-	
-	init(_homeImpl);
+        Class homeClass = loadClass(className);
+
+        _homeImpl = homeClass.newInstance();
+
+        init(_homeImpl);
       }
       else if (getInitParameter("service-class") != null) {
-	String className = getInitParameter("service-class");
-	
-	Class homeClass = loadClass(className);
+        String className = getInitParameter("service-class");
 
-	_homeImpl = homeClass.newInstance();
-	
-	init(_homeImpl);
+        Class homeClass = loadClass(className);
+
+        _homeImpl = homeClass.newInstance();
+
+        init(_homeImpl);
       }
       else {
-	if (getClass().equals(HessianServlet.class))
-	  throw new ServletException("server must extend HessianServlet");
+        if (getClass().equals(HessianServlet.class))
+          throw new ServletException("server must extend HessianServlet");
 
-	_homeImpl = this;
+        _homeImpl = this;
       }
 
       if (_homeAPI != null) {
       }
       else if (getInitParameter("home-api") != null) {
-	String className = getInitParameter("home-api");
-	
-	_homeAPI = loadClass(className);
+        String className = getInitParameter("home-api");
+
+        _homeAPI = loadClass(className);
       }
       else if (getInitParameter("api-class") != null) {
-	String className = getInitParameter("api-class");
+        String className = getInitParameter("api-class");
 
-	_homeAPI = loadClass(className);
+        _homeAPI = loadClass(className);
       }
       else if (_homeImpl != null) {
-	_homeAPI = findRemoteAPI(_homeImpl.getClass());
+        _homeAPI = findRemoteAPI(_homeImpl.getClass());
 
-	if (_homeAPI == null)
-	  _homeAPI = _homeImpl.getClass();
+        if (_homeAPI == null)
+          _homeAPI = _homeImpl.getClass();
       }
       
       if (_objectImpl != null) {
       }
       else if (getInitParameter("object-class") != null) {
-	String className = getInitParameter("object-class");
-	
-	Class objectClass = loadClass(className);
+        String className = getInitParameter("object-class");
 
-	_objectImpl = objectClass.newInstance();
+        Class objectClass = loadClass(className);
 
-	init(_objectImpl);
+        _objectImpl = objectClass.newInstance();
+
+        init(_objectImpl);
       }
 
       if (_objectAPI != null) {
       }
       else if (getInitParameter("object-api") != null) {
-	String className = getInitParameter("object-api");
-	
-	_objectAPI = loadClass(className);
+        String className = getInitParameter("object-api");
+
+        _objectAPI = loadClass(className);
       }
       else if (_objectImpl != null)
-	_objectAPI = _objectImpl.getClass();
+        _objectAPI = _objectImpl.getClass();
 
       _homeSkeleton = new HessianSkeleton(_homeImpl, _homeAPI);
       if (_objectAPI != null)
-	_homeSkeleton.setObjectClass(_objectAPI);
+        _homeSkeleton.setObjectClass(_objectAPI);
 
       if (_objectImpl != null) {
-	_objectSkeleton = new HessianSkeleton(_objectImpl, _objectAPI);
-	_objectSkeleton.setHomeClass(_homeAPI);
+        _objectSkeleton = new HessianSkeleton(_objectImpl, _objectAPI);
+        _objectSkeleton.setHomeClass(_homeAPI);
       }
       else
-	_objectSkeleton = _homeSkeleton;
+        _objectSkeleton = _homeSkeleton;
 
       if ("true".equals(getInitParameter("debug")))
-	_isDebug = true;
+        _isDebug = true;
 
       if ("false".equals(getInitParameter("send-collection-type")))
-	setSendCollectionType(false);
+        setSendCollectionType(false);
     } catch (ServletException e) {
       throw e;
     } catch (Exception e) {
@@ -406,24 +406,24 @@ public class HessianServlet extends GenericServlet {
     public void write(char ch)
     {
       if (ch == '\n' && _sb.length() > 0) {
-	_log.fine(_sb.toString());
-	_sb.setLength(0);
+        _log.fine(_sb.toString());
+        _sb.setLength(0);
       }
       else
-	_sb.append((char) ch);
+        _sb.append((char) ch);
     }
 
     public void write(char []buffer, int offset, int length)
     {
       for (int i = 0; i < length; i++) {
-	char ch = buffer[offset + i];
-	
-	if (ch == '\n' && _sb.length() > 0) {
-	  _log.fine(_sb.toString());
-	  _sb.setLength(0);
-	}
-	else
-	  _sb.append((char) ch);
+        char ch = buffer[offset + i];
+
+        if (ch == '\n' && _sb.length() > 0) {
+          _log.fine(_sb.toString());
+          _sb.setLength(0);
+        }
+        else
+          _sb.append((char) ch);
       }
     }
 

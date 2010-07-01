@@ -107,9 +107,9 @@ public class HessianURLConnectionFactory implements HessianConnectionFactory {
     // Used chunked mode when available, i.e. JDK 1.5.
     if (_proxyFactory.isChunkedPost() && conn instanceof HttpURLConnection) {
       try {
-	HttpURLConnection httpConn = (HttpURLConnection) conn;
+        HttpURLConnection httpConn = (HttpURLConnection) conn;
 
-	httpConn.setChunkedStreamingMode(8 * 1024);
+        httpConn.setChunkedStreamingMode(8 * 1024);
       } catch (Throwable e) {
       }
     }

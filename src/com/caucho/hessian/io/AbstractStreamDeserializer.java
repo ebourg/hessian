@@ -70,7 +70,7 @@ abstract public class AbstractStreamDeserializer extends AbstractDeserializer {
       if (key.equals("value"))
         value = readStreamValue(in);
       else
-	in.readObject();
+        in.readObject();
     }
 
     in.readMapEnd();
@@ -89,7 +89,7 @@ abstract public class AbstractStreamDeserializer extends AbstractDeserializer {
       if ("value".equals(fieldNames[i]))
         value = readStreamValue(in);
       else
-	in.readObject();
+        in.readObject();
     }
 
     return value;

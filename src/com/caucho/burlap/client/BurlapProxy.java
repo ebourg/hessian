@@ -136,9 +136,9 @@ public class BurlapProxy implements InvocationHandler {
       OutputStream os;
 
       try {
-	os = conn.getOutputStream();
+        os = conn.getOutputStream();
       } catch (Exception e) {
-	throw new BurlapRuntimeException(e);
+        throw new BurlapRuntimeException(e);
       }
 
       BurlapOutput out = _factory.getBurlapOutput(os);
@@ -151,18 +151,18 @@ public class BurlapProxy implements InvocationHandler {
         methodName = methodName + "__0";
 
       if (log.isLoggable(Level.FINE))
-	log.fine(this + " calling " + methodName + " (" + method + ")");
+        log.fine(this + " calling " + methodName + " (" + method + ")");
 
       out.call(methodName, args);
 
       try {
-	os.flush();
+        os.flush();
       } catch (Exception e) {
-	throw new BurlapRuntimeException(e);
+        throw new BurlapRuntimeException(e);
       }
 
       if (conn instanceof HttpURLConnection) {
-	httpConn = (HttpURLConnection) conn;
+        httpConn = (HttpURLConnection) conn;
         int code = 500;
 
         try {
@@ -210,13 +210,13 @@ public class BurlapProxy implements InvocationHandler {
       throw new BurlapRuntimeException(e);
     } finally {
       try {
-	if (is != null)
-	  is.close();
+        if (is != null)
+          is.close();
       } catch (IOException e) {
       }
       
       if (httpConn != null)
-	httpConn.disconnect();
+        httpConn.disconnect();
     }
   }
 

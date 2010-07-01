@@ -77,13 +77,13 @@ public class MBeanParameterInfoDeserializer extends AbstractDeserializer {
       String key = in.readString();
 
       if ("name".equals(key))
-	name = in.readString();
+        name = in.readString();
       else if ("type".equals(key))
-	type = in.readString();
+        type = in.readString();
       else if ("description".equals(key))
-	description = in.readString();
+        description = in.readString();
       else {
-	in.readObject();
+        in.readObject();
       }
     }
 

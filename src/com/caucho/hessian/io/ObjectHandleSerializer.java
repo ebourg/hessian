@@ -63,18 +63,18 @@ public class ObjectHandleSerializer extends AbstractSerializer {
       out.writeNull();
     else {
       if (out.addRef(obj))
-	return;
+        return;
       
       int ref = out.writeObjectBegin("object");
 
       if (ref < -1) {
-	out.writeMapEnd();
+        out.writeMapEnd();
       }
       else {
-	if (ref == -1) {
-	  out.writeInt(0);
-	  out.writeObjectBegin("object");
-	}
+        if (ref == -1) {
+          out.writeInt(0);
+          out.writeObjectBegin("object");
+        }
       }
     }
   }

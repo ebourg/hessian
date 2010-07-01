@@ -164,7 +164,7 @@ public class X509Signature extends HessianEnvelope {
 
     if (! method.equals(getClass().getName()))
       throw new IOException("expected hessian Envelope method '" +
-			    getClass().getName() + "' at '" + method + "'");
+                            getClass().getName() + "' at '" + method + "'");
 
     return unwrapHeaders(in);
   }
@@ -261,7 +261,7 @@ public class X509Signature extends HessianEnvelope {
       _out = null;
 
       if (out == null)
-	return;
+        return;
       
       _bodyOut.close();
 
@@ -334,7 +334,7 @@ public class X509Signature extends HessianEnvelope {
       int ch = _bodyIn.read();
 
       if (ch < 0)
-	return ch;
+        return ch;
 
       _mac.update((byte) ch);
 
@@ -347,7 +347,7 @@ public class X509Signature extends HessianEnvelope {
       int len = _bodyIn.read(buffer, offset, length);
 
       if (len < 0)
-	return len;
+        return len;
 
       _mac.update(buffer, offset, len);
 
@@ -361,36 +361,36 @@ public class X509Signature extends HessianEnvelope {
       _in = null;
 
       if (in != null) {
-	_bodyIn.close();
+        _bodyIn.close();
 
-	int len = in.readInt();
-	byte []signature = null;
+        int len = in.readInt();
+        byte []signature = null;
 
-	for (int i = 0; i < len; i++) {
-	  String header = in.readString();
+        for (int i = 0; i < len; i++) {
+          String header = in.readString();
 
-	  if ("signature".equals(header))
-	    signature = in.readBytes();
-	}
+          if ("signature".equals(header))
+            signature = in.readBytes();
+        }
 
         in.completeEnvelope();
         in.close();
           
 
-	if (signature == null)
-	  throw new IOException("Expected signature");
+        if (signature == null)
+          throw new IOException("Expected signature");
 
-	byte []sig = _mac.doFinal();
+        byte []sig = _mac.doFinal();
 
-	if (sig.length != signature.length)
-	  throw new IOException("mismatched signature");
+        if (sig.length != signature.length)
+          throw new IOException("mismatched signature");
 
-	for (int i = 0; i < sig.length; i++) {
-	  if (signature[i] != sig[i])
-	    throw new IOException("mismatched signature");
-	}
+        for (int i = 0; i < sig.length; i++) {
+          if (signature[i] != sig[i])
+            throw new IOException("mismatched signature");
+        }
 
-	// XXX: save principal
+        // XXX: save principal
       }
     }
   }

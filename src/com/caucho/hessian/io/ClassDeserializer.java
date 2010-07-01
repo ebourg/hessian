@@ -81,9 +81,9 @@ public class ClassDeserializer extends AbstractMapDeserializer {
       String key = in.readString();
 
       if (key.equals("name"))
-	name = in.readString();
+        name = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
       
     in.readMapEnd();
@@ -108,7 +108,7 @@ public class ClassDeserializer extends AbstractMapDeserializer {
       if ("name".equals(fieldNames[i]))
         name = in.readString();
       else
-	in.readObject();
+        in.readObject();
     }
 
     Object value = create(name);

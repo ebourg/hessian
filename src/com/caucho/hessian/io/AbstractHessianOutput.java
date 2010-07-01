@@ -360,8 +360,8 @@ abstract public class AbstractHessianOutput {
    * @param value the string value to write.
    */
   abstract public void writeByteBufferPart(byte []buffer,
-					   int offset,
-					   int length)
+                                           int offset,
+                                           int length)
     throws IOException;
   
   /**
@@ -374,8 +374,8 @@ abstract public class AbstractHessianOutput {
    * @param value the string value to write.
    */
   abstract public void writeByteBufferEnd(byte []buffer,
-					  int offset,
-					  int length)
+                                          int offset,
+                                          int length)
     throws IOException;
 
   /**
@@ -394,14 +394,14 @@ abstract public class AbstractHessianOutput {
     int len;
     while ((len = is.read(buffer, 0, buffer.length)) > 0) {
       if (len < buffer.length) {
-	int len2 = is.read(buffer, len, buffer.length - len);
+        int len2 = is.read(buffer, len, buffer.length - len);
 
-	if (len2 < 0) {
-	  writeByteBufferEnd(buffer, 0, len);
-	  return;
-	}
+        if (len2 < 0) {
+          writeByteBufferEnd(buffer, 0, len);
+          return;
+        }
 
-	len += len2;
+        len += len2;
       }
 
       writeByteBufferPart(buffer, 0, len);

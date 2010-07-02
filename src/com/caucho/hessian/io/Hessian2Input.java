@@ -111,7 +111,7 @@ public class Hessian2Input
   private String _method;
   private Throwable _replyFault;
 
-  private StringBuffer _sbuf = new StringBuffer();
+  private StringBuilder _sbuf = new StringBuilder();
   
   // true if this is the last chunk
   private boolean _isLastChunk;

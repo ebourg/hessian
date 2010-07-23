@@ -48,16 +48,6 @@
 
 package com.caucho.hessian.client;
 
-import com.caucho.hessian.io.*;
-import com.caucho.services.client.ServiceProxyFactory;
-
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NamingException;
-import javax.naming.RefAddr;
-import javax.naming.Reference;
-import javax.naming.spi.ObjectFactory;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -65,11 +55,27 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
 import java.util.Hashtable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.spi.ObjectFactory;
+
+import com.caucho.hessian.io.AbstractHessianInput;
+import com.caucho.hessian.io.AbstractHessianOutput;
+import com.caucho.hessian.io.Hessian2Input;
+import com.caucho.hessian.io.Hessian2Output;
+import com.caucho.hessian.io.HessianDebugInputStream;
+import com.caucho.hessian.io.HessianInput;
+import com.caucho.hessian.io.HessianOutput;
+import com.caucho.hessian.io.HessianRemoteObject;
+import com.caucho.hessian.io.HessianRemoteResolver;
+import com.caucho.hessian.io.SerializerFactory;
+import com.caucho.services.client.ServiceProxyFactory;
 
 /**
  * Factory for creating Hessian client stubs.  The returned stub will
@@ -416,7 +422,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
    *
    * @return a proxy to the object with the specified interface.
    */
-  public Object create(Class api, String urlName, ClassLoader loader)
+  public Object create(Class<?> api, String urlName, ClassLoader loader)
     throws MalformedURLException
   {
     URL url = new URL(urlName);
@@ -519,9 +525,7 @@ public class HessianProxyFactory implements ServiceProxyFactory, ObjectFactory {
 
     String api = null;
     String url = null;
-    String user = null;
-    String password = null;
-
+    
     for (int i = 0; i < ref.size(); i++) {
       RefAddr addr = ref.get(i);
 

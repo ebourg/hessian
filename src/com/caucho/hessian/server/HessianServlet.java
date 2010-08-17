@@ -70,10 +70,10 @@ import java.util.logging.*;
 public class HessianServlet extends GenericServlet {
   private Logger _log = Logger.getLogger(HessianServlet.class.getName());
   
-  private Class _homeAPI;
+  private Class<?> _homeAPI;
   private Object _homeImpl;
   
-  private Class _objectAPI;
+  private Class<?> _objectAPI;
   private Object _objectImpl;
   
   private HessianSkeleton _homeSkeleton;
@@ -205,7 +205,7 @@ public class HessianServlet extends GenericServlet {
       else if (getInitParameter("home-class") != null) {
         String className = getInitParameter("home-class");
 
-        Class homeClass = loadClass(className);
+        Class<?> homeClass = loadClass(className);
 
         _homeImpl = homeClass.newInstance();
 
@@ -214,7 +214,7 @@ public class HessianServlet extends GenericServlet {
       else if (getInitParameter("service-class") != null) {
         String className = getInitParameter("service-class");
 
-        Class homeClass = loadClass(className);
+        Class<?> homeClass = loadClass(className);
 
         _homeImpl = homeClass.newInstance();
 
@@ -244,6 +244,8 @@ public class HessianServlet extends GenericServlet {
 
         if (_homeAPI == null)
           _homeAPI = _homeImpl.getClass();
+        
+        _homeAPI = _homeImpl.getClass();
       }
       
       if (_objectImpl != null) {
@@ -251,7 +253,7 @@ public class HessianServlet extends GenericServlet {
       else if (getInitParameter("object-class") != null) {
         String className = getInitParameter("object-class");
 
-        Class objectClass = loadClass(className);
+        Class<?> objectClass = loadClass(className);
 
         _objectImpl = objectClass.newInstance();
 
@@ -269,6 +271,7 @@ public class HessianServlet extends GenericServlet {
         _objectAPI = _objectImpl.getClass();
 
       _homeSkeleton = new HessianSkeleton(_homeImpl, _homeAPI);
+      
       if (_objectAPI != null)
         _homeSkeleton.setObjectClass(_objectAPI);
 
@@ -291,8 +294,12 @@ public class HessianServlet extends GenericServlet {
     }
   }
 
-  private Class findRemoteAPI(Class implClass)
+  private Class<?> findRemoteAPI(Class<?> implClass)
   {
+    // hessian/34d0
+    return null;
+    
+    /*
     if (implClass == null || implClass.equals(GenericService.class))
       return null;
     
@@ -302,6 +309,7 @@ public class HessianServlet extends GenericServlet {
       return interfaces[0];
 
     return findRemoteAPI(implClass.getSuperclass());
+    */
   }
 
   private Class loadClass(String className)

@@ -1270,6 +1270,7 @@ public class Hessian2Output
     _buffer[_offset++] = (byte) BC_REF;
 
     writeInt(value);
+    System.out.println("REF: " + value);
   }
 
   /**
@@ -1370,10 +1371,11 @@ public class Hessian2Output
     flushBuffer();
 
     _isPacket = true;
-    _offset = 3;
-    _buffer[0] = (byte) 0x55;
+    _offset = 4;
+    _buffer[0] = (byte) 0x05; // 0x05 = binary
     _buffer[1] = (byte) 0x55;
     _buffer[2] = (byte) 0x55;
+    _buffer[3] = (byte) 0x55;
   }
 
   public void endPacket()
@@ -1388,30 +1390,26 @@ public class Hessian2Output
       return;
     }
 
-    int len = offset - 3;
+    int len = offset - 4;
 
-    _buffer[0] = (byte) (0x80);
-    _buffer[1] = (byte) (0x80 + ((len >> 7) & 0x7f));
-    _buffer[2] = (byte) (len & 0x7f);
-
-    // end chunk
-    _buffer[offset++] = (byte) 0x80;
-    _buffer[offset++] = (byte) 0x00;
+    if (len < 0x7e) {
+      _buffer[2] = _buffer[0];
+      _buffer[3] = (byte) (len);
+    } else {
+      _buffer[1] = (byte) (0x7e);
+      _buffer[2] = (byte) (len >> 8);
+      _buffer[3] = (byte) (len);
+    }
 
     _isPacket = false;
     _offset = 0;
 
-    if (os != null) {
-      if (len == 0) {
-        os.write(_buffer, 1, 2);
-      }
-      else if (len < 0x80) {
-        os.write(_buffer, 1, offset - 1);
-      }
-      else {
-        os.write(_buffer, 0, offset);
-      }
+    if (os == null) {
     }
+    else if (len < 0x7e)
+      os.write(_buffer, 2, offset - 2);
+    else
+      os.write(_buffer, 0, offset);
   }
 
   /**
@@ -1552,23 +1550,26 @@ public class Hessian2Output
       if (os != null)
         os.write(_buffer, 0, offset);
     }
-    else if (_isPacket && offset > 3) {
-      int len = offset - 3;
-      _buffer[0] = (byte) 0x80;
-      _buffer[1] = (byte) (0x80 + ((len >> 7) & 0x7f));
-      _buffer[2] = (byte) (len & 0x7f);
-      _offset = 3;
+    else if (_isPacket && offset > 4) {
+      int len = offset - 4;
+      
+      _buffer[0] |= (byte) 0x80;
+      _buffer[1] = (byte) (0x7e);
+      _buffer[2] = (byte) (len >> 8);
+      _buffer[3] = (byte) (len);
+      _offset = 4;
 
       if (os != null)
         os.write(_buffer, 0, offset);
 
-      _buffer[0] = (byte) 0x56;
+      _buffer[0] = (byte) 0x00;
       _buffer[1] = (byte) 0x56;
       _buffer[2] = (byte) 0x56;
-
+      _buffer[3] = (byte) 0x56;
     }
   }
 
+  @Override
   public void close()
     throws IOException
   {

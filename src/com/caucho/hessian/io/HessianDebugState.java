@@ -2414,11 +2414,13 @@ public class HessianDebugState implements Hessian2Constants
   }
   
   class StreamingState extends State {
-    private int _digit;
     private int _code;
-    private int _length;
+    private long _length;
+    private int _metaLength;
     private boolean _isLast;
     private boolean _isFirst = true;
+    
+    private boolean _isLengthState;
 
     private State _childState;
 
@@ -2432,55 +2434,66 @@ public class HessianDebugState implements Hessian2Constants
     
     State next(int ch)
     {
-      if (_digit >= 0) {
-        if (_digit == 0) {
-          _code = ch;
-          _digit = 1;
-          _length = 0;
+      if (_metaLength > 0) {
+        _length = 256 * _length + ch;
+        _metaLength--;
         
-          return this;
+        if (_metaLength == 0 && _isFirst) {
+          if (_isLast)
+            println(-1, "--- packet-start(" + _length + ")");
+          else
+            println(-1, "--- packet-start(fragment)");
+          _isFirst = false;
         }
-        else if ((ch & 0x80) == 0x80) {
-          _length = 128 * _length + (ch & 0x7f);
         
-          return this;
+        return this;
+      }
+      
+      if (_length > 0) {
+        _length--;
+        _childState = _childState.next(ch);
+        
+        return this;
+      }
+      
+      if (! _isLengthState) {
+        _isLengthState = true;
+        
+        if (_isLast) {
+          println(-1, "");
+          println(-1, "--- packet-end");
+          _refId = 0;
+          
+          _isFirst = true;
+        }
+        
+        _isLast = (ch & 0x80) == 0x00;
+        _isLengthState = true;
+      }
+      else {
+        _isLengthState = false;
+        _length = (ch & 0x7f);
+        
+        if (_length == 0x7e) {
+          _length = 0;
+          _metaLength = 2;
+        }
+        else if (_length == 0x7f) {
+          _length = 0;
+          _metaLength = 8;
         }
         else {
-          _length = 128 * _length + (ch & 0x7f);
-          _digit = -1;
+          if (_isFirst) {
+            if (_isLast)
+              println(-1, "--- packet-start(" + _length + ")");
+            else
+              println(-1, "--- packet-start(fragment)");
+            _isFirst = false;
+          }
         }
-        
-        if (_isFirst)
-          println(-1, "packet-start(" + _length + ")");
-        _isFirst = false;
-        
-        if (_length == 0) {
-          _isFirst = true;
-          println(-1, "");
-          println(-1, "packet-end");
-          _refId = 0;
-          _digit = 0;
-        }
-        
-        return this;
       }
-      else if (_length == 0) {
-        _digit = 0;
-
-        return this;
-      }
-
-      _childState = _childState.next(ch);
-
-      _length--;
-
-      if (_length <= 0) {
-        _digit = 0;
-        _length = 0;
-        return this;
-      }
-      else
-        return this;
+      
+      return this;
     }
   }
 

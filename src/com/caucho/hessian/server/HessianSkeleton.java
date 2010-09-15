@@ -277,7 +277,7 @@ public class HessianSkeleton extends AbstractSkeleton {
     }
     else if (method == null) {
       out.writeFault("NoSuchMethodException",
-                     "The service has no method named: " + in.getMethod(),
+                     escapeMessage("The service has no method named: " + in.getMethod()),
                      null);
       out.close();
       return;
@@ -287,7 +287,7 @@ public class HessianSkeleton extends AbstractSkeleton {
 
     if (argLength != args.length && argLength >= 0) {
       out.writeFault("NoSuchMethod",
-                     "method " + method + " argument length mismatch, received length=" + argLength,
+                     escapeMessage("method " + method + " argument length mismatch, received length=" + argLength),
                      null);
       out.close();
       return;
@@ -311,7 +311,9 @@ public class HessianSkeleton extends AbstractSkeleton {
 
       log.log(Level.FINE, this + " " + e1.toString(), e1);
 
-      out.writeFault("ServiceException", e1.getMessage(), e1);
+      out.writeFault("ServiceException", 
+                     escapeMessage(e1.getMessage()), 
+                     e1);
       out.close();
       return;
     }
@@ -323,6 +325,36 @@ public class HessianSkeleton extends AbstractSkeleton {
     out.writeReply(result);
 
     out.close();
+  }
+  
+  private String escapeMessage(String msg)
+  {
+    StringBuilder sb = new StringBuilder();
+    
+    int length = msg.length();
+    for (int i = 0; i < length; i++) {
+      char ch = msg.charAt(i);
+      
+      switch (ch) {
+      case '<':
+        sb.append("&lt;");
+        break;
+      case '>':
+        sb.append("&gt;");
+        break;
+      case 0x0:
+        sb.append("&#00;");
+        break;
+      case '&':
+        sb.append("&amp;");
+        break;
+      default:
+        sb.append(ch);
+        break;
+      }
+    }
+    
+    return sb.toString();
   }
 
   protected boolean isDebugInvoke()

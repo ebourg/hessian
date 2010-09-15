@@ -370,7 +370,7 @@ public class HessianServlet extends GenericServlet {
       InputStream is = request.getInputStream();
       OutputStream os = response.getOutputStream();
 
-      response.setContentType("application/x-hessian");
+      response.setContentType("x-application/hessian");
 
       SerializerFactory serializerFactory = getSerializerFactory();
 

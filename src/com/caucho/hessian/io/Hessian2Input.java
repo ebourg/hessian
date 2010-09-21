@@ -2207,7 +2207,9 @@ public class Hessian2Input
   public Object readRef()
     throws IOException
   {
-    return _refs.get(parseInt());
+    int value = parseInt();
+    
+    return _refs.get(value);
   }
 
   /**

@@ -48,17 +48,14 @@
 
 package com.caucho.hessian.io;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-
-import com.caucho.hessian.HessianException;
 
 /**
  * Deserializing a BigDecimal
  */
 public class BigDecimalDeserializer extends AbstractStringValueDeserializer {
   @Override
-  public Class getType()
+  public Class<?> getType()
   {
     return BigDecimal.class;
   }

@@ -407,6 +407,7 @@ public class Hessian2Output
   /**
    * Writes any object to the output stream.
    */
+  @Override
   public void writeObject(Object object)
     throws IOException
   {
@@ -565,6 +566,7 @@ public class Hessian2Output
   /**
    * Writes the tail of the class definition to the stream.
    */
+  @Override
   public void writeClassFieldLength(int len)
     throws IOException
   {
@@ -574,6 +576,7 @@ public class Hessian2Output
   /**
    * Writes the tail of the object definition to the stream.
    */
+  @Override
   public void writeObjectEnd()
     throws IOException
   {
@@ -623,6 +626,7 @@ public class Hessian2Output
    *
    * @param value the boolean value to write.
    */
+  @Override
   public void writeBoolean(boolean value)
     throws IOException
   {
@@ -645,6 +649,7 @@ public class Hessian2Output
    *
    * @param value the integer value to write.
    */
+  @Override
   public void writeInt(int value)
     throws IOException
   {
@@ -1270,7 +1275,6 @@ public class Hessian2Output
     _buffer[_offset++] = (byte) BC_REF;
 
     writeInt(value);
-    System.out.println("REF: " + value);
   }
 
   /**
@@ -1278,6 +1282,7 @@ public class Hessian2Output
    *
    * @return true if we're writing a ref.
    */
+  @Override
   public boolean addRef(Object object)
     throws IOException
   {
@@ -1406,10 +1411,12 @@ public class Hessian2Output
 
     if (os == null) {
     }
-    else if (len < 0x7e)
+    else if (len < 0x7e) {
       os.write(_buffer, 2, offset - 2);
-    else
+    }
+    else {
       os.write(_buffer, 0, offset);
+    }
   }
 
   /**

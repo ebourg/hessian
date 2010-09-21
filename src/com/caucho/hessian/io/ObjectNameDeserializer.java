@@ -48,7 +48,6 @@
 
 package com.caucho.hessian.io;
 
-import java.io.IOException;
 import javax.management.ObjectName;
 
 import com.caucho.hessian.HessianException;
@@ -58,7 +57,7 @@ import com.caucho.hessian.HessianException;
  */
 public class ObjectNameDeserializer extends AbstractStringValueDeserializer {
   @Override
-  public Class getType()
+  public Class<?> getType()
   {
     return ObjectName.class;
   }

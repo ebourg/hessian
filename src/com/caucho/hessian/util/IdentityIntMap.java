@@ -174,7 +174,7 @@ public class IdentityIntMap {
    */
   public final void remove(Object key)
   {
-    if (put(key, -1, true) != -1) {
+    if (put(key, NULL, true) != NULL) {
       _size--;
     }
   }
@@ -195,9 +195,10 @@ public class IdentityIntMap {
 
     for (int i = keys.length - 1; i >= 0; i--) {
       Object key = keys[i];
+      int value = values[i];
 
-      if (key != null) {
-        put(key, values[i], true);
+      if (key != null && value != NULL) {
+        put(key, value, true);
       }
     }
   }

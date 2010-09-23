@@ -48,20 +48,6 @@
 
 package com.caucho.hessian.server;
 
-import com.caucho.hessian.io.AbstractHessianInput;
-import com.caucho.hessian.io.AbstractHessianOutput;
-import com.caucho.hessian.io.Hessian2Input;
-import com.caucho.hessian.io.Hessian2Output;
-import com.caucho.hessian.io.HessianFactory;
-import com.caucho.hessian.io.HessianInput;
-import com.caucho.hessian.io.HessianOutput;
-import com.caucho.hessian.io.HessianDebugInputStream;
-import com.caucho.hessian.io.HessianDebugOutputStream;
-import com.caucho.hessian.io.HessianInputFactory;
-import com.caucho.hessian.io.SerializerFactory;
-import com.caucho.services.server.AbstractSkeleton;
-import com.caucho.services.server.ServiceContext;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -71,6 +57,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.caucho.hessian.io.AbstractHessianInput;
+import com.caucho.hessian.io.AbstractHessianOutput;
+import com.caucho.hessian.io.HessianDebugInputStream;
+import com.caucho.hessian.io.HessianDebugOutputStream;
+import com.caucho.hessian.io.HessianFactory;
+import com.caucho.hessian.io.HessianInputFactory;
+import com.caucho.hessian.io.SerializerFactory;
+import com.caucho.services.server.AbstractSkeleton;
+import com.caucho.services.server.ServiceContext;
 
 /**
  * Proxy class for Hessian services.
@@ -92,7 +88,7 @@ public class HessianSkeleton extends AbstractSkeleton {
    * @param service the underlying service object.
    * @param apiClass the API interface
    */
-  public HessianSkeleton(Object service, Class apiClass)
+  public HessianSkeleton(Object service, Class<?> apiClass)
   {
     super(apiClass);
 
@@ -111,7 +107,7 @@ public class HessianSkeleton extends AbstractSkeleton {
    * @param service the underlying service object.
    * @param apiClass the API interface
    */
-  public HessianSkeleton(Class apiClass)
+  public HessianSkeleton(Class<?> apiClass)
   {
     super(apiClass);
   }
@@ -329,6 +325,9 @@ public class HessianSkeleton extends AbstractSkeleton {
   
   private String escapeMessage(String msg)
   {
+    if (msg == null)
+      return null;
+    
     StringBuilder sb = new StringBuilder();
     
     int length = msg.length();

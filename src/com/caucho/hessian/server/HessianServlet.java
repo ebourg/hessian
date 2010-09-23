@@ -48,10 +48,12 @@
 
 package com.caucho.hessian.server;
 
-import com.caucho.hessian.io.*;
-import com.caucho.services.server.GenericService;
-import com.caucho.services.server.Service;
-import com.caucho.services.server.ServiceContext;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.logging.Logger;
 
 import javax.servlet.GenericServlet;
 import javax.servlet.Servlet;
@@ -61,15 +63,17 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.logging.*;
+
+import com.caucho.hessian.io.Hessian2Input;
+import com.caucho.hessian.io.SerializerFactory;
+import com.caucho.services.server.Service;
+import com.caucho.services.server.ServiceContext;
 
 /**
  * Servlet for serving Hessian services.
  */
+@SuppressWarnings("serial")
 public class HessianServlet extends GenericServlet {
-  private Logger _log = Logger.getLogger(HessianServlet.class.getName());
-  
   private Class<?> _homeAPI;
   private Object _homeImpl;
   
@@ -80,8 +84,6 @@ public class HessianServlet extends GenericServlet {
   private HessianSkeleton _objectSkeleton;
 
   private SerializerFactory _serializerFactory;
-
-  private boolean _isDebug;
 
   public HessianServlet()
   {
@@ -95,7 +97,7 @@ public class HessianServlet extends GenericServlet {
   /**
    * Sets the home api.
    */
-  public void setHomeAPI(Class api)
+  public void setHomeAPI(Class<?> api)
   {
     _homeAPI = api;
   }
@@ -111,7 +113,7 @@ public class HessianServlet extends GenericServlet {
   /**
    * Sets the object api.
    */
-  public void setObjectAPI(Class api)
+  public void setObjectAPI(Class<?> api)
   {
     _objectAPI = api;
   }
@@ -135,7 +137,7 @@ public class HessianServlet extends GenericServlet {
   /**
    * Sets the api-class.
    */
-  public void setAPIClass(Class api)
+  public void setAPIClass(Class<?> api)
   {
     setHomeAPI(api);
   }
@@ -143,7 +145,7 @@ public class HessianServlet extends GenericServlet {
   /**
    * Gets the api-class.
    */
-  public Class getAPIClass()
+  public Class<?> getAPIClass()
   {
     return _homeAPI;
   }
@@ -180,7 +182,6 @@ public class HessianServlet extends GenericServlet {
    */
   public void setDebug(boolean isDebug)
   {
-    _isDebug = isDebug;
   }
 
   /**
@@ -188,7 +189,7 @@ public class HessianServlet extends GenericServlet {
    */
   public void setLogName(String name)
   {
-    _log = Logger.getLogger(name);
+    // _log = Logger.getLogger(name);
   }
 
   /**
@@ -282,8 +283,8 @@ public class HessianServlet extends GenericServlet {
       else
         _objectSkeleton = _homeSkeleton;
 
-      if ("true".equals(getInitParameter("debug")))
-        _isDebug = true;
+      if ("true".equals(getInitParameter("debug"))) {
+      }
 
       if ("false".equals(getInitParameter("send-collection-type")))
         setSendCollectionType(false);
@@ -312,7 +313,7 @@ public class HessianServlet extends GenericServlet {
     */
   }
 
-  private Class loadClass(String className)
+  private Class<?> loadClass(String className)
     throws ClassNotFoundException
   {
     ClassLoader loader = getContextClassLoader();
@@ -350,7 +351,7 @@ public class HessianServlet extends GenericServlet {
     HttpServletResponse res = (HttpServletResponse) response;
 
     if (! req.getMethod().equals("POST")) {
-      res.setStatus(500, "Hessian Requires POST");
+      res.setStatus(500); // , "Hessian Requires POST");
       PrintWriter out = res.getWriter();
 
       res.setContentType("text/html");

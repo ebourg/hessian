@@ -182,7 +182,7 @@ public class BurlapServlet extends GenericServlet {
     if (objectId == null)
       objectId = req.getParameter("ejbid");
 
-    ServiceContext.begin(req, serviceId, objectId);
+    ServiceContext.begin(req, res, serviceId, objectId);
 
     try {
       InputStream is = request.getInputStream();

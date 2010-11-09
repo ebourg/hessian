@@ -678,9 +678,15 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
       try {
         java.util.Date date = (java.util.Date) in.readObject();
-        value = new java.sql.Date(date.getTime());
+        
+        if (date != null) {
+          value = new java.sql.Date(date.getTime());
 
-        _field.set(obj, value);
+          _field.set(obj, value);
+        }
+        else {
+          _field.set(obj, null);
+        }
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -702,9 +708,15 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
       try {
         java.util.Date date = (java.util.Date) in.readObject();
-        value = new java.sql.Timestamp(date.getTime());
+        
+        if (date != null) {
+          value = new java.sql.Timestamp(date.getTime());
 
-        _field.set(obj, value);
+          _field.set(obj, value);
+        }
+        else {
+          _field.set(obj, null);
+        }
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -726,9 +738,15 @@ public class JavaDeserializer extends AbstractMapDeserializer {
 
       try {
         java.util.Date date = (java.util.Date) in.readObject();
-        value = new java.sql.Time(date.getTime());
+        
+        if (date != null) {
+          value = new java.sql.Time(date.getTime());
 
-        _field.set(obj, value);
+          _field.set(obj, value);
+        }
+        else {
+          _field.set(obj, null);
+        }
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }

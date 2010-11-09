@@ -690,9 +690,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
 
       try {
         java.util.Date date = (java.util.Date) in.readObject();
-        value = new java.sql.Date(date.getTime());
+        
+        if (date != null) {
+          value = new java.sql.Date(date.getTime());
 
-        _unsafe.putObject(obj, _offset, value);
+          _unsafe.putObject(obj, _offset, value);
+        } else {
+          _unsafe.putObject(obj, _offset, null);
+        }
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -718,9 +723,15 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
 
       try {
         java.util.Date date = (java.util.Date) in.readObject();
-        value = new java.sql.Timestamp(date.getTime());
+        
+        if (date != null) {
+          value = new java.sql.Timestamp(date.getTime());
 
-        _unsafe.putObject(obj, _offset, value);
+          _unsafe.putObject(obj, _offset, value);
+        }
+        else {
+          _unsafe.putObject(obj, _offset, null);
+        }
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }
@@ -746,9 +757,14 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
 
       try {
         java.util.Date date = (java.util.Date) in.readObject();
-        value = new java.sql.Time(date.getTime());
+        
+        if (date != null) {
+          value = new java.sql.Time(date.getTime());
 
-        _unsafe.putObject(obj, _offset, value);
+          _unsafe.putObject(obj, _offset, value);
+        } else {
+          _unsafe.putObject(obj, _offset, null);
+        }
       } catch (Exception e) {
         logDeserializeError(_field, obj, value, e);
       }

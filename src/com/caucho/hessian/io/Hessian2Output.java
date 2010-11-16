@@ -107,14 +107,32 @@ public class Hessian2Output
    *
    * @param os the underlying output stream.
    */
+  public Hessian2Output()
+  {
+  }
+
+  /**
+   * Creates a new Hessian output stream, initialized with an
+   * underlying output stream.
+   *
+   * @param os the underlying output stream.
+   */
   public Hessian2Output(OutputStream os)
   {
     init(os);
   }
 
+  @Override
   public void init(OutputStream os)
   {
     reset();
+
+    _os = os;
+  }
+
+  public void initPacket(OutputStream os)
+  {
+    resetReferences();
 
     _os = os;
   }

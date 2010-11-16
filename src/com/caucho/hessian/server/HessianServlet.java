@@ -61,6 +61,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -73,7 +74,7 @@ import com.caucho.services.server.ServiceContext;
  * Servlet for serving Hessian services.
  */
 @SuppressWarnings("serial")
-public class HessianServlet extends GenericServlet {
+public class HessianServlet extends HttpServlet {
   private Class<?> _homeAPI;
   private Object _homeImpl;
   

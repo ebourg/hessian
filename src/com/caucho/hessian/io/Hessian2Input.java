@@ -118,6 +118,10 @@ public class Hessian2Input
   // the chunk length
   private int _chunkLength;
   
+  public Hessian2Input()
+  {
+  }
+  
   /**
    * Creates a new Hessian input stream, initialized with an
    * underlying input stream.
@@ -191,6 +195,20 @@ public class Hessian2Input
   public Throwable getReplyFault()
   {
     return _replyFault;
+  }
+
+  @Override
+  public void init(InputStream is)
+  {
+    if (log.isLoggable(Level.FINEST)) {
+      HessianDebugInputStream dIs;
+      dIs = new HessianDebugInputStream(is, log, Level.FINEST);
+      is = dIs;
+    }
+    
+    _is = is;
+    
+    resetReferences();
   }
 
   /**

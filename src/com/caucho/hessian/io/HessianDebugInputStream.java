@@ -95,6 +95,19 @@ public class HessianDebugInputStream extends InputStream
   {
     this(is, new PrintWriter(new LogWriter(log, level)));
   }
+  
+  /**
+   * Creates an uninitialized Hessian input stream.
+   */
+  public HessianDebugInputStream(Logger log, Level level)
+  {
+    this(null, log, level);
+  }
+  
+  public void initPacket(InputStream is)
+  {
+    _is = is;
+  }
 
   public void startTop2()
   {

@@ -118,8 +118,13 @@ public class Hessian2Input
   // the chunk length
   private int _chunkLength;
   
+  private HessianDebugInputStream _dIs;
+  
   public Hessian2Input()
   {
+    if (log.isLoggable(Level.FINEST)) {
+      _dIs = new HessianDebugInputStream(log, Level.FINEST);
+    }
   }
   
   /**
@@ -130,7 +135,9 @@ public class Hessian2Input
    */
   public Hessian2Input(InputStream is)
   {
-    _is = is;
+    this();
+    
+    init(is);
   }
 
   /**
@@ -200,10 +207,9 @@ public class Hessian2Input
   @Override
   public void init(InputStream is)
   {
-    if (log.isLoggable(Level.FINEST)) {
-      HessianDebugInputStream dIs;
-      dIs = new HessianDebugInputStream(is, log, Level.FINEST);
-      is = dIs;
+    if (_dIs != null) {
+      _dIs.initPacket(is);
+      is = _dIs;
     }
     
     _is = is;

@@ -82,6 +82,19 @@ public class HessianDebugOutputStream extends OutputStream
   {
     this(os, new PrintWriter(new LogWriter(log, level)));
   }
+  
+  /**
+   * Creates an uninitialized Hessian input stream.
+   */
+  public HessianDebugOutputStream(Logger log, Level level)
+  {
+    this(null, new PrintWriter(new LogWriter(log, level)));
+  }
+  
+  public void initPacket(OutputStream os)
+  {
+    _os = os;
+  }
 
   public void startTop2()
   {

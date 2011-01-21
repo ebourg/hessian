@@ -78,11 +78,22 @@ abstract public class AbstractStreamSerializer extends AbstractSerializer
     if (ref < -1) {
       out.writeString("value");
 
-      InputStream is = getInputStream(obj);
+      InputStream is = null;
+
       try {
-        out.writeByteStream(is);
-      } finally {
-        is.close();
+        is = getInputStream(obj);
+      } catch (Exception e) {
+        log.log(Level.WARNING, e.toString(), e);
+      }
+      
+      if (is != null) {
+        try {
+          out.writeByteStream(is);
+        } finally {
+          is.close();
+        }
+      } else {
+        out.writeNull();
       }
       
       out.writeMapEnd();
@@ -95,7 +106,13 @@ abstract public class AbstractStreamSerializer extends AbstractSerializer
         out.writeObjectBegin(getClassName(obj));
       }
 
-      InputStream is = getInputStream(obj);
+      InputStream is = null;
+
+      try {
+        is = getInputStream(obj);
+      } catch (Exception e) {
+        log.log(Level.WARNING, e.toString(), e);
+      }
 
       try {
         if (is != null)

@@ -54,6 +54,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.logging.*;
 
 /**
@@ -135,9 +136,9 @@ public class BeanSerializer extends AbstractSerializer {
       }
 
       if (j == 1)
-        name = name.substring(0, j).toLowerCase() + name.substring(j);
+        name = name.substring(0, j).toLowerCase(Locale.ENGLISH) + name.substring(j);
       else if (j > 1)
-        name = name.substring(0, j - 1).toLowerCase() + name.substring(j - 1);
+        name = name.substring(0, j - 1).toLowerCase(Locale.ENGLISH) + name.substring(j - 1);
 
       _names[i] = name;
     }

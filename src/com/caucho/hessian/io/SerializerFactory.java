@@ -231,7 +231,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     return serializer;
   }
 
-  protected Serializer loadSerializer(Class cl)
+  protected Serializer loadSerializer(Class<?> cl)
     throws HessianProtocolException
   {
     Serializer serializer = null;

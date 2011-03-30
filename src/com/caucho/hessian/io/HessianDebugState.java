@@ -1612,6 +1612,9 @@ public class HessianDebugState implements Hessian2Constants
       }
 
       _def = _objectDefList.get(def);
+      
+      if (_isObject)
+        println();
 
       println("object " + _def.getType() + " (#" + _refId + ")");
     }

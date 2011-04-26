@@ -89,11 +89,26 @@ public class CollectionSerializer extends AbstractSerializer
     boolean hasEnd;
     
     if (cl.equals(ArrayList.class)
-        || ! _sendJavaType
-        || ! Serializable.class.isAssignableFrom(cl))
+        || ! Serializable.class.isAssignableFrom(cl)) {
       hasEnd = out.writeListBegin(list.size(), null);
-    else
+    }
+    else if (! _sendJavaType) {
+      hasEnd = false;
+      
+      // hessian/3a19
+      for (; cl != null; cl = cl.getSuperclass()) {
+        if (cl.getName().startsWith("java.")) {
+          hasEnd = out.writeListBegin(list.size(), cl.getName());
+          break;
+        }
+      }
+      
+      if (cl == null)
+        hasEnd = out.writeListBegin(list.size(), null);
+    }
+    else {
       hasEnd = out.writeListBegin(list.size(), obj.getClass().getName());
+    }
 
     Iterator iter = list.iterator();
     while (iter.hasNext()) {

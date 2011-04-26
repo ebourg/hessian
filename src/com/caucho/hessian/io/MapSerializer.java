@@ -86,11 +86,23 @@ public class MapSerializer extends AbstractSerializer {
     Class cl = obj.getClass();
     
     if (cl.equals(HashMap.class)
-        || ! _isSendJavaType
         || ! (obj instanceof java.io.Serializable))
       out.writeMapBegin(null);
-    else
-      out.writeMapBegin(obj.getClass().getName());
+    else if (! _isSendJavaType) {
+      // hessian/3a19
+      for (; cl != null; cl = cl.getSuperclass()) {
+        if (cl.getName().startsWith("java.")) {
+          out.writeMapBegin(cl.getName());
+          break;
+        }
+      }
+      
+      if (cl == null)
+        out.writeMapBegin(null);
+    }
+    else {
+      out.writeMapBegin(cl.getName());
+    }
 
     Iterator iter = map.entrySet().iterator();
     while (iter.hasNext()) {

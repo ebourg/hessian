@@ -103,7 +103,7 @@ public class HessianFactory
   public Hessian2Input createHessian2Input(InputStream is)
   {
     Hessian2Input in = new Hessian2Input(is);
-    in.setSerializerFactory(_serializerFactory);
+    in.setSerializerFactory(getSerializerFactory());
 
     return in;
   }
@@ -129,7 +129,7 @@ public class HessianFactory
   public Hessian2StreamingInput createHessian2StreamingInput(InputStream is)
   {
     Hessian2StreamingInput in = new Hessian2StreamingInput(is);
-    in.setSerializerFactory(_serializerFactory);
+    in.setSerializerFactory(getSerializerFactory());
 
     return in;
   }
@@ -161,7 +161,7 @@ public class HessianFactory
     else
       out = new Hessian2Output(os);
 
-    out.setSerializerFactory(_serializerFactory);
+    out.setSerializerFactory(getSerializerFactory());
 
     return out;
   }

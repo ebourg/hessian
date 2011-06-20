@@ -61,6 +61,9 @@ import java.util.logging.Level;
  */
 public class HessianDebugOutputStream extends OutputStream
 {
+  private static final Logger log
+    = Logger.getLogger(HessianDebugOutputStream.class.getName());
+  
   private OutputStream _os;
   
   private HessianDebugState _state;
@@ -109,6 +112,7 @@ public class HessianDebugOutputStream extends OutputStream
   /**
    * Writes a character.
    */
+  @Override
   public void write(int ch)
     throws IOException
   {
@@ -116,9 +120,14 @@ public class HessianDebugOutputStream extends OutputStream
     
     _os.write(ch);
 
-    _state.next(ch);
+    try {
+      _state.next(ch);
+    } catch (Exception e) {
+      log.log(Level.WARNING, e.toString(), e);
+    }
   }
 
+  @Override
   public void flush()
     throws IOException
   {
@@ -128,6 +137,7 @@ public class HessianDebugOutputStream extends OutputStream
   /**
    * closes the stream.
    */
+  @Override
   public void close()
     throws IOException
   {

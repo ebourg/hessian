@@ -49,15 +49,18 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 /**
  * Debugging input stream for Hessian requests.
  */
 public class HessianDebugState implements Hessian2Constants
 {
+  private static final Logger log
+    = Logger.getLogger(HessianDebugState.class.getName());
+  
   private PrintWriter _dbg;
 
   private State _state;
@@ -1306,8 +1309,11 @@ public class HessianDebugState implements Hessian2Constants
       
         return this;
       }
-      else
-        throw new IllegalStateException();
+      else {
+        printObject("unknown shift state= " + _state + " type=" + type);
+        
+        return this;
+      }
     }
 
     @Override
@@ -1489,10 +1495,7 @@ public class HessianDebugState implements Hessian2Constants
     private static final int FIELD = 3;
     private static final int COMPLETE = 4;
 
-    private int _refId;
-
     private int _state;
-    private boolean _hasData;
     private int _count;
 
     private String _type;
@@ -1608,7 +1611,9 @@ public class HessianDebugState implements Hessian2Constants
       _state = FIELD;
 
       if (def < 0 || _objectDefList.size() <= def) {
-        throw new IllegalStateException(def + " is an unknown object type");
+        log.warning(def + " is an unknown object type");
+        
+        println("object unknown  (#" + _refId + ")");
       }
 
       _def = _objectDefList.get(def);
@@ -1689,7 +1694,6 @@ public class HessianDebugState implements Hessian2Constants
     private int _refId;
 
     private int _state;
-    private boolean _hasData;
     private int _count;
     private int _valueDepth;
 
@@ -1805,7 +1809,6 @@ public class HessianDebugState implements Hessian2Constants
     private int _refId;
 
     private int _state;
-    private boolean _hasData;
     private int _count;
     private int _valueDepth;
 
@@ -1913,7 +1916,6 @@ public class HessianDebugState implements Hessian2Constants
     private boolean _isLength;
 
     private int _state;
-    private boolean _hasData;
     private int _length;
     private int _count;
     private int _valueDepth;
@@ -2389,6 +2391,7 @@ public class HessianDebugState implements Hessian2Constants
       super(next);
     }
     
+    @Override
     State next(int ch)
     {
       switch (_state) {
@@ -2417,7 +2420,6 @@ public class HessianDebugState implements Hessian2Constants
   }
   
   class StreamingState extends State {
-    private int _code;
     private long _length;
     private int _metaLength;
     private boolean _isLast;

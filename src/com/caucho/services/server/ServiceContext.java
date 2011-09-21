@@ -58,7 +58,8 @@ import java.util.HashMap;
  * Context for a service, to handle request-specific information.
  */
 public class ServiceContext {
-  private static final ThreadLocal _localContext = new ThreadLocal();
+  private static final ThreadLocal<ServiceContext> _localContext
+    = new ThreadLocal<ServiceContext>();
 
   private ServletRequest _request;
   private ServletResponse _response;
@@ -196,8 +197,11 @@ public class ServiceContext {
 
     if (context != null && --context._count == 0) {
       context._request = null;
+      context._response = null;
 
       context._headers.clear();
+      
+      _localContext.set(null);
     }
   }
 

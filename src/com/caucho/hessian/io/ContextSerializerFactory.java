@@ -83,7 +83,7 @@ public class ContextSerializerFactory
   private static HashMap _staticClassNameMap;
 
   private ContextSerializerFactory _parent;
-  private ClassLoader _loader;
+  private WeakReference<ClassLoader> _loaderRef;
 
   private final HashSet<String> _serializerFiles = new HashSet<String>();
   private final HashSet<String> _deserializerFiles = new HashSet<String>();
@@ -94,8 +94,8 @@ public class ContextSerializerFactory
   private final ConcurrentHashMap<String,Serializer> _customSerializerMap
     = new ConcurrentHashMap<String,Serializer>();
 
-  private final HashMap<Class,Serializer> _serializerInterfaceMap
-    = new HashMap<Class,Serializer>();
+  private final HashMap<Class<?>,Serializer> _serializerInterfaceMap
+    = new HashMap<Class<?>,Serializer>();
 
   private final HashMap<String,Deserializer> _deserializerClassMap
     = new HashMap<String,Deserializer>();
@@ -106,8 +106,8 @@ public class ContextSerializerFactory
   private final ConcurrentHashMap<String,Deserializer> _customDeserializerMap
     = new ConcurrentHashMap<String,Deserializer>();
 
-  private final HashMap<Class,Deserializer> _deserializerInterfaceMap
-    = new HashMap<Class,Deserializer>();
+  private final HashMap<Class<?>,Deserializer> _deserializerInterfaceMap
+    = new HashMap<Class<?>,Deserializer>();
 
   public ContextSerializerFactory(ContextSerializerFactory parent,
                                   ClassLoader loader)
@@ -115,7 +115,7 @@ public class ContextSerializerFactory
     if (loader == null)
       loader = _systemClassLoader;
 
-    _loader = loader;
+    _loaderRef = new WeakReference<ClassLoader>(loader);
 
     init();
   }
@@ -154,7 +154,12 @@ public class ContextSerializerFactory
 
   public ClassLoader getClassLoader()
   {
-    return _loader;
+    WeakReference<ClassLoader> loaderRef = _loaderRef;
+    
+    if (loaderRef != null)
+      return loaderRef.get();
+    else
+      return null;
   }
 
   /**

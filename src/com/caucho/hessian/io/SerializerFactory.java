@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.annotation.Annotation;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.management.*;
 
@@ -81,7 +82,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     = new WeakHashMap<ClassLoader,SoftReference<SerializerFactory>>();
 
   private ContextSerializerFactory _contextFactory;
-  private ClassLoader _loader;
+  private WeakReference<ClassLoader> _loaderRef;
 
   protected Serializer _defaultSerializer;
 
@@ -109,7 +110,7 @@ public class SerializerFactory extends AbstractSerializerFactory
 
   public SerializerFactory(ClassLoader loader)
   {
-    _loader = loader;
+    _loaderRef = new WeakReference<ClassLoader>(loader);
 
     _contextFactory = ContextSerializerFactory.create(loader);
   }
@@ -141,7 +142,7 @@ public class SerializerFactory extends AbstractSerializerFactory
 
   public ClassLoader getClassLoader()
   {
-    return _loader;
+    return _loaderRef.get();
   }
 
   /**
@@ -277,7 +278,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     else if (JavaSerializer.getWriteReplace(cl) != null) {
       Serializer baseSerializer = getDefaultSerializer(cl);
       
-      return new WriteReplaceSerializer(cl, _loader, baseSerializer);
+      return new WriteReplaceSerializer(cl, getClassLoader(), baseSerializer);
     }
 
     else if (Map.class.isAssignableFrom(cl)) {
@@ -434,7 +435,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       deserializer = new EnumDeserializer(cl);
 
     else if (Class.class.equals(cl))
-      deserializer = new ClassDeserializer(_loader);
+      deserializer = new ClassDeserializer(getClassLoader());
 
     else
       deserializer = getDefaultDeserializer(cl);
@@ -663,10 +664,10 @@ public class SerializerFactory extends AbstractSerializerFactory
     }
     else {
       try {
-        Class cl = Class.forName(type, false, _loader);
+        Class cl = Class.forName(type, false, getClassLoader());
         deserializer = getDeserializer(cl);
       } catch (Exception e) {
-        log.warning("Hessian/Burlap: '" + type + "' is an unknown class in " + _loader + ":\n" + e);
+        log.warning("Hessian/Burlap: '" + type + "' is an unknown class in " + getClassLoader() + ":\n" + e);
 
         log.log(Level.FINER, e.toString(), e);
       }

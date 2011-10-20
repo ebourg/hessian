@@ -49,7 +49,6 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -58,6 +57,8 @@ import java.util.ArrayList;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.caucho.hessian.HessianUnshared;
 
 /**
  * Serializing an object for known object types.
@@ -92,7 +93,13 @@ public class JavaSerializer extends AbstractSerializer
       JavaSerializer base = baseRef != null ? baseRef.get() : null;
 
       if (base == null) {
-        base = new JavaSerializer(cl);
+        if (cl.isAnnotationPresent(HessianUnshared.class))
+          base = new JavaUnsharedSerializer(cl);
+        else
+          base = new JavaSerializer(cl);
+        
+        System.out.println("BASE: " + base + " " + cl);
+        
         baseRef = new SoftReference<JavaSerializer>(base);
         _serializerMap.put(cl, baseRef);
       }
@@ -130,7 +137,7 @@ public class JavaSerializer extends AbstractSerializer
       }
     }
 
-    ArrayList fields = new ArrayList();
+    ArrayList<Field> fields = new ArrayList<Field>();
     fields.addAll(primitiveFields);
     fields.addAll(compoundFields);
 
@@ -147,7 +154,7 @@ public class JavaSerializer extends AbstractSerializer
   /**
    * Returns the writeReplace method
    */
-  protected static Method getWriteReplace(Class cl)
+  protected static Method getWriteReplace(Class<?> cl)
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       Method []methods = cl.getDeclaredMethods();
@@ -167,7 +174,7 @@ public class JavaSerializer extends AbstractSerializer
   /**
    * Returns the writeReplace method
    */
-  protected Method getWriteReplace(Class cl, Class param)
+  protected Method getWriteReplace(Class<?> cl, Class<?> param)
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       for (Method method : cl.getDeclaredMethods()) {
@@ -181,6 +188,7 @@ public class JavaSerializer extends AbstractSerializer
     return null;
   }
   
+  @Override
   public void writeObject(Object obj, AbstractHessianOutput out)
     throws IOException
   {
@@ -255,6 +263,7 @@ public class JavaSerializer extends AbstractSerializer
     }
   }
   
+  @Override
   public void writeInstance(Object obj, AbstractHessianOutput out)
     throws IOException
   {
@@ -277,7 +286,7 @@ public class JavaSerializer extends AbstractSerializer
     }
   }
 
-  private static FieldSerializer getFieldSerializer(Class type)
+  private static FieldSerializer getFieldSerializer(Class<?> type)
   {
     if (int.class.equals(type)
         || byte.class.equals(type)

@@ -118,6 +118,11 @@ abstract public class AbstractHessianOutput {
   public void init(OutputStream os)
   {
   }
+  
+  public boolean setUnshared(boolean isUnshared)
+  {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
 
   /**
    * Writes a complete method call.

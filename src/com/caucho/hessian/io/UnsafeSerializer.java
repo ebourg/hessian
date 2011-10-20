@@ -59,6 +59,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.caucho.hessian.HessianUnshared;
+
 import sun.misc.Unsafe;
 
 /**
@@ -101,7 +103,11 @@ public class UnsafeSerializer extends AbstractSerializer
       UnsafeSerializer base = baseRef != null ? baseRef.get() : null;
 
       if (base == null) {
-        base = new UnsafeSerializer(cl);
+        if (cl.isAnnotationPresent(HessianUnshared.class))
+          base = new UnsafeUnsharedSerializer(cl);
+        else
+          base = new UnsafeSerializer(cl);
+        
         baseRef = new SoftReference<UnsafeSerializer>(base);
         _serializerMap.put(cl, baseRef);
       }

@@ -98,8 +98,6 @@ public class JavaSerializer extends AbstractSerializer
         else
           base = new JavaSerializer(cl);
         
-        System.out.println("BASE: " + base + " " + cl);
-        
         baseRef = new SoftReference<JavaSerializer>(base);
         _serializerMap.put(cl, baseRef);
       }

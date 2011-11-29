@@ -619,6 +619,7 @@ public class HessianDebugState implements Hessian2Constants
         return new StringState(this, 'S', true);
 
       case 'b':
+      case 'A':
         return new BinaryState(this, 'B', false);
 
       case 'B':
@@ -1093,7 +1094,7 @@ public class HessianDebugState implements Hessian2Constants
           return this;
         }
         else {
-          println(String.valueOf((char) ch) + ": unexpected character");
+          println(this + " " + String.valueOf((char) ch) + ": unexpected character");
           return _next;
         }
       }
@@ -1180,6 +1181,7 @@ public class HessianDebugState implements Hessian2Constants
       _lengthIndex = 1;
     }
     
+    @Override
     State next(int ch)
     {
       if (_lengthIndex < 2) {
@@ -1199,7 +1201,7 @@ public class HessianDebugState implements Hessian2Constants
           return this;
       }
       else if (_length == 0) {
-        if (ch == 'b') {
+        if (ch == 'b' || ch == 'A') {
           _isLastChunk = false;
           _lengthIndex = 0;
           return this;
@@ -1219,14 +1221,14 @@ public class HessianDebugState implements Hessian2Constants
             return _next;
           }
         }
-        else if (0x20 <=ch && ch < 0x30) {
+        else if (0x20 <= ch && ch < 0x30) {
           _isLastChunk = true;
           _lengthIndex = 2;
           _length = (ch & 0xff) - 0x20;
           return this;
         }
         else {
-          println(String.valueOf((char) ch) + ": unexpected character");
+          println(this + " 0x" + Integer.toHexString(ch) + " " + String.valueOf((char) ch) + ": unexpected character");
           return _next;
         }
       }
@@ -1310,7 +1312,7 @@ public class HessianDebugState implements Hessian2Constants
         return this;
       }
       else {
-        printObject("unknown shift state= " + _state + " type=" + type);
+        printObject(this + " unknown shift state= " + _state + " type=" + type);
         
         return this;
       }
@@ -1611,9 +1613,9 @@ public class HessianDebugState implements Hessian2Constants
       _state = FIELD;
 
       if (def < 0 || _objectDefList.size() <= def) {
-        log.warning(def + " is an unknown object type");
+        log.warning(this + " " + def + " is an unknown object type");
         
-        println("object unknown  (#" + _refId + ")");
+        println(this + " object unknown  (#" + _refId + ")");
       }
 
       _def = _objectDefList.get(def);

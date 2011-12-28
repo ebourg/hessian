@@ -78,7 +78,8 @@ public class Hessian2Output
   extends AbstractHessianOutput
   implements Hessian2Constants
 {
-  public final static int SIZE = 4096;
+  // should match Resin buffer size for perf
+  public final static int SIZE = 8 * 1024;
 
   // the output stream/
   protected OutputStream _os;
@@ -198,6 +199,7 @@ public class Hessian2Output
    *
    * @param method the method name to call.
    */
+  @Override
   public void startCall(String method, int length)
     throws IOException
   {
@@ -226,6 +228,7 @@ public class Hessian2Output
    *
    * @param method the method name to call.
    */
+  @Override
   public void startCall()
     throws IOException
   {
@@ -298,6 +301,7 @@ public class Hessian2Output
    * z
    * </pre></code>
    */
+  @Override
   public void completeCall()
     throws IOException
   {
@@ -317,6 +321,7 @@ public class Hessian2Output
    * R
    * </pre>
    */
+  @Override
   public void startReply()
     throws IOException
   {
@@ -346,6 +351,7 @@ public class Hessian2Output
    * z
    * </pre>
    */
+  @Override
   public void completeReply()
     throws IOException
   {

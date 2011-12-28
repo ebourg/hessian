@@ -429,6 +429,7 @@ public class ContextSerializerFactory
 
     addBasic(boolean[].class, "[boolean", BasicSerializer.BOOLEAN_ARRAY);
     addBasic(byte[].class, "[byte", BasicSerializer.BYTE_ARRAY);
+    _staticSerializerMap.put(byte[].class.getName(), ByteArraySerializer.SER);
     addBasic(short[].class, "[short", BasicSerializer.SHORT_ARRAY);
     addBasic(int[].class, "[int", BasicSerializer.INTEGER_ARRAY);
     addBasic(long[].class, "[long", BasicSerializer.LONG_ARRAY);

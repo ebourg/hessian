@@ -154,12 +154,21 @@ public class HessianFactory
    */
   public Hessian2Output createHessian2Output(OutputStream os)
   {
+    Hessian2Output out = createHessian2Output();
+    
+    out.init(os);
+    
+    return out;
+  }
+
+  /**
+   * Creates a new Hessian 2.0 serializer.
+   */
+  public Hessian2Output createHessian2Output()
+  {
     Hessian2Output out = _freeHessian2Output.allocate();
 
-    if (out != null)
-      out.init(os);
-    else
-      out = new Hessian2Output(os);
+    out = new Hessian2Output();
 
     out.setSerializerFactory(getSerializerFactory());
 

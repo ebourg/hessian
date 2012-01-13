@@ -214,6 +214,18 @@ public class Hessian2Input
     
     _is = is;
     
+    reset();
+  }
+
+  public void initPacket(InputStream is)
+  {
+    if (_dIs != null) {
+      _dIs.initPacket(is);
+      is = _dIs;
+    }
+    
+    _is = is;
+    
     resetReferences();
   }
 

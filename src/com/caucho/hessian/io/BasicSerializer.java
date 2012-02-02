@@ -68,7 +68,8 @@ public class BasicSerializer extends AbstractSerializer
   public static final int CHARACTER = DOUBLE + 1;
   public static final int CHARACTER_OBJECT = CHARACTER + 1;
   public static final int STRING = CHARACTER_OBJECT + 1;
-  public static final int DATE = STRING + 1;
+  public static final int STRING_BUILDER = STRING + 1;
+  public static final int DATE = STRING_BUILDER + 1;
   public static final int NUMBER = DATE + 1;
   public static final int OBJECT = NUMBER + 1;
   
@@ -147,6 +148,10 @@ public class BasicSerializer extends AbstractSerializer
       
     case STRING:
       out.writeString((String) obj);
+      break;
+      
+    case STRING_BUILDER:
+      out.writeString(((StringBuilder) obj).toString());
       break;
       
     case DATE:

@@ -72,7 +72,7 @@ public class UnsafeSerializer extends AbstractSerializer
     = Logger.getLogger(UnsafeSerializer.class.getName());
 
   private static boolean _isEnabled;
-  private static Unsafe _unsafe;
+  private static final Unsafe _unsafe;
   
   private static final WeakHashMap<Class<?>,SoftReference<UnsafeSerializer>> _serializerMap
     = new WeakHashMap<Class<?>,SoftReference<UnsafeSerializer>>();
@@ -539,21 +539,22 @@ public class UnsafeSerializer extends AbstractSerializer
   
   static {
     boolean isEnabled = false;
+    Unsafe unsafe = null;
     
     try {
-      Class unsafe = Class.forName("sun.misc.Unsafe");
+      Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
       Field theUnsafe = null;
-      for (Field field : unsafe.getDeclaredFields()) {
+      for (Field field : unsafeClass.getDeclaredFields()) {
         if (field.getName().equals("theUnsafe"))
           theUnsafe = field;
       }
       
       if (theUnsafe != null) {
         theUnsafe.setAccessible(true);
-        _unsafe = (Unsafe) theUnsafe.get(null);
+        unsafe = (Unsafe) theUnsafe.get(null);
       }
       
-      isEnabled = _unsafe != null;
+      isEnabled = unsafe != null;
       
       String unsafeProp = System.getProperty("com.caucho.hessian.unsafe");
       
@@ -563,6 +564,7 @@ public class UnsafeSerializer extends AbstractSerializer
       log.log(Level.FINER, e.toString(), e);
     }
     
+    _unsafe = unsafe;
     _isEnabled = isEnabled;
   }
 }

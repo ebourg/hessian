@@ -82,6 +82,9 @@ public class JavaSerializer extends AbstractSerializer
     introspect(cl);
 
     _writeReplace = getWriteReplace(cl);
+
+    if (_writeReplace != null)
+      _writeReplace.setAccessible(true);
   }
 
   public static Serializer create(Class<?> cl)

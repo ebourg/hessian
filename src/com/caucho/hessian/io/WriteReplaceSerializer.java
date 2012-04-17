@@ -166,6 +166,7 @@ public class WriteReplaceSerializer extends AbstractSerializer
         }
         
         _baseSerializer.writeObject(obj, out);
+
         return;
       }
 

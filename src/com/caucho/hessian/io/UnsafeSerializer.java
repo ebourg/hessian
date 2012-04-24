@@ -561,7 +561,7 @@ public class UnsafeSerializer extends AbstractSerializer
       if ("false".equals(unsafeProp))
         isEnabled = false;
     } catch (Throwable e) {
-      log.log(Level.FINER, e.toString(), e);
+      log.log(Level.ALL, e.toString(), e);
     }
     
     _unsafe = unsafe;

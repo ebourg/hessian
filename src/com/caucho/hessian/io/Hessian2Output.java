@@ -156,6 +156,7 @@ public class Hessian2Output
    * Sets hessian to be "unshared", meaning it will not detect 
    * duplicate or circular references.
    */
+  @Override
   public boolean setUnshared(boolean isUnshared)
   {
     boolean oldIsUnshared = _isUnshared;
@@ -429,7 +430,7 @@ public class Hessian2Output
     _buffer[_offset++] = (byte) 'F';
     _buffer[_offset++] = (byte) 'H';
 
-    _refs.put(new Object(), _refCount++, false);
+    addRef(new Object(), _refCount++, false);
 
     writeString("code");
     writeString(code);
@@ -1335,7 +1336,7 @@ public class Hessian2Output
     
     int newRef = _refCount;
 
-    int ref = _refs.put(object, newRef, false);
+    int ref = addRef(object, newRef, false);
     
     if (ref != newRef) {
       writeRef(ref);
@@ -1380,6 +1381,7 @@ public class Hessian2Output
   /**
    * Replaces a reference from one object to another.
    */
+  @Override
   public boolean replaceRef(Object oldRef, Object newRef)
     throws IOException
   {
@@ -1390,7 +1392,7 @@ public class Hessian2Output
     int value = _refs.get(oldRef);
 
     if (value >= 0) {
-      _refs.put(newRef, value, true);
+      addRef(newRef, value, true);
       
       _refs.remove(oldRef);
       
@@ -1398,6 +1400,13 @@ public class Hessian2Output
     }
     else
       return false;
+  }
+  
+  private int addRef(Object value, int newRef, boolean isReplace)
+  {
+    int prevRef = _refs.put(value, newRef, isReplace);
+    
+    return prevRef;
   }
 
   /**

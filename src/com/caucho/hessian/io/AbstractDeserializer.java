@@ -128,6 +128,7 @@ public class AbstractDeserializer implements Deserializer {
     return name;
   }
   
+  @Override
   public Object readObject(AbstractHessianInput in,
                            String []fieldNames)
     throws IOException

@@ -48,15 +48,9 @@
 
 package com.caucho.hessian.io;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Serializing an object containing a byte stream.
@@ -66,6 +60,7 @@ abstract public class AbstractStreamSerializer extends AbstractSerializer
   /**
    * Writes the object to the output stream.
    */
+  @Override
   public void writeObject(Object obj, AbstractHessianOutput out)
     throws IOException
   {

@@ -2324,6 +2324,7 @@ public class Hessian2Input
   /**
    * Adds a list/map reference.
    */
+  @Override
   public int addRef(Object ref)
   {
     if (_refs == null)

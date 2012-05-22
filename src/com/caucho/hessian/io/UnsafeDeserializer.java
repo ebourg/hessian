@@ -389,6 +389,8 @@ public class UnsafeDeserializer extends AbstractMapDeserializer {
   
   static class NullFieldDeserializer extends FieldDeserializer {
     static NullFieldDeserializer DESER = new NullFieldDeserializer();
+    
+    @Override
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {

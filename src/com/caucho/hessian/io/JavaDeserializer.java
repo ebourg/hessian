@@ -160,6 +160,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     return new FieldDeserializer[len];
   }
 
+  @Override
   public Object createField(String name)
   {
     Object reader = _fieldMap.get(name);
@@ -447,8 +448,10 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       throws IOException;
   }
   
-  static class NullFieldDeserializer {
+  static class NullFieldDeserializer extends FieldDeserializer {
     static NullFieldDeserializer DESER = new NullFieldDeserializer();
+    
+    @Override
     void deserialize(AbstractHessianInput in, Object obj)
       throws IOException
     {

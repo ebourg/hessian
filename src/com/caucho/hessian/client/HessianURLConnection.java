@@ -51,6 +51,8 @@ package com.caucho.hessian.client;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -80,6 +82,7 @@ public class HessianURLConnection extends AbstractHessianConnection {
   /**
    * Adds a HTTP header.
    */
+  @Override
   public void addHeader(String key, String value)
   {
     _conn.setRequestProperty(key, value);
@@ -176,24 +179,36 @@ public class HessianURLConnection extends AbstractHessianConnection {
   /**
    * Returns the InputStream to the result
    */
+  @Override
   public InputStream getInputStream()
     throws IOException
   {
-    return _conn.getInputStream();
+    return _conn.getInputStream(); 
+  }
+  
+  @Override
+  public String getContentEncoding()
+  {
+    return _conn.getContentEncoding();
   }
 
   /**
    * Close/free the connection
    */
+  @Override
   public void close()
   {
+    _inputStream = null;
   }
 
   /**
    * Disconnect the connection
    */
+  @Override
   public void destroy()
   {
+    close();
+    
     URLConnection conn = _conn;
     _conn = null;
     

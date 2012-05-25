@@ -416,21 +416,24 @@ public class SerializerFactory extends AbstractSerializerFactory
     if (Collection.class.isAssignableFrom(cl))
       deserializer = new CollectionDeserializer(cl);
 
-    else if (Map.class.isAssignableFrom(cl))
+    else if (Map.class.isAssignableFrom(cl)) {
       deserializer = new MapDeserializer(cl);
-
-    else if (Annotation.class.isAssignableFrom(cl))
+    }
+    else if (Iterator.class.isAssignableFrom(cl)) {
+      deserializer = IteratorDeserializer.create();
+    }
+    else if (Annotation.class.isAssignableFrom(cl)) {
       deserializer = new AnnotationDeserializer(cl);
-
-    else if (cl.isInterface())
+    }
+    else if (cl.isInterface()) {
       deserializer = new ObjectDeserializer(cl);
-
-    else if (cl.isArray())
+    }
+    else if (cl.isArray()) {
       deserializer = new ArrayDeserializer(cl.getComponentType());
-
-    else if (Enumeration.class.isAssignableFrom(cl))
+    }
+    else if (Enumeration.class.isAssignableFrom(cl)) {
       deserializer = EnumerationDeserializer.create();
-
+    }
     else if (Enum.class.isAssignableFrom(cl))
       deserializer = new EnumDeserializer(cl);
 

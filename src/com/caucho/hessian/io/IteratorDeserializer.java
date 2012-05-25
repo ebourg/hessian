@@ -22,7 +22,7 @@
  *    Alternately, this acknowlegement may appear in the software itself,
  *    if and wherever such third-party acknowlegements normally appear.
  *
- * 4. The names "Burlap", "Resin", and "Caucho" must not be used to
+ * 4. The names "Hessian", "Resin", and "Caucho" must not be used to
  *    endorse or promote products derived from this software without prior
  *    written permission. For written permission, please contact
  *    info@caucho.com.
@@ -46,72 +46,40 @@
  * @author Scott Ferguson
  */
 
-package com.caucho.hessian.client;
+package com.caucho.hessian.io;
 
-import java.net.URL;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
- * Internal connection to a server.  The default connection is based on
- * java.net
+ * Deserializing a JDK 1.2 Collection.
  */
-abstract public class AbstractHessianConnection implements HessianConnection {
-  /**
-   * Adds HTTP headers.
-   */
-  public void addHeader(String key, String value)
+public class IteratorDeserializer extends AbstractListDeserializer {
+  private static IteratorDeserializer _deserializer;
+
+  public static IteratorDeserializer create()
   {
+    if (_deserializer == null)
+      _deserializer = new IteratorDeserializer();
+
+    return _deserializer;
   }
   
-  /**
-   * Returns the output stream for the request.
-   */
-  abstract public OutputStream getOutputStream()
-    throws IOException;
-
-  /**
-   * Sends the query
-   */
-  abstract public void sendRequest()
-    throws IOException;
-
-  /**
-   * Returns the status code.
-   */
-  abstract public int getStatusCode();
-
-  /**
-   * Returns the status string.
-   */
-  abstract public String getStatusMessage();
-
-  /**
-   * Returns the InputStream to the result
-   */
-  abstract public InputStream getInputStream()
-    throws IOException;
-
   @Override
-  public String getContentEncoding()
-  {
-    return null;
-  }
-  
-  /**
-   * Close/free the connection, using keepalive if appropriate.
-   */
-  public void close()
+  public Object readList(AbstractHessianInput in, int length)
     throws IOException
   {
-    destroy();
-  }
+    ArrayList list = new ArrayList();
 
-  /**
-   * Destroy/disconnect the connection
-   */
-  abstract public void destroy()
-    throws IOException;
+    in.addRef(list);
+
+    while (! in.isEnd())
+      list.add(in.readObject());
+
+    in.readEnd();
+
+    return list.iterator();
+  }
 }
+
 

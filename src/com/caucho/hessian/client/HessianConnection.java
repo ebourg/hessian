@@ -84,6 +84,12 @@ public interface HessianConnection {
    * Returns the status string.
    */
   public String getStatusMessage();
+  
+  /**
+   * Returns the content encoding
+   */
+  public String getContentEncoding();
+  
 
   /**
    * Returns the InputStream to the result

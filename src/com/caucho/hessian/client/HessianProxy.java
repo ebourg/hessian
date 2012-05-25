@@ -60,6 +60,7 @@ import java.util.WeakHashMap;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.zip.*;
 
 /**
  * Proxy implementation for Hessian clients.  Applications will generally
@@ -169,7 +170,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
       
       conn = sendRequest(mangleName, args);
 
-      is = conn.getInputStream();
+      is = getInputStream(conn);
 
       if (log.isLoggable(Level.FINEST)) {
         PrintWriter dbg = new PrintWriter(new LogWriter(log));
@@ -235,6 +236,18 @@ public class HessianProxy implements InvocationHandler, Serializable {
       }
     }
   }
+  
+  protected InputStream getInputStream(HessianConnection conn)
+    throws IOException
+  {
+    InputStream is = conn.getInputStream();
+
+    if ("deflate".equals(conn.getContentEncoding())) {
+      is = new InflaterInputStream(is, new Inflater(true));
+    }
+    
+    return is;
+  }
 
   protected String mangleName(Method method)
   {
@@ -298,6 +311,7 @@ public class HessianProxy implements InvocationHandler, Serializable {
   protected void addRequestHeaders(HessianConnection conn)
   {
     conn.addHeader("Content-Type", "x-application/hessian");
+    conn.addHeader("Accept-Encoding", "deflate");
 
     String basicAuth = _factory.getBasicAuth();
 

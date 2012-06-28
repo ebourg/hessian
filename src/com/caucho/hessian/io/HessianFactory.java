@@ -102,8 +102,15 @@ public class HessianFactory
    */
   public Hessian2Input createHessian2Input(InputStream is)
   {
-    Hessian2Input in = new Hessian2Input(is);
-    in.setSerializerFactory(getSerializerFactory());
+    Hessian2Input in = _freeHessian2Input.allocate();
+    
+    if (in == null) {
+      in = new Hessian2Input(is);
+      in.setSerializerFactory(getSerializerFactory());
+    }
+    else {
+      in.init(is);
+    }
 
     return in;
   }
@@ -113,14 +120,12 @@ public class HessianFactory
    */
   public void freeHessian2Input(Hessian2Input in)
   {
-    /*
     if (in == null)
       return;
 
     in.free();
 
     _freeHessian2Input.free(in);
-    */
   }
 
   /**
@@ -168,9 +173,11 @@ public class HessianFactory
   {
     Hessian2Output out = _freeHessian2Output.allocate();
 
-    out = new Hessian2Output();
+    if (out == null) {
+      out = new Hessian2Output();
 
-    out.setSerializerFactory(getSerializerFactory());
+      out.setSerializerFactory(getSerializerFactory());
+    }
 
     return out;
   }

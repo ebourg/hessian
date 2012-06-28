@@ -2346,6 +2346,7 @@ public class Hessian2Input
   /**
    * Resets the references for streaming.
    */
+  @Override
   public void resetReferences()
   {
     _refs.clear();
@@ -2941,7 +2942,13 @@ public class Hessian2Input
     else
       return new HessianProtocolException(message);
   }
+  
+  public void free()
+  {
+    reset();
+  }
 
+  @Override
   public void close()
     throws IOException
   {

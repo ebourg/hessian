@@ -132,7 +132,7 @@ public class IdentityIntMap {
   public final int put(Object key, int value, boolean isReplace)
   {
     int prime = _prime;
-    int hash = System.identityHashCode(key) % prime;
+    int hash = Math.abs(System.identityHashCode(key) % prime);
     // int hash = key.hashCode() % prime;
 
     Object []keys = _keys;

@@ -49,19 +49,17 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.caucho.hessian.HessianUnshared;
-
 import sun.misc.Unsafe;
+
+import com.caucho.hessian.HessianUnshared;
 
 /**
  * Serializing an object for known object types.
@@ -76,8 +74,6 @@ public class UnsafeSerializer extends AbstractSerializer
   
   private static final WeakHashMap<Class<?>,SoftReference<UnsafeSerializer>> _serializerMap
     = new WeakHashMap<Class<?>,SoftReference<UnsafeSerializer>>();
-
-  private static Object []NULL_ARGS = new Object[0];
 
   private Field []_fields;
   private FieldSerializer []_fieldSerializers;
@@ -94,8 +90,6 @@ public class UnsafeSerializer extends AbstractSerializer
 
   public static UnsafeSerializer create(Class<?> cl)
   {
-    ClassLoader loader = cl.getClassLoader();
-
     synchronized (_serializerMap) {
       SoftReference<UnsafeSerializer> baseRef
         = _serializerMap.get(cl);
@@ -123,22 +117,26 @@ public class UnsafeSerializer extends AbstractSerializer
 
     for (; cl != null; cl = cl.getSuperclass()) {
       Field []fields = cl.getDeclaredFields();
+      
       for (int i = 0; i < fields.length; i++) {
         Field field = fields[i];
-
+        
         if (Modifier.isTransient(field.getModifiers())
-            || Modifier.isStatic(field.getModifiers()))
+            || Modifier.isStatic(field.getModifiers())) {
           continue;
+        }
 
         // XXX: could parameterize the handler to only deal with public
         field.setAccessible(true);
 
         if (field.getType().isPrimitive()
             || (field.getType().getName().startsWith("java.lang.")
-                && ! field.getType().equals(Object.class)))
+                && ! field.getType().equals(Object.class))) {
           primitiveFields.add(field);
-        else
+        }
+        else {
           compoundFields.add(field);
+        }
       }
     }
 

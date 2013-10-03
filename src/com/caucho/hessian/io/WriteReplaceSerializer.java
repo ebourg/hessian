@@ -49,15 +49,10 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.caucho.hessian.HessianException;
 
 /**
  * Serializing an object for known object types.
@@ -66,8 +61,6 @@ public class WriteReplaceSerializer extends AbstractSerializer
 {
   private static final Logger log
     = Logger.getLogger(WriteReplaceSerializer.class.getName());
-
-  private static Object []NULL_ARGS = new Object[0];
 
   private Object _writeReplaceFactory;
   private Method _writeReplace;
@@ -110,7 +103,7 @@ public class WriteReplaceSerializer extends AbstractSerializer
   /**
    * Returns the writeReplace method
    */
-  protected static Method getWriteReplace(Class cl, Class param)
+  protected static Method getWriteReplace(Class<?> cl, Class<?> param)
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       for (Method method : cl.getDeclaredMethods()) {
@@ -127,7 +120,7 @@ public class WriteReplaceSerializer extends AbstractSerializer
   /**
    * Returns the writeReplace method
    */
-  protected static Method getWriteReplace(Class cl)
+  protected static Method getWriteReplace(Class<?> cl)
   {
     for (; cl != null; cl = cl.getSuperclass()) {
       Method []methods = cl.getDeclaredMethods();
@@ -143,7 +136,8 @@ public class WriteReplaceSerializer extends AbstractSerializer
 
     return null;
   }
-  
+
+  @Override
   public void writeObject(Object obj, AbstractHessianOutput out)
     throws IOException
   {

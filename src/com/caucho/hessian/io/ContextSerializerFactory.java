@@ -48,18 +48,22 @@
 
 package com.caucho.hessian.io;
 
-import com.caucho.hessian.HessianException;
-
-import java.io.*;
-import java.math.BigDecimal;
-import java.net.URL;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.lang.annotation.Annotation;
-import java.lang.ref.WeakReference;
+
+import com.caucho.hessian.HessianException;
 
 /**
  * The classloader-specific Factory for returning serialization
@@ -460,6 +464,9 @@ public class ContextSerializerFactory
     } catch (Throwable e) {
     }
     */
+    
+    _staticSerializerMap.put(InetAddress.class.getName(),
+                             InetAddressSerializer.create());
 
     _staticSerializerMap.put(java.sql.Date.class.getName(),
                              new SqlDateSerializer());

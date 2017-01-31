@@ -177,6 +177,30 @@ public class HessianServlet extends HttpServlet {
   {
     getSerializerFactory().setSendCollectionType(sendType);
   }
+  
+  /**
+   * Sets whitelist mode for the deserializer
+   */
+  public void setWhitelist(boolean isWhitelist)
+  {
+    getSerializerFactory().getClassFactory().setWhitelist(isWhitelist);
+  }
+  
+  /**
+   * Adds an allow rule to the deserializer
+   */
+  public void allow(String pattern)
+  {
+    getSerializerFactory().getClassFactory().allow(pattern);
+  }
+  
+  /**
+   * Adds a deny rule to the deserializer
+   */
+  public void deny(String pattern)
+  {
+    getSerializerFactory().getClassFactory().deny(pattern);
+  }
 
   /**
    * Sets the debugging flag.

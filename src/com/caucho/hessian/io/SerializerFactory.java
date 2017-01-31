@@ -110,6 +110,8 @@ public class SerializerFactory extends AbstractSerializerFactory
   private boolean _isEnableUnsafeSerializer
     = (UnsafeSerializer.isEnabled()
         && UnsafeDeserializer.isEnabled());
+  
+  private ClassFactory _classFactory;
 
   public SerializerFactory()
   {
@@ -209,6 +211,23 @@ public class SerializerFactory extends AbstractSerializerFactory
       return ((ObjectSerializer) serializer).getObjectSerializer();
     else
       return serializer;
+  }
+  
+  public Class<?> loadSerializedClass(String className)
+    throws ClassNotFoundException
+  {
+    return getClassFactory().load(className);
+  }
+  
+  public ClassFactory getClassFactory()
+  {
+    synchronized (this) {
+      if (_classFactory == null) {
+        _classFactory = new ClassFactory(getClassLoader());
+      }
+      
+      return _classFactory;
+    }
   }
 
   /**
@@ -679,7 +698,10 @@ public class SerializerFactory extends AbstractSerializerFactory
     }
     else {
       try {
-        Class cl = Class.forName(type, false, getClassLoader());
+        //Class cl = Class.forName(type, false, getClassLoader());
+        
+        Class cl = loadSerializedClass(type);
+        
         deserializer = getDeserializer(cl);
       } catch (Exception e) {
         log.warning("Hessian/Burlap: '" + type + "' is an unknown class in " + getClassLoader() + ":\n" + e);

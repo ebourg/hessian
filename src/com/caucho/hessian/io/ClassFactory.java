@@ -48,92 +48,127 @@
 
 package com.caucho.hessian.io;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Pattern;
 
 /**
- * Deserializing a JDK 1.2 Collection.
+ * Loads a class from the classloader.
  */
-public class CollectionDeserializer extends AbstractListDeserializer {
-  private Class _type;
+public class ClassFactory
+{
+  private static ArrayList<Allow> _staticAllowList;
   
-  public CollectionDeserializer(Class type)
+  private ClassLoader _loader;
+  private boolean _isWhitelist;
+  
+  private ArrayList<Allow> _allowList;
+  
+  ClassFactory(ClassLoader loader)
   {
-    _type = type;
+    _loader = loader;
   }
   
-  public Class getType()
+  public Class<?> load(String className)
+    throws ClassNotFoundException
   {
-    return _type;
-  }
-  
-  public Object readList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    Collection list = createList();
-
-    in.addRef(list);
-
-    while (! in.isEnd())
-      list.add(in.readObject());
-
-    in.readEnd();
-
-    return list;
-  }
-  
-  public Object readLengthList(AbstractHessianInput in, int length)
-    throws IOException
-  {
-    Collection list = createList();
-
-    in.addRef(list);
-
-    for (; length > 0; length--)
-      list.add(in.readObject());
-
-    return list;
-  }
-
-  private Collection createList()
-    throws IOException
-  {
-    Collection list = null;
-    
-    if (_type == null)
-      list = new ArrayList();
-    else if (! _type.isInterface()) {
-      try {
-        list = (Collection) _type.newInstance();
-      } catch (Exception e) {
-      }
+    if (isAllow(className)) {
+      return Class.forName(className, false, _loader);
     }
-
-    if (list != null) {
-    }
-    else if (SortedSet.class.isAssignableFrom(_type))
-      list = new TreeSet();
-    else if (Set.class.isAssignableFrom(_type))
-      list = new HashSet();
-    else if (List.class.isAssignableFrom(_type))
-      list = new ArrayList();
-    else if (Collection.class.isAssignableFrom(_type))
-      list = new ArrayList();
     else {
-      try {
-        list = (Collection) _type.newInstance();
-      } catch (Exception e) {
-        throw new IOExceptionWrapper(e);
-      }
+      return HashMap.class;
     }
-
-    return list;
   }
   
-  public String toString()
+  private boolean isAllow(String className)
   {
-    return getClass().getSimpleName() + "[" + _type + "]";
+    ArrayList<Allow> allowList = _allowList;
+    
+    if (allowList == null) {
+      return true;
+    }
+    
+    int size = allowList.size();
+    for (int i = 0; i < size; i++) {
+      Allow allow = allowList.get(i);
+      
+      Boolean isAllow = allow.allow(className);
+      
+      if (isAllow != null) {
+        return isAllow;
+      }
+    }
+    
+    return false;
+  }
+  
+  public void setWhitelist(boolean isWhitelist)
+  {
+    _isWhitelist = isWhitelist;
+    
+    initAllow();
+  }
+  
+  public void allow(String pattern)
+  {
+    initAllow();
+    
+    synchronized (this) {
+      _allowList.add(new Allow(toPattern(pattern), true));
+    }
+  }
+  
+  public void deny(String pattern)
+  {
+    initAllow();
+    
+    synchronized (this) {
+      _allowList.add(new Allow(toPattern(pattern), false));
+    }
+  }
+  
+  private String toPattern(String pattern)
+  {
+    pattern = pattern.replace(".", "\\.");
+    pattern = pattern.replace("*", ".*");
+    
+    return pattern;
+  }
+  
+  private void initAllow()
+  {
+    synchronized (this) {
+      if (_allowList == null) {
+        _allowList = new ArrayList<Allow>();
+        _allowList.addAll(_staticAllowList);
+      }
+    }
+  }
+  
+  static class Allow {
+    private Boolean _isAllow;
+    private Pattern _pattern;
+    
+    private Allow(String pattern, boolean isAllow)
+    {
+      _isAllow = isAllow;
+      _pattern = Pattern.compile(pattern);
+    }
+    
+    Boolean allow(String className)
+    {
+      if (_pattern.matcher(className).matches()) {
+        return _isAllow;
+      }
+      else {
+        return null;
+      }
+    }
+  }
+  
+  static {
+    _staticAllowList = new ArrayList<Allow>();
+    
+    _staticAllowList.add(new Allow("java\\..+", true));
   }
 }
-
-

@@ -96,6 +96,21 @@ public class HessianFactory
 
     return _serializerFactory;
   }
+  
+  public void setWhitelist(boolean isWhitelist)
+  {
+    getSerializerFactory().getClassFactory().setWhitelist(isWhitelist);
+  }
+  
+  public void allow(String pattern)
+  {
+    getSerializerFactory().getClassFactory().allow(pattern);
+  }
+  
+  public void deny(String pattern)
+  {
+    getSerializerFactory().getClassFactory().deny(pattern);
+  }
 
   /**
    * Creates a new Hessian 2.0 deserializer.

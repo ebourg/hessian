@@ -109,6 +109,11 @@ public class ClassFactory
     initAllow();
   }
   
+  /**
+   * Allow a class or package based on a pattern.
+   * 
+   * Examples: "java.util.*", "com.foo.io.Bean"
+   */
   public void allow(String pattern)
   {
     initAllow();
@@ -118,6 +123,11 @@ public class ClassFactory
     }
   }
   
+  /**
+   * Deny a class or package based on a pattern.
+   * 
+   * Examples: "java.util.*", "com.foo.io.Bean"
+   */
   public void deny(String pattern)
   {
     initAllow();

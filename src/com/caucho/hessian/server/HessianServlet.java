@@ -188,6 +188,8 @@ public class HessianServlet extends HttpServlet {
   
   /**
    * Adds an allow rule to the deserializer
+   * 
+   * Examples: "java.util.*", "com.foo.io.Bean"
    */
   public void allow(String pattern)
   {

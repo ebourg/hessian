@@ -97,16 +97,31 @@ public class HessianFactory
     return _serializerFactory;
   }
   
+  /**
+   * Enable whitelist deserialization mode. Only classes matching the whitelist
+   * will be allowed.
+   */
   public void setWhitelist(boolean isWhitelist)
   {
     getSerializerFactory().getClassFactory().setWhitelist(isWhitelist);
   }
   
+  /**
+   * Allow a class or package based on a pattern.
+   * 
+   * Examples: "java.util.*", "com.foo.io.Bean"
+   */
   public void allow(String pattern)
   {
     getSerializerFactory().getClassFactory().allow(pattern);
   }
   
+  
+  /**
+   * Deny a class or package based on a pattern.
+   * 
+   * Examples: "java.util.*", "com.foo.io.Bean"
+   */
   public void deny(String pattern)
   {
     getSerializerFactory().getClassFactory().deny(pattern);

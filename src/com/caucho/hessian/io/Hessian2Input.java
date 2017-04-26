@@ -177,6 +177,13 @@ public class Hessian2Input
 
     return factory;
   }
+  
+  public void allow(String pattern)
+  {
+    ClassFactory factory = getSerializerFactory().getClassFactory();
+    
+    factory.allow(pattern);
+  }
 
   public void setCloseStreamOnClose(boolean isClose)
   {

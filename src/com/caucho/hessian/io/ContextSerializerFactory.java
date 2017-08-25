@@ -221,11 +221,18 @@ public class ContextSerializerFactory
   public Deserializer getDeserializer(String className)
   {
     Deserializer deserializer = _deserializerClassMap.get(className);
-
-    if (deserializer == AbstractDeserializer.NULL)
-      return null;
-    else
+    
+    if (deserializer != null && deserializer != AbstractDeserializer.NULL) {
       return deserializer;
+    }
+    
+    deserializer = _deserializerInterfaceMap.get(className);
+    
+    if (deserializer != null && deserializer != AbstractDeserializer.NULL) {
+      return deserializer;
+    }
+    
+    return null;
   }
 
   /**

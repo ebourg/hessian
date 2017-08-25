@@ -180,5 +180,6 @@ public class ClassFactory
     _staticAllowList = new ArrayList<Allow>();
     
     _staticAllowList.add(new Allow("java\\..+", true));
+    _staticAllowList.add(new Allow("javax\\.management\\..+", true));
   }
 }

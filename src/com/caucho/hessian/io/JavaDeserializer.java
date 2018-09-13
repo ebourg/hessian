@@ -65,15 +65,15 @@ import com.caucho.hessian.io.UnsafeDeserializer.FieldDeserializer;
  */
 public class JavaDeserializer extends AbstractMapDeserializer {
   private Class<?> _type;
-  private HashMap<?,FieldDeserializer> _fieldMap;
+  private HashMap<?,FieldDeserializer2> _fieldMap;
   private Method _readResolve;
   private Constructor<?> _constructor;
   private Object []_constructorArgs;
   
-  public JavaDeserializer(Class<?> cl)
+  public JavaDeserializer(Class<?> cl, FieldDeserializer2Factory fieldFactory)
   {
     _type = cl;
-    _fieldMap = getFieldMap(cl);
+    _fieldMap = getFieldMap(cl, fieldFactory);
 
     _readResolve = getReadResolve(cl);
 
@@ -236,7 +236,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       while (! in.isEnd()) {
         Object key = in.readObject();
         
-        FieldDeserializer deser = _fieldMap.get(key);
+        FieldDeserializer2 deser = _fieldMap.get(key);
 
         if (deser != null)
           deser.deserialize(in, obj);
@@ -293,7 +293,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       int ref = in.addRef(obj);
 
       for (String fieldName : fieldNames) {
-        FieldDeserializer reader = _fieldMap.get(fieldName);
+        FieldDeserializer2 reader = _fieldMap.get(fieldName);
         
         if (reader != null)
           reader.deserialize(in, obj);
@@ -347,10 +347,11 @@ public class JavaDeserializer extends AbstractMapDeserializer {
   /**
    * Creates a map of the classes fields.
    */
-  protected HashMap<String,FieldDeserializer> getFieldMap(Class cl)
+  protected HashMap<String,FieldDeserializer2> 
+  getFieldMap(Class<?> cl, FieldDeserializer2Factory fieldFactory)
   {
-    HashMap<String,FieldDeserializer> fieldMap
-      = new HashMap<String,FieldDeserializer>();
+    HashMap<String,FieldDeserializer2> fieldMap
+      = new HashMap<String,FieldDeserializer2>();
     
     for (; cl != null; cl = cl.getSuperclass()) {
       Field []fields = cl.getDeclaredFields();
@@ -371,43 +372,7 @@ public class JavaDeserializer extends AbstractMapDeserializer {
         }
 
         Class<?> type = field.getType();
-        FieldDeserializer deser;
-
-        if (String.class.equals(type))
-          deser = new StringFieldDeserializer(field);
-        else if (byte.class.equals(type)) {
-          deser = new ByteFieldDeserializer(field);
-        }
-        else if (short.class.equals(type)) {
-          deser = new ShortFieldDeserializer(field);
-        }
-        else if (int.class.equals(type)) {
-          deser = new IntFieldDeserializer(field);
-        }
-        else if (long.class.equals(type)) {
-          deser = new LongFieldDeserializer(field);
-        }
-        else if (float.class.equals(type)) {
-          deser = new FloatFieldDeserializer(field);
-        }
-        else if (double.class.equals(type)) {
-          deser = new DoubleFieldDeserializer(field);
-        }
-        else if (boolean.class.equals(type)) {
-          deser = new BooleanFieldDeserializer(field);
-        }
-        else if (java.sql.Date.class.equals(type)) {
-          deser = new SqlDateFieldDeserializer(field);
-        }
-        else if (java.sql.Timestamp.class.equals(type)) {
-          deser = new SqlTimestampFieldDeserializer(field);
-        }
-        else if (java.sql.Time.class.equals(type)) {
-          deser = new SqlTimeFieldDeserializer(field);
-        }
-        else {
-          deser = new ObjectFieldDeserializer(field);
-        }
+        FieldDeserializer2 deser = fieldFactory.create(field);
 
         fieldMap.put(field.getName(), deser);
       }

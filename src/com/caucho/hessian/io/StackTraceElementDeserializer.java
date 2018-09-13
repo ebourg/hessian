@@ -55,9 +55,9 @@ import java.util.HashMap;
  * Deserializing a JDK 1.4 StackTraceElement
  */
 public class StackTraceElementDeserializer extends JavaDeserializer {
-  public StackTraceElementDeserializer()
+  public StackTraceElementDeserializer(FieldDeserializer2Factory fieldFactory)
   {
-    super(StackTraceElement.class);
+    super(StackTraceElement.class, fieldFactory);
   }
 
   @Override

@@ -111,6 +111,8 @@ public class SerializerFactory extends AbstractSerializerFactory
     = (UnsafeSerializer.isEnabled()
         && UnsafeDeserializer.isEnabled());
   
+  private FieldDeserializer2Factory _fieldDeserializerFactory;
+  
   private ClassFactory _classFactory;
 
   public SerializerFactory()
@@ -123,6 +125,13 @@ public class SerializerFactory extends AbstractSerializerFactory
     _loaderRef = new WeakReference<ClassLoader>(loader);
 
     _contextFactory = ContextSerializerFactory.create(loader);
+    
+    if (_isEnableUnsafeSerializer) {
+      _fieldDeserializerFactory = new FieldDeserializer2FactoryUnsafe();
+    }
+    else {
+      _fieldDeserializerFactory = new FieldDeserializer2Factory();
+    }
   }
 
   public static SerializerFactory createDefault()
@@ -228,6 +237,11 @@ public class SerializerFactory extends AbstractSerializerFactory
       
       return _classFactory;
     }
+  }
+  
+  public FieldDeserializer2Factory getFieldDeserializerFactory()
+  {
+    return _fieldDeserializerFactory;
   }
 
   /**
@@ -528,7 +542,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       return new UnsafeDeserializer(cl);
     }
     else
-      return new JavaDeserializer(cl);
+      return new JavaDeserializer(cl, _fieldDeserializerFactory);
   }
 
   /**
@@ -773,7 +787,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     addBasic(String[].class, "[string", BasicSerializer.STRING_ARRAY);
     addBasic(Object[].class, "[object", BasicSerializer.OBJECT_ARRAY);
 
-    Deserializer objectDeserializer = new JavaDeserializer(Object.class);
+    Deserializer objectDeserializer = new JavaDeserializer(Object.class, new FieldDeserializer2Factory());
     _staticTypeMap.put("object", objectDeserializer);
     _staticTypeMap.put(HessianRemote.class.getName(),
                        RemoteDeserializer.DESER);

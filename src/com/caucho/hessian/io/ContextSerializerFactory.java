@@ -415,6 +415,8 @@ public class ContextSerializerFactory
     _staticDeserializerMap = new HashMap();
     _staticClassNameMap = new HashMap();
 
+    FieldDeserializer2Factory fieldFactory = FieldDeserializer2Factory.create();
+
     addBasic(void.class, "void", BasicSerializer.NULL);
 
     addBasic(Boolean.class, "boolean", BasicSerializer.BOOLEAN);
@@ -450,7 +452,7 @@ public class ContextSerializerFactory
     addBasic(String[].class, "[string", BasicSerializer.STRING_ARRAY);
     addBasic(Object[].class, "[object", BasicSerializer.OBJECT_ARRAY);
 
-    Deserializer objectDeserializer = new JavaDeserializer(Object.class);
+    Deserializer objectDeserializer = new JavaDeserializer(Object.class, fieldFactory);
     _staticDeserializerMap.put("object", objectDeserializer);
     _staticClassNameMap.put("object", objectDeserializer);
 
@@ -491,7 +493,7 @@ public class ContextSerializerFactory
 
     // hessian/3bb5
     _staticDeserializerMap.put(StackTraceElement.class.getName(),
-                               new StackTraceElementDeserializer());
+                               new StackTraceElementDeserializer(fieldFactory));
 
     ClassLoader systemClassLoader = null;
     try {

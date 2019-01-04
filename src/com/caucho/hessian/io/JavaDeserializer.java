@@ -362,12 +362,14 @@ public class JavaDeserializer extends AbstractMapDeserializer {
         else if (fieldMap.get(field.getName()) != null)
           continue;
 
+	/*
         // XXX: could parameterize the handler to only deal with public
         try {
           field.setAccessible(true);
         } catch (Throwable e) {
           e.printStackTrace();
         }
+	*/
 
         FieldDeserializer2 deser = fieldFactory.create(field);
 

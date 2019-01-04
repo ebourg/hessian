@@ -78,12 +78,14 @@ public class FieldDeserializer2FactoryUnsafe extends FieldDeserializer2Factory {
       return NullFieldDeserializer.DESER;
     }
 
+    /*
     // XXX: could parameterize the handler to only deal with public
     try {
       field.setAccessible(true);
     } catch (Throwable e) {
       e.printStackTrace();
     }
+    */
 
     Class<?> type = field.getType();
     FieldDeserializer2 deser;

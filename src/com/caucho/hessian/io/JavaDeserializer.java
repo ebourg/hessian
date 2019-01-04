@@ -78,9 +78,17 @@ public class JavaDeserializer extends AbstractMapDeserializer {
     if (_readResolve != null) {
       _readResolve.setAccessible(true);
     }
-
+    
+    _constructor = getConstructor(cl);
+    _constructorArgs = getConstructorArgs(_constructor);
+  }
+  
+  protected Constructor<?> getConstructor(Class<?> cl)
+  {
     Constructor<?> []constructors = cl.getDeclaredConstructors();
     long bestCost = Long.MAX_VALUE;
+    
+    Constructor<?> constructor = null; 
 
     for (int i = 0; i < constructors.length; i++) {
       Class<?> []param = constructors[i].getParameterTypes();
@@ -109,19 +117,31 @@ public class JavaDeserializer extends AbstractMapDeserializer {
       cost += (long) param.length << 48;
 
       if (cost < bestCost) {
-        _constructor = constructors[i];
+        constructor = constructors[i];
         bestCost = cost;
       }
     }
-
-    if (_constructor != null) {
-      _constructor.setAccessible(true);
-      Class<?> []params = _constructor.getParameterTypes();
-      _constructorArgs = new Object[params.length];
+    
+    if (constructor != null) {
+      constructor.setAccessible(true);
+    }
+    
+    return constructor;
+  }
+  
+  protected Object []getConstructorArgs(Constructor<?> constructor)
+  {
+    Object []constructorArgs = null;
+    
+    if (constructor != null) {
+      Class<?> []params = constructor.getParameterTypes();
+      constructorArgs = new Object[params.length];
       for (int i = 0; i < params.length; i++) {
-        _constructorArgs[i] = getParamArg(params[i]);
+        constructorArgs[i] = getParamArg(params[i]);
       }
     }
+    
+    return constructorArgs;
   }
 
   @Override

@@ -48,8 +48,7 @@
 
 package com.caucho.hessian.io;
 
-import java.io.*;
-import java.util.HashMap;
+import java.lang.reflect.Constructor;
 
 /**
  * Deserializing a JDK 1.4 StackTraceElement
@@ -58,6 +57,12 @@ public class StackTraceElementDeserializer extends JavaDeserializer {
   public StackTraceElementDeserializer(FieldDeserializer2Factory fieldFactory)
   {
     super(StackTraceElement.class, fieldFactory);
+  }
+  
+  @Override
+  protected Constructor<?> getConstructor(Class<?> cl)
+  {
+    return null;
   }
 
   @Override

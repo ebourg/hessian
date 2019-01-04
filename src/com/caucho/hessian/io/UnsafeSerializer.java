@@ -126,8 +126,10 @@ public class UnsafeSerializer extends AbstractSerializer
           continue;
         }
 
+        /*
         // XXX: could parameterize the handler to only deal with public
         field.setAccessible(true);
+        */
 
         if (field.getType().isPrimitive()
             || (field.getType().getName().startsWith("java.lang.")

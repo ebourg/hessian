@@ -345,7 +345,7 @@ public class SerializerFactory extends AbstractSerializerFactory
     }
 
     else if (Throwable.class.isAssignableFrom(cl))
-      return new ThrowableSerializer(cl, getClassLoader());
+      return new ThrowableSerializer(getDefaultSerializer(cl));
 
     else if (InputStream.class.isAssignableFrom(cl))
       return new InputStreamSerializer();
@@ -539,7 +539,7 @@ public class SerializerFactory extends AbstractSerializerFactory
       return InputStreamDeserializer.DESER;
     
     if (_isEnableUnsafeSerializer) {
-      return new UnsafeDeserializer(cl);
+      return new UnsafeDeserializer(cl, _fieldDeserializerFactory);
     }
     else
       return new JavaDeserializer(cl, _fieldDeserializerFactory);

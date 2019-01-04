@@ -146,6 +146,7 @@ public class BasicDeserializer extends AbstractDeserializer {
     }
   }
   
+  @Override
   public Object readObject(AbstractHessianInput in)
     throws IOException
   {
@@ -260,6 +261,7 @@ public class BasicDeserializer extends AbstractDeserializer {
     }
   }
   
+  @Override
   public Object readList(AbstractHessianInput in, int length)
     throws IOException
   {

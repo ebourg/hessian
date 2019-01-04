@@ -2196,7 +2196,7 @@ public class Hessian2Input
     
     for (int i = 0; i < len; i++) {
       String name = readString();
-      
+
       fields[i] = reader.createField(name);
       fieldNames[i] = name;
     }

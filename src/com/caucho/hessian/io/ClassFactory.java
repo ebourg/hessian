@@ -58,8 +58,11 @@ import java.util.regex.Pattern;
 public class ClassFactory
 {
   private static ArrayList<Allow> _staticAllowList;
+
+  private static ArrayList<Allow> _staticDenyList;
   
   private ClassLoader _loader;
+  
   private boolean _isWhitelist;
   
   private ArrayList<Allow> _allowList;
@@ -85,7 +88,35 @@ public class ClassFactory
     ArrayList<Allow> allowList = _allowList;
     
     if (allowList == null) {
-      return true;
+      Boolean isAllow = isAllow(_staticDenyList, className);
+
+      if (isAllow != null) {
+        return isAllow;
+      }
+      else {
+        return true;
+      }
+
+    }
+
+    Boolean isAllow = isAllow(_allowList, className);
+    if (isAllow != null) {
+      return isAllow;
+    }
+    
+    isAllow = isAllow(_staticAllowList, className);
+    
+    if (isAllow != null) {
+      return isAllow;
+    }
+    
+    return ! _isWhitelist;
+  }
+  
+  private Boolean isAllow(ArrayList<Allow> allowList, String className)
+  {
+    if (allowList == null) {
+      return null;
     }
     
     int size = allowList.size();
@@ -99,14 +130,14 @@ public class ClassFactory
       }
     }
     
-    return false;
+    return null;
   }
   
   public void setWhitelist(boolean isWhitelist)
   {
-    _isWhitelist = isWhitelist;
-    
     initAllow();
+    
+    _isWhitelist = isWhitelist;
   }
   
   /**
@@ -150,7 +181,7 @@ public class ClassFactory
     synchronized (this) {
       if (_allowList == null) {
         _allowList = new ArrayList<Allow>();
-        _allowList.addAll(_staticAllowList);
+        _isWhitelist = true;
       }
     }
   }
@@ -177,9 +208,18 @@ public class ClassFactory
   }
   
   static {
-    _staticAllowList = new ArrayList<Allow>();
+    ArrayList<Allow> blacklist = new ArrayList<Allow>();
+    
+    blacklist.add(new Allow("java\\.lang\\.Runtime", false));
+    blacklist.add(new Allow("java\\.lang\\.Process", false));
+    blacklist.add(new Allow("java\\.lang\\.System", false));
+    blacklist.add(new Allow("java\\.lang\\.Thread", false));
+    
+    _staticAllowList = new ArrayList<Allow>(blacklist);
     
     _staticAllowList.add(new Allow("java\\..+", true));
     _staticAllowList.add(new Allow("javax\\.management\\..+", true));
+    
+    _staticDenyList = new ArrayList<Allow>(blacklist);
   }
 }

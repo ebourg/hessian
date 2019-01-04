@@ -139,6 +139,7 @@ public class AbstractDeserializer implements Deserializer {
   /**
    * Reads an object instance from the input stream
    */
+  @Override
   public Object readObject(AbstractHessianInput in, 
                            Object []fields)
     throws IOException

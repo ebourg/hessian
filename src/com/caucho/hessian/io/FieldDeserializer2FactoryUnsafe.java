@@ -49,17 +49,10 @@
 package com.caucho.hessian.io;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-
-import java.util.logging.*;
-
-import com.caucho.hessian.io.JavaDeserializer.FieldDeserializer;
-import com.caucho.hessian.io.JavaDeserializer.NullFieldDeserializer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import sun.misc.Unsafe;
 

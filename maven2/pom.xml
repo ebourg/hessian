@@ -1,16 +1,46 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.caucho</groupId>
-  <artifactId>resin-hessian</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>hessian</artifactId>
   <version>@VERSION@</version>
-  <name>Hessian Binary Web Service</name>
+  
+  <packaging>jar</packaging>
+  <name>Hessian</name>
+  <description>Hessian is a compact binary protocol for connecting web services</description>
   <url>http://hessian.caucho.com</url>
 
   <licenses>
     <license>
-      <name>Apache License 1.0</name>
+      <name>The Apache Software License, Version 1.1</name>
+      <url>http://www.apache.org/licenses/LICENSE-1.1.txt</url>
+      <distribution>repo</distribution>
     </license>
-  </licenses>
+  </licenses> 
+
+  <developers>
+    <developer>
+      <name>Scott Ferguson</name>
+      <email>ferg@caucho.com</email>
+      <organization>Caucho Technology, Inc</organization>
+      <organizationUrl>https://www.caucho.com</organizationUrl>
+    </developer>
+  </developers>
+  
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  
+  <scm>
+    <connection>scm:svn:svn://svn.caucho.com/home/svn/svnroot/resin/trunk/modules/hessian</connection>
+    <url>svn://svn.caucho.com/home/svn/svnroot/resin/trunk/modules/hessian</url>
+  </scm>
 </project>
+

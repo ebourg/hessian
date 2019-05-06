@@ -88,10 +88,10 @@ public interface Hessian2Constants
   public static final int INT_SHORT_MAX = 0x3ffff;
   public static final int BC_INT_SHORT_ZERO = 0xd4;
 
-  public static final int BC_LIST_VARIABLE =0x55;
+  public static final int BC_LIST_VARIABLE = 0x55;
   public static final int BC_LIST_FIXED = 'V';
   public static final int BC_LIST_VARIABLE_UNTYPED = 0x57;
-  public static final int BC_LIST_FIXED_UNTYPED =0x58;
+  public static final int BC_LIST_FIXED_UNTYPED = 0x58;
 
   public static final int BC_LIST_DIRECT = 0x70;
   public static final int BC_LIST_DIRECT_UNTYPED = 0x78;

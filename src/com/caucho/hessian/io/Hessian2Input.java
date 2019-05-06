@@ -1652,31 +1652,6 @@ public class Hessian2Input
   }
 
   /**
-   * Reads a fault.
-   */
-  private HashMap readFault()
-    throws IOException
-  {
-    HashMap map = new HashMap();
-
-    int code = read();
-    for (; code > 0 && code != 'Z'; code = read()) {
-      _offset--;
-      
-      Object key = readObject();
-      Object value = readObject();
-
-      if (key != null && value != null)
-        map.put(key, value);
-    }
-
-    if (code != 'Z')
-      throw expect("fault", code);
-
-    return map;
-  }
-
-  /**
    * Reads an object from the input stream with an expected type.
    */
   public Object readObject(Class cl)
@@ -1984,7 +1959,6 @@ public class Hessian2Input
         _isLastChunk = true;
         _chunkLength = tag - 0x00;
 
-        int data;
         _sbuf.setLength(0);
       
         parseString(_sbuf);

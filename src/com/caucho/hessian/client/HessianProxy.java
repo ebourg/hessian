@@ -193,6 +193,12 @@ public class HessianProxy implements InvocationHandler, Serializable {
         in = _factory.getHessian2Input(is);
 
         Object value = in.readReply(method.getReturnType());
+        
+        if (value instanceof InputStream) {
+          value = new ResultInputStream(conn, is, in, (InputStream) value);
+          is = null;
+          conn = null;
+        }
 
         return value;
       }
@@ -211,8 +217,9 @@ public class HessianProxy implements InvocationHandler, Serializable {
           is = null;
           conn = null;
         }
-        else
+        else {
           in.completeReply();
+        }
 
         return value;
       }

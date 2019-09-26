@@ -56,6 +56,13 @@ import java.util.HashMap;
 
 /**
  * Context for a service, to handle request-specific information.
+ * 
+ * Applications can use the ServiceContext to get servlet session ids or
+ * HTTP headers.
+ * 
+ * <code><pre>
+ * ServletRequest req = ServiceContext.getContext().getRequest();
+ * </pre></code>
  */
 public class ServiceContext {
   private static final ThreadLocal<ServiceContext> _localContext

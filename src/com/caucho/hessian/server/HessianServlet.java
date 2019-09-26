@@ -72,6 +72,9 @@ import com.caucho.services.server.ServiceContext;
 
 /**
  * Servlet for serving Hessian services.
+ * 
+ * Applications can use ServletContext inside a Hessian service to get
+ * ServletRequest, ServletResponse and session information.
  */
 @SuppressWarnings("serial")
 public class HessianServlet extends HttpServlet {

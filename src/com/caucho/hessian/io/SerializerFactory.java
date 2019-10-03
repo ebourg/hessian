@@ -102,8 +102,8 @@ public class SerializerFactory extends AbstractSerializerFactory
 
   private Deserializer _hashMapDeserializer;
   private Deserializer _arrayListDeserializer;
-  private ConcurrentHashMap _cachedSerializerMap;
-  private ConcurrentHashMap _cachedDeserializerMap;
+  private Map _cachedSerializerMap;
+  private Map _cachedDeserializerMap;
   private HashMap _cachedTypeDeserializerMap;
 
   private boolean _isAllowNonSerializable;

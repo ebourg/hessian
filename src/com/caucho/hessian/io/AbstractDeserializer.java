@@ -74,7 +74,7 @@ public class AbstractDeserializer implements Deserializer {
     String className = getClass().getName();
 
     if (obj != null)
-      throw error(className + ": unexpected object " + obj.getClass().getName() + " (" + obj + ")");
+      throw error(className + ": unexpected object " + obj.getClass().getName());
     else
       throw error(className + ": unexpected null value");
   }
@@ -99,7 +99,7 @@ public class AbstractDeserializer implements Deserializer {
     String className = getClass().getName();
 
     if (obj != null)
-      throw error(className + ": unexpected object " + obj.getClass().getName() + " (" + obj + ")");
+      throw error(className + ": unexpected object " + obj.getClass().getName());
     else
       throw error(className + ": unexpected null value");
   }
